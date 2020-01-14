@@ -14,7 +14,7 @@ class V(Vk):
     def __init__(self):
         with open("token.txt", "r") as f:
             token = f.read()
-        Vk.__init__(self, token=token, group_id=190864852)
+        Vk.__init__(self, token=token, group_id=190877945)
 
     def message_new(self, event):
         event = event["object"]["message"]
@@ -31,8 +31,8 @@ class V(Vk):
             self.send_top(event)
         elif regex.findall(r"\A\s*(\+|\-)\d*\s*\Z", message):
             match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>\d*)\s*\Z", message)
-            operator = match.group("operator")[0];
-            number = match.group("amount");
+            operator = match.group("operator")[0]
+            number = match.group("amount")
             
             n = user.quest_price
             if number:
@@ -52,13 +52,13 @@ class V(Vk):
         user_rating_change = None
         transfer = False
 
-        if user.rating > 0 and amount > 0:
+        if amount > 0:
             if user.rating < amount:
                 self.send_not_enough_rating_error(event, user)
                 return None
             else:
                 if user.quest_price == amount:
-                    user.quest_price = 0;
+                    user.quest_price = 0
                 user.rating -= abs(amount)
                 user_rating_change = (user.name, user.rating+amount, user.rating)
                 transfer = True
