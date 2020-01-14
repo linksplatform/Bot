@@ -127,3 +127,9 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# Database
+python/users/*
+
+# API token
+python/token.txt
