@@ -4,6 +4,7 @@
 ```
 cd python
 python -m pip install saya social_ethosa regex
+cd ..
 ```
 
 ## Run
