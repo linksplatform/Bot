@@ -45,10 +45,6 @@ class V(Vk):
                 n = 0
             if operator == "-":
                 n = -n
-
-            #print(selected_message)
-            #print(dir(selected_message))
-            #print()
                 
             if selected_user and (user.uid != selected_user.uid):
                 self.send_rating_change(event, user, selected_user, operator, n)
