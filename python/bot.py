@@ -6,7 +6,8 @@ import regex
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
-base.addPattern("quest_price", 1)
+base.addPattern("quest_price", 1) # Bug, should be 0
+base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
@@ -30,6 +31,14 @@ class V(Vk):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(r"\A\s*(топ|top)\s*\Z", message):
             self.send_top(event)
+        #elif regex.findall(r"\A\s*(я|me)\s*\+=\s*(C#|C|C++)\s*\Z", message):
+        #    match = regex.match(r"\A\s*(я|me)\s*\+=\s*(?P<language>C#|C|C++)\s*\Z", message)
+        #    language = match.group("language")
+        #    if not "programming_languages" in user:
+        #        user.programming_languages = []
+        #    user.programming_languages.append(language)
+        #    self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string))
+        #    base.save(user)
         elif regex.findall(r"\A\s*(\+|\-)[0-9]*\s*\Z", message):
             if is_bot_selected:
                 return None
@@ -121,7 +130,7 @@ class V(Vk):
             return "(" + programming_languages_string + ")"
 
     def get_programming_languages_string(self, user):
-        if "programming_languages" in user:
+        if ("programming_languages" in user) and (len(user.programming_languages) > 0):
             ", ".join(user.programming_languages)
         else:
             return ""
