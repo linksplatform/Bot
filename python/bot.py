@@ -50,7 +50,7 @@ class V(Vk):
     def send_rating_change(self, event, user, selected_user, operator, amount):
         selected_user_rating_change = None
         user_rating_change = None
-        transfer = False
+        is_transfer = False
 
         if amount != 0:
             if user.rating < abs(amount):
@@ -61,27 +61,27 @@ class V(Vk):
                     user.quest_price = 0
                 user.rating -= abs(amount)
                 user_rating_change = (user.name, user.rating+abs(amount), user.rating)
-                transfer = True
+                is_transfer = True
         if operator == "+":
-            if (not transfer) and (user.uid not in selected_user.current):
+            if (not is_transfer) and (user.uid not in selected_user.current):
                 selected_user.current.append(user.uid)
-            if transfer or (len(selected_user.current) >= 2):
-                if not transfer:
+            if is_transfer or (len(selected_user.current) >= 2):
+                if not is_transfer:
                     selected_user.current = []
                     amount = 1
                 selected_user.rating += amount
                 selected_user_rating_change = (selected_user.name, selected_user.rating-amount, selected_user.rating)
         else:
-            if (not transfer) and (user.uid not in selected_user.current_sub):
+            if (not is_transfer) and (user.uid not in selected_user.current_sub):
                 selected_user.current_sub.append(user.uid)
-            if transfer or (len(selected_user.current_sub) >= 3):
-                if not transfer:
+            if is_transfer or (len(selected_user.current_sub) >= 3):
+                if not is_transfer:
                     selected_user.current_sub = []
                     amount = -1
                 selected_user.rating += amount
                 selected_user_rating_change = (selected_user.name, selected_user.rating-amount, selected_user.rating)
         base.save(selected_user)
-        if transfer:
+        if is_transfer:
             base.save(user)
         if selected_user_rating_change:
             if user_rating_change:
