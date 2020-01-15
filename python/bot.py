@@ -91,7 +91,7 @@ class V(Vk):
                                            
     def send_reward_change(self, event, user, operator, amount):
         if operator == "+":
-            if user.rating < amount:
+            if (amount != 0) and (user.rating < amount):
                 self.send_not_enough_rating_error(event, user)
             else:
                 user.quest_price = amount
