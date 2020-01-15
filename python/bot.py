@@ -126,7 +126,7 @@ if __name__ == '__main__':
     vk = V()
     print("start listen ...")
     @vk.longpoll.on_listen_end
-    def restart():
+    def restart(arg):
         print("restart ...")
         vk.longpoll.start_listen()
     vk.start_listen()
