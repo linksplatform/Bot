@@ -110,8 +110,23 @@ class V(Vk):
     def send_top(self, event):
         users = base.getSortedByKeys("rating")
         users = [i for i in users if i["rating"] != 0]
-        response = "\n".join(["[id%s|%s] - [%s]" % (user["uid"], user["name"], user["rating"]) for user in users])
+        response = "\n".join(["[id%s|%s]%s - [%s]" % (user["uid"], self.get_programming_languages_string_with_parentheses_or_empty(user), user["name"], user["rating"]) for user in users])
         self.send_message(event, response)
+
+    def get_programming_languages_string_with_parentheses_or_empty(self, user)
+        programming_languages_string = get_programming_languages_string(user)
+        if programming_languages_string == "":
+            return programming_languages_string
+        else
+            return "(" + programming_languages_string + ")"
+
+    def get_programming_languages_string(self, user)
+        programming_languages = user["programming_languages"]
+        if not programming_languages:
+            return ""
+        else
+            ", ".join(programming_languages)
+
     
     def send_rating(self, event, user, is_self = True):
         if is_self:
