@@ -52,8 +52,8 @@ class V(Vk):
         user_rating_change = None
         transfer = False
 
-        if amount > 0:
-            if user.rating < amount:
+        if amount != 0:
+            if user.rating < abs(amount):
                 self.send_not_enough_rating_error(event, user)
                 return None
             else:
