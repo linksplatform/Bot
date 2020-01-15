@@ -63,7 +63,10 @@ class V(Vk):
                 user_rating_change = (user.name, user.rating+amount, user.rating)
                 transfer = True
         else:
-            amount = 1
+            if operator == "+":
+                amount = 1
+            else:
+                amount = -1
         if operator == "+":
             if (not transfer) and (user.uid not in selected_user.current):
                 selected_user.current.append(user.uid)
