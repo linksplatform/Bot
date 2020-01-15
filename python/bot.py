@@ -60,7 +60,7 @@ class V(Vk):
                 if user.quest_price == amount:
                     user.quest_price = 0
                 user.rating -= abs(amount)
-                user_rating_change = (user.name, user.rating+amount, user.rating)
+                user_rating_change = (user.name, user.rating+abs(amount), user.rating)
                 transfer = True
         if operator == "+":
             if (not transfer) and (user.uid not in selected_user.current):
