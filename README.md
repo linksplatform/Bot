@@ -2,9 +2,9 @@
 
 ## Install
 ```
-cd python
-python -m pip install saya social_ethosa regex
-cd ..
+git clone https://github.com/linksplatform/Bot.git
+cd Bot
+pip install requirements.txt
 ```
 
 ## Run
