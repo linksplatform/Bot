@@ -6,7 +6,7 @@ import regex
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
-base.addPattern("quest_price", 1) # Bug, should be 0
+base.addPattern("quest_price", 0)
 base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
