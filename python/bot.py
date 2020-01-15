@@ -24,12 +24,16 @@ class V(Vk):
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = base.autoInstall(selected_message["from_id"], self) if selected_message else None
-            
+        is_bot_selected = True if selected_message and (selected_message["from_id"] < 0) else False
+
         if regex.findall(r"\A\s*(рейтинг|rating)\s*\Z", message):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(r"\A\s*(топ|top)\s*\Z", message):
             self.send_top(event)
         elif regex.findall(r"\A\s*(\+|\-)\d*\s*\Z", message):
+            if is_bot_selected:
+                return None
+
             match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>\d*)\s*\Z", message)
             operator = match.group("operator")[0]
             number = match.group("amount")
@@ -41,6 +45,10 @@ class V(Vk):
                 n = 0
             if operator == "-":
                 n = -n
+
+            #print(selected_message)
+            #print(dir(selected_message))
+            #print()
                 
             if selected_user and (user.uid != selected_user.uid):
                 self.send_rating_change(event, user, selected_user, operator, n)
