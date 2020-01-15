@@ -30,11 +30,11 @@ class V(Vk):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(r"\A\s*(топ|top)\s*\Z", message):
             self.send_top(event)
-        elif regex.findall(r"\A\s*(\+|\-)\d*\s*\Z", message):
+        elif regex.findall(r"\A\s*(\+|\-)[0-9]*\s*\Z", message):
             if is_bot_selected:
                 return None
 
-            match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>\d*)\s*\Z", message)
+            match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z", message)
             operator = match.group("operator")[0]
             number = match.group("amount")
             
