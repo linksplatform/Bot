@@ -24,7 +24,7 @@ class V(Vk):
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = base.autoInstall(selected_message["from_id"], self) if selected_message else None
-        is_bot_selected = True if selected_message and (selected_message["from_id"] < 0) else False
+        is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
         if regex.findall(r"\A\s*(рейтинг|rating)\s*\Z", message):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
