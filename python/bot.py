@@ -113,18 +113,18 @@ class V(Vk):
         response = "\n".join(["[id%s|%s]%s - [%s]" % (user["uid"], self.get_programming_languages_string_with_parentheses_or_empty(user), user["name"], user["rating"]) for user in users])
         self.send_message(event, response)
 
-    def get_programming_languages_string_with_parentheses_or_empty(self, user)
+    def get_programming_languages_string_with_parentheses_or_empty(self, user):
         programming_languages_string = get_programming_languages_string(user)
         if programming_languages_string == "":
             return programming_languages_string
-        else
+        else:
             return "(" + programming_languages_string + ")"
 
-    def get_programming_languages_string(self, user)
+    def get_programming_languages_string(self, user):
         programming_languages = user["programming_languages"]
         if not programming_languages:
             return ""
-        else
+        else:
             ", ".join(programming_languages)
 
     
