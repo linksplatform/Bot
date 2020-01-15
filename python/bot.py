@@ -62,25 +62,22 @@ class V(Vk):
                 user.rating -= abs(amount)
                 user_rating_change = (user.name, user.rating+amount, user.rating)
                 transfer = True
-        else:
-            if operator == "+":
-                amount = 1
-            else:
-                amount = -1
         if operator == "+":
             if (not transfer) and (user.uid not in selected_user.current):
                 selected_user.current.append(user.uid)
-            if (transfer) or (len(selected_user.current) >= 2):
-                if len(selected_user.current) >= 2:
+            if transfer or (len(selected_user.current) >= 2):
+                if not transfer:
                     selected_user.current = []
+                    amount = 1
                 selected_user.rating += amount
                 selected_user_rating_change = (selected_user.name, selected_user.rating-amount, selected_user.rating)
         else:
             if (not transfer) and (user.uid not in selected_user.current_sub):
                 selected_user.current_sub.append(user.uid)
-            if (transfer) or (len(selected_user.current_sub) >= 3):
-                if len(selected_user.current_sub) >= 3:
+            if transfer or (len(selected_user.current_sub) >= 3):
+                if not transfer:
                     selected_user.current_sub = []
+                    amount = -1
                 selected_user.rating += amount
                 selected_user_rating_change = (selected_user.name, selected_user.rating-amount, selected_user.rating)
         base.save(selected_user)
