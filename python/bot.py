@@ -173,7 +173,7 @@ class V(Vk):
         
     def send_top(self, event):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
-        users = [i for i in users if i["rating"] != 0]
+        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         response = "\n".join(["[id%s|%s]%s - [%s]" % (user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user), user["rating"]) for user in users])
         self.send_message(event, response)
 
