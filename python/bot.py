@@ -87,6 +87,11 @@ class V(Vk):
             match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z", message)
             operator = match.group("operator")[0]
             number = match.group("amount")
+
+            # Downvotes disabled for users with negative rating
+            if (operator == "-") and (user.rating < 0):
+                self.send_not_enough_rating_error(self, event, user)
+                return None
             
             n = user.quest_price
             if number:
