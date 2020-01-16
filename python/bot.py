@@ -22,7 +22,7 @@ default_programming_languages = [
     "C",
     "Shell",
     "C\#",
-    "Objective-C",
+    "Objective\-C",
     "R",
     "VimL",
     "Go",
