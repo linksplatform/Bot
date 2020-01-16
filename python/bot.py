@@ -37,7 +37,6 @@ default_programming_languages = [
     "Lua",
     "Clojure",
     "Matlab",
-    "Arduino",
     "Groovy",
     "Puppet",
     "Rust",
@@ -47,7 +46,8 @@ default_programming_languages = [
     "Nim",
     "1С",
     "КуМир",
-    "Scratch"
+    "Scratch",
+    "Prolog",
 ]
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
 
