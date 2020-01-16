@@ -77,6 +77,10 @@ class V(Vk):
             base.save(user)
             self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
         elif regex.findall(r"\A\s*(\+|\-)[0-9]*\s*\Z", message):
+            # Only for chat rooms
+            if event["peer_id"] < 2000000000:
+                return None
+            # Only regular users can be selected
             if is_bot_selected:
                 return None
 
