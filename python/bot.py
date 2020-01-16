@@ -12,6 +12,7 @@ base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
 default_programming_languages = [
+    "Assembler",
     "JavaScript",
     "Java",
     "Python",
