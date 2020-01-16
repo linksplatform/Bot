@@ -61,6 +61,11 @@ default_programming_languages = [
 ]
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
 
+chats_whitelist = [
+    2000000001,
+    2000000006
+]
+
 class V(Vk):
     def __init__(self):
         with open("token.txt", "r") as f:
@@ -94,6 +99,9 @@ class V(Vk):
         elif regex.findall(r"\A\s*(\+|\-)[0-9]*\s*\Z", message):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
+                return None
+            if event["peer_id"] not in chats_whitelist:
+                self.send_not_in_whitelist(event)
                 return None
             # Only regular users can be selected
             if is_bot_selected:
@@ -206,6 +214,9 @@ class V(Vk):
         else:
             response = "Рейтинг %s - [%s]"
         self.send_message(event, response % (user.name, user.rating))
+
+    def send_not_in_whitelist(self, event):
+        self.send_message(event, "Извините, но ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (event["peer_id"]))
 
     def send_not_enough_rating_error(self, event, user):
         self.send_message(event, "Извините, но вашего рейтинга [%s] недостаточно :(" % (user.rating))
