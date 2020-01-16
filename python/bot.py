@@ -31,7 +31,7 @@ default_programming_languages = [
     "Swift",
     "Scala",
     "Emacs Lisp",
-    "Lisp
+    "Lisp",
     "Haskell",
     "Lua",
     "Clojure",
