@@ -40,6 +40,7 @@ default_programming_languages = [
     "Haskell",
     "Lua",
     "Clojure",
+    "TLA+",
     "PlusCal",
     "Matlab",
     "Groovy",
