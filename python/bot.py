@@ -14,6 +14,7 @@ base.addPattern("current_sub", [])
 default_programming_languages = [
     "Assembler",
     "JavaScript",
+    "TypeScript",
     "Java",
     "Python",
     "PHP",
