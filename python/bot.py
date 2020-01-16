@@ -170,9 +170,9 @@ class V(Vk):
             base.save(user)
         if selected_user_rating_change:
             if user_rating_change:
-                self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]" % (user_rating_change + selected_user_rating_change))
+                self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
             else:
-                self.send_message(event, "Рейтинг изменён: %s [%s]->[%s]" % selected_user_rating_change)
+                self.send_message(event, "Рейтинг изменён: %s [%s]->[%s]." % selected_user_rating_change)
                                            
     def send_reward_change(self, event, user, operator, amount):
         if operator == "+":
@@ -181,7 +181,7 @@ class V(Vk):
             else:
                 user.quest_price = amount
                 base.save(user)
-                self.send_message(event, "Вы установили награду, ваш следующий + теперь [%s]" % (amount))
+                self.send_message(event, "Вы установили награду, Ваш следующий + теперь [%s]." % (amount))
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
@@ -191,7 +191,7 @@ class V(Vk):
     def send_top(self, event):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        response = "\n".join(["[id%s|%s]%s - [%s]" % (user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user), user["rating"]) for user in users])
+        response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
         self.send_message(event, response)
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
@@ -213,16 +213,16 @@ class V(Vk):
     
     def send_rating(self, event, user, is_self = True):
         if is_self:
-            response = "%s, Ваш рейтинг - [%s]"
+            response = "%s, Ваш рейтинг - [%s]."
         else:
-            response = "Рейтинг %s - [%s]"
+            response = "Рейтинг %s - [%s]."
         self.send_message(event, response % (user.name, user.rating))
 
     def send_not_in_whitelist(self, event):
-        self.send_message(event, "Извините, но ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (event["peer_id"]))
+        self.send_message(event, "Извините, но Ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (event["peer_id"]))
 
     def send_not_enough_rating_error(self, event, user):
-        self.send_message(event, "Извините, но вашего рейтинга [%s] недостаточно :(" % (user.rating))
+        self.send_message(event, "Извините, но Вашего рейтинга [%s] недостаточно :(" % (user.rating))
                            
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(0, 1000))
