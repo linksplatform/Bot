@@ -42,12 +42,16 @@ default_programming_languages = [
     "Rust",
     "PowerShell",
     "Pascal",
+    "Delphi",
     "SQL",
     "Nim",
     "1С",
     "КуМир",
     "Scratch",
     "Prolog",
+    "GLSL",
+    "HLSL",
+    "Whitespace"
 ]
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
 
