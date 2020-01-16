@@ -69,6 +69,26 @@ chats_whitelist = [
     2000000006
 ]
 
+help_string = """Вот что я умею:
+"помощь" или "help" — вывод этого сообщения.
+"топ" или "top" — вывести список пользователей с рейтингом, или указанными языками программирования.
+"рейтинг" или "rating" — вывести свой рейтинг, или рейтинг другого пользователя.
+"+" или "-" — принять участие в коллективном голосование за или против другого пользователя.
+"+5" или "-4" — передать свой рейтинг другому пользователю или пожертвовать своим рейтингом, чтобы проголосовать против друго пользователя.
+
+Команды по отношению к другим пользователям запускаются путём ответа или репоста их сообщений.
+
+1 единица рейтинга прибавляется, если два разных человека голосуют за "+".
+1 единица рейтинга отнимается, если три разных человека голосуют против "-".
+
+Голосовать против других пользователей могут только те пользователи, у кого не отрицательный рейтинг, т.е. 0 и более.
+
+Голосование за самого себя не работает.
+Если вы не выберите другого пользователя и напишете "+3" (можно ответом на своё сообщение), то установится награда за следующий ваш "+". Так рекомендуется заявлять о награде за ответ на свой вопрос. После выбора того, кому начислится награда сбрасывается. Если вы передумали, вы можете сбросить награду явно написав "+0".
+
+Все команды указаны в кавычках, однако отправлять в чат их нужно без кавычек, чтобы они выполнились.
+"""
+
 class V(Vk):
     def __init__(self):
         with open("token.txt", "r") as f:
@@ -85,7 +105,9 @@ class V(Vk):
         selected_user = base.autoInstall(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
-        if regex.findall(r"\A\s*(рейтинг|rating)\s*\Z", message):
+        if regex.findall(r"\A\s*(помощь|help)\s*\Z", message):
+            self.send_help(event)
+        elif regex.findall(r"\A\s*(рейтинг|rating)\s*\Z", message):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(r"\A\s*(топ|top)\s*\Z", message):
             self.send_top(event)
@@ -187,6 +209,9 @@ class V(Vk):
         reply_message = event.get("reply_message", {})
         fwd_messages = event.get("fwd_messages", [])
         return [reply_message] if reply_message else fwd_messages
+
+    def send_help(self, event):
+        self.send_message(event, help_string)
         
     def send_top(self, event):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
