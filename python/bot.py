@@ -37,7 +37,6 @@ default_programming_languages = [
     "Clojure",
     "Matlab",
     "Arduino",
-    "Makefile",
     "Groovy",
     "Puppet",
     "Rust",
