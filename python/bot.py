@@ -57,7 +57,10 @@ default_programming_languages = [
     "Prolog",
     "GLSL",
     "HLSL",
-    "Whitespace"
+    "Whitespace",
+    "Basic",
+    "Visual Basic",
+    "Parser",
 ]
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
 
