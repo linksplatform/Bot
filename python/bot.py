@@ -32,7 +32,7 @@ default_programming_languages = [
     "TeX",
     "Swift",
     "Kotlin",
-    "F#",
+    "F\#",
     "Scala",
     "Scheme",
     "Emacs Lisp",
