@@ -90,7 +90,7 @@ class V(Vk):
 
             # Downvotes disabled for users with negative rating
             if (operator == "-") and (user.rating < 0):
-                self.send_not_enough_rating_error(self, event, user)
+                self.send_not_enough_rating_error(event, user)
                 return None
             
             n = user.quest_price
