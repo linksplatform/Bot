@@ -11,6 +11,40 @@ base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
+default_programming_languages = [
+    "JavaScript",
+    "Java",
+    "Python",
+    "CSS",
+    "PHP",
+    "Ruby",
+    "C\+\+",
+    "C",
+    "Shell",
+    "C\#",
+    "Objective-C",
+    "R",
+    "VimL",
+    "Go",
+    "Perl",
+    "CoffeeScript",
+    "TeX",
+    "Swift",
+    "Scala",
+    "Emacs Lisp",
+    "Haskell",
+    "Lua",
+    "Clojure",
+    "Matlab",
+    "Arduino",
+    "Makefile",
+    "Groovy",
+    "Puppet",
+    "Rust",
+    "PowerShell",
+]
+default_programming_languages_pattern_string = "|".join(default_programming_languages)
+
 class V(Vk):
     def __init__(self):
         with open("token.txt", "r") as f:
@@ -31,14 +65,16 @@ class V(Vk):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(r"\A\s*(топ|top)\s*\Z", message):
             self.send_top(event)
-        #elif regex.findall(r"\A\s*(я|me)\s*\+=\s*(C#|C|C++)\s*\Z", message):
-        #    match = regex.match(r"\A\s*(я|me)\s*\+=\s*(?P<language>C#|C|C++)\s*\Z", message)
-        #    language = match.group("language")
-        #    if not "programming_languages" in user:
-        #        user.programming_languages = []
-        #    user.programming_languages.append(language)
-        #    self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string))
-        #    base.save(user)
+        elif regex.findall(r"\A\s*(я|me)\s*\+=\s*(" + default_programming_languages_pattern_string + r")\s*\Z", message):
+            match = regex.match(r"\A\s*(я|me)\s*\+=\s*(?P<language>" + default_programming_languages_pattern_string + r")\s*\Z", message)
+            language = match.group("language")
+            if "programming_languages" not in user.obj:
+                user.programming_languages = []
+                base.save(user)
+            if not language in user.programming_languages:
+                user.programming_languages.append(language)
+            base.save(user)
+            self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
         elif regex.findall(r"\A\s*(\+|\-)[0-9]*\s*\Z", message):
             if is_bot_selected:
                 return None
@@ -124,14 +160,20 @@ class V(Vk):
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
         programming_languages_string = self.get_programming_languages_string(user)
+        print(programming_languages_string)
         if programming_languages_string == "":
             return programming_languages_string
         else:
             return "(" + programming_languages_string + ")"
 
     def get_programming_languages_string(self, user):
-        if ("programming_languages" in user) and (len(user.programming_languages) > 0):
-            ", ".join(user.programming_languages)
+        if isinstance(user, dict):
+            print("programming_languages" in user)
+            languages = user["programming_languages"] if "programming_languages" in user else []
+        else:
+            languages = user.programming_languages
+        if  len(languages) > 0:
+            return ", ".join(languages)
         else:
             return ""
     
