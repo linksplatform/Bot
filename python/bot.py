@@ -42,6 +42,7 @@ default_programming_languages = [
     "Puppet",
     "Rust",
     "PowerShell",
+    "Nim"
 ]
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
 
@@ -153,14 +154,13 @@ class V(Vk):
         return [reply_message] if reply_message else fwd_messages
         
     def send_top(self, event):
-        users = base.getSortedByKeys("rating")
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
         users = [i for i in users if i["rating"] != 0]
         response = "\n".join(["[id%s|%s]%s - [%s]" % (user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user), user["rating"]) for user in users])
         self.send_message(event, response)
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
         programming_languages_string = self.get_programming_languages_string(user)
-        print(programming_languages_string)
         if programming_languages_string == "":
             return programming_languages_string
         else:
@@ -168,7 +168,6 @@ class V(Vk):
 
     def get_programming_languages_string(self, user):
         if isinstance(user, dict):
-            print("programming_languages" in user)
             languages = user["programming_languages"] if "programming_languages" in user else []
         else:
             languages = user.programming_languages
