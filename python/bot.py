@@ -31,6 +31,7 @@ default_programming_languages = [
     "CoffeeScript",
     "TeX",
     "Swift",
+    "Kotlin",
     "Scala",
     "Emacs Lisp",
     "Lisp",
