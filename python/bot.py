@@ -15,7 +15,6 @@ default_programming_languages = [
     "JavaScript",
     "Java",
     "Python",
-    "CSS",
     "PHP",
     "Ruby",
     "C\+\+",
@@ -32,6 +31,7 @@ default_programming_languages = [
     "Swift",
     "Scala",
     "Emacs Lisp",
+    "Lisp
     "Haskell",
     "Lua",
     "Clojure",
@@ -42,7 +42,12 @@ default_programming_languages = [
     "Puppet",
     "Rust",
     "PowerShell",
-    "Nim"
+    "Pascal",
+    "SQL",
+    "Nim",
+    "1С",
+    "КуМир",
+    "Scratch"
 ]
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
 
