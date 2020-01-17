@@ -166,17 +166,17 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_rating_change = self.apply_collective_vote(user, selected_user, selected_user.current, 2, +1)
+                selected_user_rating_change = self.apply_collective_vote(user, selected_user, "current", 2, +1)
             else:
-                selected_user_rating_change = self.apply_collective_vote(user, selected_user, selected_user.current_sub, 3, -1)
+                selected_user_rating_change = self.apply_collective_vote(user, selected_user, "current_sub", 3, -1)
 
         return user_rating_change, selected_user_rating_change
 
     def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
-        if user.uid not in current_voters:
-            current_voters.append(user.uid)
-        if len(current_voters) >= number_of_voters:
-            current_voters = []
+        if user.uid not in selected_user[current_voters]:
+            selected_user[current_voters].append(user.uid)
+        if len(cselected_user[urrent_voters]) >= number_of_voters:
+            selected_user[current_voters] = []
             return self.apply_user_rating(selected_user, amount)
 
     def apply_user_rating(self, user, amount):
