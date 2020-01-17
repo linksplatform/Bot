@@ -152,12 +152,6 @@ class V(Vk):
 
         amount = int(amount) if amount else 0
 
-        print(selected_user.name)
-        print(operator)
-        print(amount)
-        print(selected_user.current)
-        print(selected_user.current_sub)
-
         # Personal rating transfer
         if amount > 0:
             if user.rating < amount:
