@@ -141,10 +141,9 @@ class V(Vk):
                     return None
 
                 user_rating_change, selected_user_rating_change = self.apply_rating_change(event, user, selected_user, operator, amount)
+                base.save(selected_user)
                 if user_rating_change:
                     base.save(user)
-                if selected_user_rating_change:
-                    base.save(selected_user)
                 self.send_rating_change(event, user_rating_change, selected_user_rating_change)
 
     def apply_rating_change(self, event, user, selected_user, operator, amount):
@@ -152,6 +151,12 @@ class V(Vk):
         user_rating_change = None
 
         amount = int(amount) if amount else 0
+
+        print(selected_user.name)
+        print(operator)
+        print(amount)
+        print(selected_user.current)
+        print(selected_user.current_sub)
 
         # Personal rating transfer
         if amount > 0:
@@ -185,8 +190,7 @@ class V(Vk):
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
-        fwd_messages = event.get("fwd_messages", [])
-        return [reply_message] if reply_message else fwd_messages
+        return [reply_message] if reply_message else event.get("fwd_messages", [])
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
         programming_languages_string = self.get_programming_languages_string(user)
