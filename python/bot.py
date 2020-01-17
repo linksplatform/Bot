@@ -175,7 +175,7 @@ class V(Vk):
     def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
         if user.uid not in selected_user[current_voters]:
             selected_user[current_voters].append(user.uid)
-        if len(cselected_user[urrent_voters]) >= number_of_voters:
+        if len(selected_user[current_voters]) >= number_of_voters:
             selected_user[current_voters] = []
             return self.apply_user_rating(selected_user, amount)
 
