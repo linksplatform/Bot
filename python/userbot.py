@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 import requests
 
+from .tokens import UserToken
+from .exceptions import TooManyMessagesError
+
 
 class UserBot:
-    def __init__(self, token):
+    def __init__(self):
         self.url = 'https://api.vk.com/method/'
-        self.token = token
+        self.token = UserToken
 
     def delete_messages(self, conversation_message_ids: list, peer_id: int):
         if len(conversation_message_ids) <= 24:
@@ -19,7 +22,9 @@ class UserBot:
             }
             return 1;'''
 
-            requests.post(self.url + 'execute', data={'token': self.token, 'code': code % params}).json()
+            return requests.post(self.url + 'execute', data={'token': self.token, 'code': code % params}).json()
+        else:
+            raise TooManyMessagesError('Maximum amount was reached (%d/24)' % len(conversation_message_ids))
 
 
 
