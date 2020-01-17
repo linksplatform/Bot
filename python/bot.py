@@ -75,18 +75,14 @@ help_string = """Вот что я умею:
 "+" или "-" — принять участие в коллективном голосование за или против другого пользователя.
 "+5" или "-4" — передать свой рейтинг другому пользователю или пожертвовать своим рейтингом, чтобы проголосовать против друго пользователя.
 "я += КуМир" или "me += C++" — добавить язык программирования в свой список языков программирования.
-
 Команды по отношению к другим пользователям запускаются путём ответа или репоста их сообщений.
-
 1 единица рейтинга прибавляется, если два разных человека голосуют за "+".
 1 единица рейтинга отнимается, если три разных человека голосуют против "-".
-
 Голосовать против других пользователей могут только те пользователи, у кого не отрицательный рейтинг, т.е. 0 и более.
-
 Голосование за самого себя не работает.
-
 Все команды указаны в кавычках, однако отправлять в чат их нужно без кавычек, чтобы они выполнились.
 """
+
 
 class V(Vk):
     def __init__(self):
@@ -97,7 +93,7 @@ class V(Vk):
     def message_new(self, event):
         event = event["object"]["message"]
         user = base.autoInstall(event["from_id"], self) if event["from_id"] > 0 else None
-        
+
         message = event["text"].lstrip("/")
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
@@ -116,7 +112,7 @@ class V(Vk):
             if "programming_languages" not in user.obj:
                 user.programming_languages = []
                 base.save(user)
-            if not language in user.programming_languages:
+            if language not in user.programming_languages:
                 user.programming_languages.append(language)
             base.save(user)
             self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
@@ -149,7 +145,6 @@ class V(Vk):
                     base.save(selected_user)
                 self.send_rating_change(event, user_rating_change, selected_user_rating_change)
 
-                                           
     def apply_rating_change(self, event, user, selected_user, operator, amount):
         selected_user_rating_change = None
         user_rating_change = None
@@ -185,7 +180,7 @@ class V(Vk):
     def apply_user_rating(self, user, amount):
         user.rating += amount
         return (user.name, user.rating-amount, user.rating)
-                                           
+
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
         fwd_messages = event.get("fwd_messages", [])
@@ -203,18 +198,18 @@ class V(Vk):
             languages = user["programming_languages"] if "programming_languages" in user else []
         else:
             languages = user.programming_languages
-        if  len(languages) > 0:
+        if len(languages) > 0:
             return ", ".join(languages)
         else:
             return ""
-    
+
     def send_rating_change(self, event, user_rating_change, selected_user_rating_change):
         if selected_user_rating_change and user_rating_change:
             self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
         elif selected_user_rating_change:
             self.send_message(event, "Рейтинг изменён: %s [%s]->[%s]." % selected_user_rating_change)
 
-    def send_rating(self, event, user, is_self = True):
+    def send_rating(self, event, user, is_self=True):
         if is_self:
             response = "%s, Ваш рейтинг - [%s]."
         else:
@@ -222,7 +217,7 @@ class V(Vk):
         self.send_message(event, response % (user.name, user.rating))
 
     def send_top(self, event):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
         self.send_message(event, response)
@@ -235,13 +230,14 @@ class V(Vk):
 
     def send_not_enough_rating_error(self, event, user):
         self.send_message(event, "Извините, но Вашего рейтинга [%s] недостаточно :(" % (user.rating))
-                           
+
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(0, 1000))
 
 if __name__ == '__main__':
     vk = V()
     print("start listen ...")
+
     @vk.longpoll.on_listen_end
     def restart(event):
         print("restart ...")
