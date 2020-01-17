@@ -6,7 +6,6 @@ import regex
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
-base.addPattern("quest_price", 0)
 base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
@@ -85,7 +84,6 @@ help_string = """Вот что я умею:
 Голосовать против других пользователей могут только те пользователи, у кого не отрицательный рейтинг, т.е. 0 и более.
 
 Голосование за самого себя не работает.
-Если вы не выберите другого пользователя и напишете "+3" (можно ответом на своё сообщение), то установится награда за следующий ваш "+". Так рекомендуется заявлять о награде за ответ на свой вопрос. После выбора того, кому начислится награда сбрасывается. Если вы передумали, вы можете сбросить награду явно написав "+0".
 
 Все команды указаны в кавычках, однако отправлять в чат их нужно без кавычек, чтобы они выполнились.
 """
@@ -126,6 +124,7 @@ class V(Vk):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
                 return None
+            # Only for whitelisted chat rooms
             if event["peer_id"] not in chats_whitelist:
                 self.send_not_in_whitelist(event)
                 return None
@@ -133,92 +132,64 @@ class V(Vk):
             if is_bot_selected:
                 return None
 
-            match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z", message)
-            operator = match.group("operator")[0]
-            number = match.group("amount")
-
-            # Downvotes disabled for users with negative rating
-            if (operator == "-") and (user.rating < 0):
-                self.send_not_enough_rating_error(event, user)
-                return None
-            
-            n = user.quest_price
-            if number:
-                n = int(number)
-            if not n:
-                n = 0
-            if operator == "-":
-                n = -n
-                
             if selected_user and (user.uid != selected_user.uid):
-                self.send_rating_change(event, user, selected_user, operator, n)
-            else:
-                self.send_reward_change(event, user, operator, n)
+                match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z", message)
+                operator = match.group("operator")[0]
+                amount = match.group("amount")
+
+                # Downvotes disabled for users with negative rating
+                if (operator == "-") and (user.rating < 0):
+                    self.send_not_enough_rating_error(event, user)
+                    return None
+
+                user_rating_change, selected_user_rating_change = self.apply_rating_change(event, user, selected_user, operator, amount)
+                if user_rating_change:
+                    base.save(user)
+                if selected_user_rating_change:
+                    base.save(selected_user)
+                self.send_rating_change(event, user_rating_change, selected_user_rating_change)
+
                                            
-    def send_rating_change(self, event, user, selected_user, operator, amount):
+    def apply_rating_change(self, event, user, selected_user, operator, amount):
         selected_user_rating_change = None
         user_rating_change = None
-        is_transfer = False
 
-        if amount != 0:
-            if user.rating < abs(amount):
+        amount = int(amount) if amount else 0
+
+        # Personal rating transfer
+        if amount > 0:
+            if user.rating < amount:
                 self.send_not_enough_rating_error(event, user)
                 return None
             else:
-                if user.quest_price == amount:
-                    user.quest_price = 0
-                user.rating -= abs(amount)
-                user_rating_change = (user.name, user.rating+abs(amount), user.rating)
-                is_transfer = True
-        if operator == "+":
-            if (not is_transfer) and (user.uid not in selected_user.current):
-                selected_user.current.append(user.uid)
-            if is_transfer or (len(selected_user.current) >= 2):
-                if not is_transfer:
-                    selected_user.current = []
-                    amount = 1
-                selected_user.rating += amount
-                selected_user_rating_change = (selected_user.name, selected_user.rating-amount, selected_user.rating)
-        else:
-            if (not is_transfer) and (user.uid not in selected_user.current_sub):
-                selected_user.current_sub.append(user.uid)
-            if is_transfer or (len(selected_user.current_sub) >= 3):
-                if not is_transfer:
-                    selected_user.current_sub = []
-                    amount = -1
-                selected_user.rating += amount
-                selected_user_rating_change = (selected_user.name, selected_user.rating-amount, selected_user.rating)
-        base.save(selected_user)
-        if is_transfer:
-            base.save(user)
-        if selected_user_rating_change:
-            if user_rating_change:
-                self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
-            else:
-                self.send_message(event, "Рейтинг изменён: %s [%s]->[%s]." % selected_user_rating_change)
-                                           
-    def send_reward_change(self, event, user, operator, amount):
-        if operator == "+":
-            if (amount != 0) and (user.rating < amount):
-                self.send_not_enough_rating_error(event, user)
-            else:
-                user.quest_price = amount
-                base.save(user)
-                self.send_message(event, "Вы установили награду, Ваш следующий + теперь [%s]." % (amount))
+                user_rating_change = self.apply_user_rating(user, -amount)
+                amount = -amount if operator == "-" else amount
+                selected_user_rating_change = self.apply_user_rating(selected_user, amount)
 
+        # Collective vote
+        elif amount == 0:
+            if operator == "+":
+                selected_user_rating_change = self.apply_collective_vote(user, selected_user, selected_user.current, 2, +1)
+            else:
+                selected_user_rating_change = self.apply_collective_vote(user, selected_user, selected_user.current_sub, 3, -1)
+
+        return user_rating_change, selected_user_rating_change
+
+    def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
+        if user.uid not in current_voters:
+            current_voters.append(user.uid)
+        if len(current_voters) >= number_of_voters:
+            current_voters = []
+            return self.apply_user_rating(selected_user, amount)
+
+    def apply_user_rating(self, user, amount):
+        user.rating += amount
+        return (user.name, user.rating-amount, user.rating)
+                                           
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
         fwd_messages = event.get("fwd_messages", [])
         return [reply_message] if reply_message else fwd_messages
-
-    def send_help(self, event):
-        self.send_message(event, help_string)
-        
-    def send_top(self, event):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
-        self.send_message(event, response)
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
         programming_languages_string = self.get_programming_languages_string(user)
@@ -237,12 +208,27 @@ class V(Vk):
         else:
             return ""
     
+    def send_rating_change(self, event, user_rating_change, selected_user_rating_change):
+        if selected_user_rating_change and user_rating_change:
+            self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
+        elif selected_user_rating_change:
+            self.send_message(event, "Рейтинг изменён: %s [%s]->[%s]." % selected_user_rating_change)
+
     def send_rating(self, event, user, is_self = True):
         if is_self:
             response = "%s, Ваш рейтинг - [%s]."
         else:
             response = "Рейтинг %s - [%s]."
         self.send_message(event, response % (user.name, user.rating))
+
+    def send_top(self, event):
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"]) 
+        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
+        self.send_message(event, response)
+
+    def send_help(self, event):
+        self.send_message(event, help_string)
 
     def send_not_in_whitelist(self, event):
         self.send_message(event, "Извините, но Ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (event["peer_id"]))
