@@ -210,3 +210,4 @@ if __name__ == '__main__':
         print("restart ...")
         vk.start_listen()
     vk.start_listen()
+
