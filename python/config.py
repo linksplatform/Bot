@@ -87,3 +87,4 @@ default_programming_languages = [
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
+
