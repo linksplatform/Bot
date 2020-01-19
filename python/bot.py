@@ -104,7 +104,7 @@ class V(Vk):
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
 
-        if peer_id in userbot_chats:
+        if peer_id in userbot_chats and peer_id in chats_deleting:
             if peer_id not in self.messages_to_delete:
                 self.messages_to_delete.update({peer_id: []})
 
