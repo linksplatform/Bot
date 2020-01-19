@@ -26,9 +26,7 @@ class V(Vk):
         self.userbot = UserBot()
 
     def message_new(self, event):
-
         event = event["object"]
-        print(event)
 
         if event['peer_id'] in self.messages_to_delete:
             peer = 2000000000 + userbot_chats[event['peer_id']]
@@ -200,9 +198,7 @@ class V(Vk):
         self.send_message(event, "Извините, но Вашего рейтинга [%s] недостаточно :(" % (user.rating))
 
     def send_message(self, event, message):
-        print('+')
-        a = self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(0, 100000))
-        print(a)
+        self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(-INT32, INT32))
 
 
 if __name__ == '__main__':

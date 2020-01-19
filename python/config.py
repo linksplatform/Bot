@@ -1,10 +1,16 @@
 # -*- coding: utf-8 -*-
 
+# Pluses and minuses will be removed in these chats
+chats_deleting = [
+    2000000003
+]
 
+# Check your search line, when you`re in the needed chat. Then copy it`s id after "vk.com/im?peers=c"
 userbot_chats = {
     2000000003: 212
 }
 
+# Chats where you can change reputation of other users
 chats_whitelist = [
     2000000003
 ]
