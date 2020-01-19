@@ -2,7 +2,14 @@ from random import randint
 
 from saya import Vk
 from social_ethosa import BetterBotBase
+from datetime import datetime, timedelta
 import regex
+
+import python.patterns as patterns
+
+from python.tokens import BotToken, group_id
+from python.userbot import UserBot
+from python.config import *
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
@@ -10,90 +17,38 @@ base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
-default_programming_languages = [
-    "Assembler",
-    "JavaScript",
-    "TypeScript",
-    "Java",
-    "Python",
-    "PHP",
-    "Ruby",
-    "C\+\+",
-    "C",
-    "Shell",
-    "C\#",
-    "Objective\-C",
-    "R",
-    "VimL",
-    "Go",
-    "Perl",
-    "CoffeeScript",
-    "TeX",
-    "Swift",
-    "Kotlin",
-    "F\#",
-    "Scala",
-    "Scheme",
-    "Emacs Lisp",
-    "Lisp",
-    "Haskell",
-    "Lua",
-    "Clojure",
-    "TLA\+",
-    "PlusCal",
-    "Matlab",
-    "Groovy",
-    "Puppet",
-    "Rust",
-    "PowerShell",
-    "Pascal",
-    "Delphi",
-    "SQL",
-    "Nim",
-    "1С",
-    "КуМир",
-    "Scratch",
-    "Prolog",
-    "GLSL",
-    "HLSL",
-    "Whitespace",
-    "Basic",
-    "Visual Basic",
-    "Parser",
-]
-default_programming_languages_pattern_string = "|".join(default_programming_languages)
-
-chats_whitelist = [
-    2000000001,
-    2000000006
-]
-
-help_string = """Вот что я умею:
-"помощь" или "help" — вывод этого сообщения.
-"топ" или "top" — вывести список пользователей с рейтингом, или указанными языками программирования.
-"рейтинг" или "rating" — вывести свой рейтинг, или рейтинг другого пользователя.
-"+" или "-" — принять участие в коллективном голосование за или против другого пользователя.
-"+5" или "-4" — передать свой рейтинг другому пользователю или пожертвовать своим рейтингом, чтобы проголосовать против него.
-"+= C++" — добавить язык программирования в свой список языков программирования.
-
-1 единица рейтинга прибавляется, если два разных человека голосуют за "+".
-1 единица рейтинга отнимается, если три разных человека голосуют против "-".
-
-Команды по отношению к другим пользователям запускаются путём ответа или репоста их сообщений.
-Голосовать против других пользователей могут только те пользователи, у кого не отрицательный рейтинг, т.е. 0 и более.
-Голосование за самого себя не работает.
-Все команды указаны в кавычках, однако отправлять в чат их нужно без кавычек, чтобы они выполнились.
-"""
-
 
 class V(Vk):
     def __init__(self):
-        with open("token.txt", "r") as f:
-            token = f.read()
-        Vk.__init__(self, token=token, group_id=190877945)
+        Vk.__init__(self, token=BotToken, group_id=group_id)
+        self.messages_to_delete = {}
+
+        self.userbot = UserBot()
 
     def message_new(self, event):
-        event = event["object"]["message"]
+
+        event = event["object"]
+        print(event)
+
+        if event['peer_id'] in self.messages_to_delete:
+            peer = 2000000000 + userbot_chats[event['peer_id']]
+            new_messages_to_delete = []
+            ids = []
+
+            for item in self.messages_to_delete[event['peer_id']]:
+                if item['date'] > datetime.now():
+                    new_messages_to_delete.append(item)
+                else:
+                    ids.append(item['id'])
+
+            if new_messages_to_delete:
+                self.messages_to_delete[event['peer_id']] = new_messages_to_delete
+            else:
+                self.messages_to_delete.pop(event['peer_id'])
+
+            if ids:
+                self.userbot.delete_messages(ids, peer)
+
         user = base.autoInstall(event["from_id"], self) if event["from_id"] > 0 else None
 
         message = event["text"].lstrip("/")
@@ -102,15 +57,14 @@ class V(Vk):
         selected_user = base.autoInstall(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
-        if regex.findall(r"\A\s*(помощь|help)\s*\Z", message):
+        if regex.findall(patterns.HELP, message):
             self.send_help(event)
-        elif regex.findall(r"\A\s*(рейтинг|rating)\s*\Z", message):
+        elif regex.findall(patterns.RATING, message):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
-        elif regex.findall(r"\A\s*(топ|top)\s*\Z", message):
+        elif regex.findall(patterns.TOP, message):
             self.send_top(event)
-        elif regex.findall(r"\A\s*\+=\s*(" + default_programming_languages_pattern_string + r")\s*\Z", message):
-            match = regex.match(r"\A\s*\+=\s*(?P<language>" + default_programming_languages_pattern_string + r")\s*\Z", message)
-            language = match.group("language")
+        elif regex.findall(patterns.PROGRAMMING_LANGUAGES, message):
+            language = regex.match(patterns.PROGRAMMING_LANGUAGES_MATCH, message).group('language')
             if "programming_languages" not in user.obj:
                 user.programming_languages = []
                 base.save(user)
@@ -118,33 +72,47 @@ class V(Vk):
                 user.programming_languages.append(language)
             base.save(user)
             self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
-        elif regex.findall(r"\A\s*(\+|\-)[0-9]*\s*\Z", message):
+        elif regex.findall(patterns.SET_RATING, message):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
-                return None
+                return
             # Only for whitelisted chat rooms
             if event["peer_id"] not in chats_whitelist:
                 self.send_not_in_whitelist(event)
-                return None
+                return
             # Only regular users can be selected
             if is_bot_selected:
-                return None
+                return
 
             if selected_user and (user.uid != selected_user.uid):
-                match = regex.match(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z", message)
+                match = regex.match(patterns.RATING_OPERATOR_MATCH, message)
                 operator = match.group("operator")[0]
                 amount = match.group("amount")
+                print(amount)
 
                 # Downvotes disabled for users with negative rating
                 if (operator == "-") and (user.rating < 0):
                     self.send_not_enough_rating_error(event, user)
-                    return None
+                    return
 
                 user_rating_change, selected_user_rating_change = self.apply_rating_change(event, user, selected_user, operator, amount)
                 base.save(selected_user)
                 if user_rating_change:
                     base.save(user)
+
                 self.send_rating_change(event, user_rating_change, selected_user_rating_change)
+                self.delete_message(event)
+
+    def delete_message(self, event, delay=2):
+        peer_id = event['peer_id']
+
+        if peer_id in userbot_chats:
+            if peer_id not in self.messages_to_delete:
+                self.messages_to_delete.update({peer_id: []})
+
+            message_id = event['conversation_message_id']
+            data = {'date': datetime.now() + timedelta(seconds=delay), 'id': message_id}
+            self.messages_to_delete[peer_id].append(data)
 
     def apply_rating_change(self, event, user, selected_user, operator, amount):
         selected_user_rating_change = None
@@ -156,7 +124,7 @@ class V(Vk):
         if amount > 0:
             if user.rating < amount:
                 self.send_not_enough_rating_error(event, user)
-                return None
+                return
             else:
                 user_rating_change = self.apply_user_rating(user, -amount)
                 amount = -amount if operator == "-" else amount
@@ -232,7 +200,10 @@ class V(Vk):
         self.send_message(event, "Извините, но Вашего рейтинга [%s] недостаточно :(" % (user.rating))
 
     def send_message(self, event, message):
-        self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(0, 1000))
+        print('+')
+        a = self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(0, 100000))
+        print(a)
+
 
 if __name__ == '__main__':
     vk = V()

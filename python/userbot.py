@@ -14,15 +14,16 @@ class UserBot:
         if len(conversation_message_ids) <= 24:
             params = {'conversation_message_ids': conversation_message_ids, 'peer_id': peer_id}
             code = '''
-            var ids = API.messages.getByConversationId(%s).items@.id;
+            var ids = API.messages.getByConversationMessageId(%s).items@.id;
+            var deleted = [];
             var index = 0;
             while (index < ids.length){
-                API.messages.delete({"id": ids[index]});
+                API.messages.delete({"message_ids": ids[index]});
                 index = index + 1;
             }
             return 1;'''
-
-            return requests.post(self.url + 'execute', data={'token': self.token, 'code': code % params}).json()
+            data = {'access_token': self.token, 'code': code % params, 'v': '5.103'}
+            return requests.post(self.url + 'execute', data=data).json()
         else:
             raise TooManyMessagesError('Maximum amount was reached (%d/24)' % len(conversation_message_ids))
 
