@@ -26,7 +26,3 @@ class UserBot:
             return requests.post(self.url + 'execute', data=data).json()
         else:
             raise TooManyMessagesError('Maximum amount was reached (%d/24)' % len(conversation_message_ids))
-
-
-
-
