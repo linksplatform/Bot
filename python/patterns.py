@@ -11,5 +11,3 @@ PROGRAMMING_LANGUAGES_MATCH = compile(r"\A\s*\+=\s*(?P<language>" + default_lang
 
 RATING_OPERATOR_MATCH = compile(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z")
 SET_RATING = compile(r'\A\s*(\+|\-)[0-9]*\s*\Z')
-
-
