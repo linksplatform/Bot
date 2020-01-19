@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from regex import compile, IGNORECASE
-from .config import default_programming_languages_pattern_string as default_languages
+from config import default_programming_languages_pattern_string as default_languages
 
 TOP = compile(r"\A\s*(топ|top)\s*\Z", IGNORECASE)
 HELP = compile(r"\A\s*(помощь|help)\s*\Z", IGNORECASE)

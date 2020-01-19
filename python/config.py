@@ -1,18 +1,24 @@
 # -*- coding: utf-8 -*-
 
+# Bot group id
+bot_group_id = 190877945
+
 # Pluses and minuses will be removed in these chats
 chats_deleting = [
-    2000000003
+    2000000001,
+    2000000006
 ]
 
 # Check your search line, when you`re in the needed chat. Then copy it`s id after "vk.com/im?peers=c"
 userbot_chats = {
-    2000000003: 212
+    2000000001: 477,
+    2000000006: 423
 }
 
 # Chats where you can change reputation of other users
 chats_whitelist = [
-    2000000003
+    2000000001,
+    2000000006
 ]
 
 INT32 = 2147483647

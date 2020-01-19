@@ -5,11 +5,11 @@ from social_ethosa import BetterBotBase
 from datetime import datetime, timedelta
 import regex
 
-import python.patterns as patterns
+import patterns as patterns
 
-from python.tokens import BotToken, group_id
-from python.userbot import UserBot
-from python.config import *
+from tokens import BotToken
+from userbot import UserBot
+from config import *
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
@@ -17,16 +17,15 @@ base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
-
 class V(Vk):
     def __init__(self):
-        Vk.__init__(self, token=BotToken, group_id=group_id)
+        Vk.__init__(self, token=BotToken, group_id=bot_group_id)
         self.messages_to_delete = {}
-
         self.userbot = UserBot()
+        self.debug = True
 
     def message_new(self, event):
-        event = event["object"]
+        event = event["object"]["message"]
 
         if event['peer_id'] in self.messages_to_delete:
             peer = 2000000000 + userbot_chats[event['peer_id']]
