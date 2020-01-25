@@ -4,7 +4,7 @@
 ```
 git clone https://github.com/linksplatform/Bot.git
 cd Bot
-pip install requirements.txt
+pip install -r requirements.txt
 ```
 
 ## Run
