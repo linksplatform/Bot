@@ -131,9 +131,3 @@ dmypy.json
 
 # Database
 python/users/*
-users/*
-
-# API token
-python/tokens.py
-**/tokens.py
-tokens.py
