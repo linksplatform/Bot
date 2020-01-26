@@ -90,6 +90,13 @@ default_programming_languages = [
     "Basic",
     "Visual Basic",
     "Parser",
+    "Erlang",
+    "Wolfram",
+    "Brainfuck",
+    "Pawn",
+    "Cobol",
+    "Fortran",
+    "Arduino",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
