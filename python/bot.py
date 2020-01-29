@@ -20,7 +20,7 @@ base.addPattern("current_sub", [])
 
 class V(Vk):
     def __init__(self):
-        Vk.__init__(self, token=BotToken, group_id=bot_group_id)
+        Vk.__init__(self, token=BotToken, group_id=bot_group_id, debug=True)
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.debug = True
@@ -238,10 +238,4 @@ class V(Vk):
 
 if __name__ == '__main__':
     vk = V()
-    print("start listen ...")
-
-    @vk.longpoll.on_listen_end
-    def restart(event):
-        print("restart ...")
-        vk.start_listen()
     vk.start_listen()
