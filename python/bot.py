@@ -99,8 +99,8 @@ class V(Vk):
                 base.save(user)
             if language not in user.programming_languages:
                 user.programming_languages.append(language)
-            base.save(user)
-            self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
+                base.save(user)
+            self.send_programming_languages_list(event, user)
         elif regex.findall(patterns.REMOVE_PROGRAMMING_LANGUAGE, message):
             language = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message).group('language')
             language = self.get_default_programming_language(language)
@@ -111,8 +111,8 @@ class V(Vk):
                 base.save(user)
             if language in user.programming_languages:
                 user.programming_languages.remove(language)
-            base.save(user)
-            self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
+                base.save(user)
+            self.send_programming_languages_list(event, user)
         elif regex.findall(patterns.TOP_LANGUAGES, message):
             match = regex.match(patterns.TOP_LANGUAGES, message)
             languages = match.group("languages")
@@ -120,7 +120,6 @@ class V(Vk):
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
-
         if peer_id in userbot_chats and peer_id in chats_deleting:
             if peer_id not in self.messages_to_delete:
                 self.messages_to_delete.update({peer_id: []})
@@ -245,6 +244,13 @@ class V(Vk):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
+
+    def send_programming_languages_list(self, event, user):
+        programming_languages_string = self.get_programming_languages_string(user)
+        if not programming_languages_string:
+            self.send_message(event, "[id%s|%s], у Вас не указано языков программирования." % (user.uid, user.name))
+        else:
+            self.send_message(event, "[id%s|%s], Ваши языки программирования: %s." % (user.uid, user.name, programming_languages_string))
 
     def send_help(self, event):
         self.send_message(event, help_string)
