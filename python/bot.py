@@ -93,6 +93,9 @@ class V(Vk):
                 self.delete_message(event)
         elif regex.findall(patterns.ADD_PROGRAMMING_LANGUAGE, message):
             language = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message).group('language')
+            language = self.get_default_programming_language(language)
+            if not language:
+                return
             if "programming_languages" not in user.obj:
                 user.programming_languages = []
                 base.save(user)
@@ -172,6 +175,13 @@ class V(Vk):
             return ", ".join(languages)
         else:
             return ""
+
+    def get_default_programming_language(self, language):
+        for default_programming_language in default_programming_languages:
+            default_programming_language = default_programming_language.replace('\\', '')
+            if default_programming_language.lower() == language.lower():
+                return default_programming_language
+        return None
 
     def contains_string(self, strings, matchedString, ignoreCase):
         if ignoreCase:
