@@ -97,6 +97,12 @@ default_programming_languages = [
     "Cobol",
     "Fortran",
     "Arduino",
+    "Makefile",
+    "CMake",
+    "D",
+    "Forth",
+    "Dart",
+    "Ada",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
