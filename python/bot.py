@@ -191,9 +191,13 @@ class V(Vk):
         self.send_message(event, response)
 
     def contains(self, target, other_list):
+        length = len(target)
+        now = 0
         for _, item in enumerate(other_list):
             if item in target:
-                return True
+                now += 1
+        if now >= length:
+            return True
 
     def send_top_langs(self, event):
         text = regex.sub(r"\A\s*(топ|top)\s*", r"", event["text"])
