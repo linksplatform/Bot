@@ -17,6 +17,7 @@ base.addPattern("programming_languages", [])
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
+
 class V(Vk):
     def __init__(self):
         Vk.__init__(self, token=BotToken, group_id=bot_group_id)
@@ -60,6 +61,8 @@ class V(Vk):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
+        elif regex.findall(patterns.TOP_LANGUAGES, message):
+            self.send_top_langs(event)
         elif regex.findall(patterns.PROGRAMMING_LANGUAGES, message):
             language = regex.match(patterns.PROGRAMMING_LANGUAGES_MATCH, message).group('language')
             if "programming_languages" not in user.obj:
@@ -187,6 +190,27 @@ class V(Vk):
         response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
         self.send_message(event, response)
 
+    def contains(self, target, other_list):
+        for _, item in enumerate(other_list):
+            if item in target:
+                return True
+
+    def send_top_langs(self, event):
+        text = regex.sub(patterns.TOP, r"", event["text"])
+        langs = regex.split(r"\s*", text)
+        print(langs, text)
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
+        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        response = "\n".join(
+            ["[%s] [id%s|%s] %s" % (
+                user["rating"],
+                user["uid"],
+                user["name"],
+                self.get_programming_languages_string_with_parentheses_or_empty(user))
+             for user in users if self.contains(langs, user["programming_languages"])]
+        )
+        self.send_message(event, response)
+
     def send_help(self, event):
         self.send_message(event, help_string)
 
@@ -209,4 +233,3 @@ if __name__ == '__main__':
         print("restart ...")
         vk.start_listen()
     vk.start_listen()
-
