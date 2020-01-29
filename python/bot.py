@@ -67,7 +67,7 @@ class V(Vk):
                 return
             # Only for whitelisted chat rooms
             if event["peer_id"] not in chats_whitelist:
-                self.send_not_in_whitelist(event)
+                self.send_not_in_whitelist(event, user)
                 return
             # Only regular users can be selected
             if is_bot_selected:
@@ -153,7 +153,7 @@ class V(Vk):
 
     def apply_user_rating(self, user, amount):
         user.rating += amount
-        return (user.name, user.rating-amount, user.rating)
+        return (user.uid, user.name, user.rating-amount, user.rating)
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
@@ -205,16 +205,16 @@ class V(Vk):
 
     def send_rating_change(self, event, user_rating_change, selected_user_rating_change):
         if selected_user_rating_change and user_rating_change:
-            self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
+            self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
         elif selected_user_rating_change:
-            self.send_message(event, "Рейтинг изменён: %s [%s]->[%s]." % selected_user_rating_change)
+            self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s]." % selected_user_rating_change)
 
     def send_rating(self, event, user, is_self=True):
         if is_self:
-            response = "%s, Ваш рейтинг - [%s]."
+            response = "[id%s|%s], Ваш рейтинг - [%s]."
         else:
-            response = "Рейтинг %s - [%s]."
-        self.send_message(event, response % (user.name, user.rating))
+            response = "Рейтинг [id%s|%s] - [%s]."
+        self.send_message(event, response % (user.uid, user.name, user.rating))
 
     def send_top_users(self, event, users):
         if not users:
@@ -236,11 +236,11 @@ class V(Vk):
     def send_help(self, event):
         self.send_message(event, help_string)
 
-    def send_not_in_whitelist(self, event):
-        self.send_message(event, "Извините, но Ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (event["peer_id"]))
+    def send_not_in_whitelist(self, event, user):
+        self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (user.uid, user.name, event["peer_id"]))
 
     def send_not_enough_rating_error(self, event, user):
-        self.send_message(event, "Извините, но Вашего рейтинга [%s] недостаточно :(" % (user.rating))
+        self.send_message(event, "Извините, [id%s|%s], но Вашего рейтинга [%s] недостаточно :(" % (user.uid, user.name, user.rating))
 
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(-INT32, INT32))
