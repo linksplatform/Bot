@@ -101,6 +101,18 @@ class V(Vk):
                 user.programming_languages.append(language)
             base.save(user)
             self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
+        elif regex.findall(patterns.REMOVE_PROGRAMMING_LANGUAGE, message):
+            language = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message).group('language')
+            language = self.get_default_programming_language(language)
+            if not language:
+                return
+            if "programming_languages" not in user.obj:
+                user.programming_languages = []
+                base.save(user)
+            if language in user.programming_languages:
+                user.programming_languages.remove(language)
+            base.save(user)
+            self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
         elif regex.findall(patterns.TOP_LANGUAGES, message):
             match = regex.match(patterns.TOP_LANGUAGES, message)
             languages = match.group("languages")
