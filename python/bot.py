@@ -84,12 +84,11 @@ class V(Vk):
                     self.send_not_enough_rating_error(event, user)
                     return
 
-                user_rating_change, selected_user_rating_change = self.apply_rating_change(event, user, selected_user, operator, amount)
+                user_rating_change, selected_user_rating_change, voters = self.apply_rating_change(event, user, selected_user, operator, amount)
                 base.save(selected_user)
                 if user_rating_change:
                     base.save(user)
-
-                self.send_rating_change(event, user_rating_change, selected_user_rating_change)
+                self.send_rating_change(event, user_rating_change, selected_user_rating_change, voters)
                 self.delete_message(event)
         elif regex.findall(patterns.ADD_PROGRAMMING_LANGUAGE, message):
             language = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message).group('language')
@@ -122,6 +121,7 @@ class V(Vk):
     def apply_rating_change(self, event, user, selected_user, operator, amount):
         selected_user_rating_change = None
         user_rating_change = None
+        voters = None
 
         amount = int(amount) if amount else 0
 
@@ -138,18 +138,20 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_rating_change = self.apply_collective_vote(user, selected_user, "current", 2, +1)
+                selected_user_rating_change, voters = self.apply_collective_vote(user, selected_user, "current", 2, +1)
             else:
-                selected_user_rating_change = self.apply_collective_vote(user, selected_user, "current_sub", 3, -1)
+                selected_user_rating_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", 3, -1)
 
-        return user_rating_change, selected_user_rating_change
+        return user_rating_change, selected_user_rating_change, voters
 
     def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
         if user.uid not in selected_user[current_voters]:
             selected_user[current_voters].append(user.uid)
         if len(selected_user[current_voters]) >= number_of_voters:
+            voters = selected_user[current_voters]
             selected_user[current_voters] = []
-            return self.apply_user_rating(selected_user, amount)
+            return self.apply_user_rating(selected_user, amount), voters
+        return None, None
 
     def apply_user_rating(self, user, amount):
         user.rating += amount
@@ -203,11 +205,11 @@ class V(Vk):
                     return True
         return False
 
-    def send_rating_change(self, event, user_rating_change, selected_user_rating_change):
+    def send_rating_change(self, event, user_rating_change, selected_user_rating_change, voters):
         if selected_user_rating_change and user_rating_change:
             self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
         elif selected_user_rating_change:
-            self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s]." % selected_user_rating_change)
+            self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_rating_change + (", ".join(["@id%s" % (voter) for voter in voters]),)))
 
     def send_rating(self, event, user, is_self=True):
         if is_self:
