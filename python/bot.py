@@ -61,16 +61,7 @@ class V(Vk):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
-        elif regex.findall(patterns.PROGRAMMING_LANGUAGES, message):
-            language = regex.match(patterns.PROGRAMMING_LANGUAGES_MATCH, message).group('language')
-            if "programming_languages" not in user.obj:
-                user.programming_languages = []
-                base.save(user)
-            if language not in user.programming_languages:
-                user.programming_languages.append(language)
-            base.save(user)
-            self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
-        elif regex.findall(patterns.SET_RATING, message):
+        elif regex.findall(patterns.APPLY_RATING, message):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
                 return
@@ -83,7 +74,7 @@ class V(Vk):
                 return
 
             if selected_user and (user.uid != selected_user.uid):
-                match = regex.match(patterns.RATING_OPERATOR_MATCH, message)
+                match = regex.match(patterns.APPLY_RATING, message)
                 operator = match.group("operator")[0]
                 amount = match.group("amount")
                 print(amount)
@@ -100,6 +91,15 @@ class V(Vk):
 
                 self.send_rating_change(event, user_rating_change, selected_user_rating_change)
                 self.delete_message(event)
+        elif regex.findall(patterns.ADD_PROGRAMMING_LANGUAGE, message):
+            language = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message).group('language')
+            if "programming_languages" not in user.obj:
+                user.programming_languages = []
+                base.save(user)
+            if language not in user.programming_languages:
+                user.programming_languages.append(language)
+            base.save(user)
+            self.send_message(event, "Ваши языки программирования: %s." % (self.get_programming_languages_string(user)))
         elif regex.findall(patterns.TOP_LANGUAGES, message):
             match = regex.match(patterns.TOP_LANGUAGES, message)
             languages = match.group("languages")
