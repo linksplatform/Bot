@@ -190,11 +190,17 @@ class V(Vk):
         response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
         self.send_message(event, response)
 
-    def contains(self, target, other_list):
+    def caseInsensitiveContains(self, array, value):
+        for i in array:
+            if i.lower() == value.lower():
+                return True
+        return False
+
+    def containsAll(self, target, other_list):
         length = len(target)
         now = 0
         for _, item in enumerate(other_list):
-            if item in target:
+            if self.caseInsensitiveContains(target, item):
                 now += 1
         if now >= length:
             return True
@@ -205,13 +211,14 @@ class V(Vk):
         print(langs, text)
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+
         response = "\n".join(
             ["[%s] [id%s|%s] %s" % (
                 user["rating"],
                 user["uid"],
                 user["name"],
                 self.get_programming_languages_string_with_parentheses_or_empty(user))
-             for user in users if self.contains(langs, user["programming_languages"])]
+             for user in users if self.containsAll(langs, user["programming_languages"])]
         )
         self.send_message(event, response)
 
