@@ -61,8 +61,6 @@ class V(Vk):
             self.send_rating(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
-        elif regex.findall(patterns.TOP_LANGUAGES, message):
-            self.send_top_langs(event)
         elif regex.findall(patterns.PROGRAMMING_LANGUAGES, message):
             language = regex.match(patterns.PROGRAMMING_LANGUAGES_MATCH, message).group('language')
             if "programming_languages" not in user.obj:
@@ -102,6 +100,8 @@ class V(Vk):
 
                 self.send_rating_change(event, user_rating_change, selected_user_rating_change)
                 self.delete_message(event)
+        elif regex.findall(patterns.TOP_LANGUAGES, message):
+            self.send_top_langs(event)
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
@@ -194,7 +194,7 @@ class V(Vk):
         length = len(target)
         now = 0
         for _, item in enumerate(other_list):
-            if item in target:
+            if item.lower() in target.lower():
                 now += 1
         if now >= length:
             return True
