@@ -57,11 +57,11 @@ class V(Vk):
 
         if regex.findall(patterns.HELP, message):
             self.send_help(event)
-        elif regex.findall(patterns.RATING, message):
-            self.send_rating(event, selected_user if selected_user else user, not selected_user)
+        elif regex.findall(patterns.KARMA, message):
+            self.send_karma(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
-        elif regex.findall(patterns.APPLY_RATING, message):
+        elif regex.findall(patterns.APPLY_KARMA, message):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
                 return
@@ -74,20 +74,20 @@ class V(Vk):
                 return
 
             if selected_user and (user.uid != selected_user.uid):
-                match = regex.match(patterns.APPLY_RATING, message)
+                match = regex.match(patterns.APPLY_KARMA, message)
                 operator = match.group("operator")[0]
                 amount = match.group("amount")
 
                 # Downvotes disabled for users with negative rating
                 if (operator == "-") and (user.rating < 0):
-                    self.send_not_enough_rating_error(event, user)
+                    self.send_not_enough_karma_error(event, user)
                     return
 
-                user_rating_change, selected_user_rating_change, voters = self.apply_rating_change(event, user, selected_user, operator, amount)
+                user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
                 base.save(selected_user)
-                if user_rating_change:
+                if user_karma_change:
                     base.save(user)
-                self.send_rating_change(event, user_rating_change, selected_user_rating_change, voters)
+                self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
                 self.delete_message(event)
         elif regex.findall(patterns.ADD_PROGRAMMING_LANGUAGE, message):
             language = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message).group('language')
@@ -128,31 +128,31 @@ class V(Vk):
             data = {'date': datetime.now() + timedelta(seconds=delay), 'id': message_id}
             self.messages_to_delete[peer_id].append(data)
 
-    def apply_rating_change(self, event, user, selected_user, operator, amount):
-        selected_user_rating_change = None
-        user_rating_change = None
+    def apply_karma_change(self, event, user, selected_user, operator, amount):
+        selected_user_karma_change = None
+        user_karma_change = None
         voters = None
 
         amount = int(amount) if amount else 0
 
-        # Personal rating transfer
+        # Personal karma transfer
         if amount > 0:
             if user.rating < amount:
-                self.send_not_enough_rating_error(event, user)
-                return user_rating_change, selected_user_rating_change, voters
+                self.send_not_enough_karma_error(event, user)
+                return user_karma_change, selected_user_karma_change, voters
             else:
-                user_rating_change = self.apply_user_rating(user, -amount)
+                user_karma_change = self.apply_user_karma(user, -amount)
                 amount = -amount if operator == "-" else amount
-                selected_user_rating_change = self.apply_user_rating(selected_user, amount)
+                selected_user_karma_change = self.apply_user_karma(selected_user, amount)
 
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_rating_change, voters = self.apply_collective_vote(user, selected_user, "current", 2, +1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", 2, +1)
             else:
-                selected_user_rating_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", 3, -1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", 3, -1)
 
-        return user_rating_change, selected_user_rating_change, voters
+        return user_karma_change, selected_user_karma_change, voters
 
     def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
         if user.uid not in selected_user[current_voters]:
@@ -160,10 +160,10 @@ class V(Vk):
         if len(selected_user[current_voters]) >= number_of_voters:
             voters = selected_user[current_voters]
             selected_user[current_voters] = []
-            return self.apply_user_rating(selected_user, amount), voters
+            return self.apply_user_karma(selected_user, amount), voters
         return None, None
 
-    def apply_user_rating(self, user, amount):
+    def apply_user_karma(self, user, amount):
         user.rating += amount
         return (user.uid, user.name, user.rating-amount, user.rating)
 
@@ -215,17 +215,17 @@ class V(Vk):
                     return True
         return False
 
-    def send_rating_change(self, event, user_rating_change, selected_user_rating_change, voters):
-        if selected_user_rating_change and user_rating_change:
-            self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
-        elif selected_user_rating_change:
-            self.send_message(event, "Рейтинг изменён: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_rating_change + (", ".join(["@id%s" % (voter) for voter in voters]),)))
+    def send_karma_change(self, event, user_karma_change, selected_user_karma_change, voters):
+        if selected_user_karma_change and user_karma_change:
+            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_karma_change + selected_user_karma_change))
+        elif selected_user_karma_change:
+            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_karma_change + (", ".join(["@id%s" % (voter) for voter in voters]),)))
 
-    def send_rating(self, event, user, is_self=True):
+    def send_karma(self, event, user, is_self=True):
         if is_self:
-            response = "[id%s|%s], Ваш рейтинг - [%s]."
+            response = "[id%s|%s], Ваша карма - [%s]."
         else:
-            response = "Рейтинг [id%s|%s] - [%s]."
+            response = "Карма [id%s|%s] - [%s]."
         self.send_message(event, response % (user.uid, user.name, user.rating))
 
     def send_top_users(self, event, users):
@@ -256,10 +256,10 @@ class V(Vk):
         self.send_message(event, help_string)
 
     def send_not_in_whitelist(self, event, user):
-        self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления рейтинга." % (user.uid, user.name, event["peer_id"]))
+        self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления кармы." % (user.uid, user.name, event["peer_id"]))
 
-    def send_not_enough_rating_error(self, event, user):
-        self.send_message(event, "Извините, [id%s|%s], но Вашего рейтинга [%s] недостаточно :(" % (user.uid, user.name, user.rating))
+    def send_not_enough_karma_error(self, event, user):
+        self.send_message(event, "Извините, [id%s|%s], но Вашей кармы [%s] недостаточно :(" % (user.uid, user.name, user.rating))
 
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(-INT32, INT32))
