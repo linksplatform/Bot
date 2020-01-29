@@ -194,7 +194,7 @@ class V(Vk):
         length = len(target)
         now = 0
         for _, item in enumerate(other_list):
-            if item.lower() in target.lower():
+            if item in target:
                 now += 1
         if now >= length:
             return True
