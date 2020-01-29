@@ -77,7 +77,6 @@ class V(Vk):
                 match = regex.match(patterns.APPLY_RATING, message)
                 operator = match.group("operator")[0]
                 amount = match.group("amount")
-                print(amount)
 
                 # Downvotes disabled for users with negative rating
                 if (operator == "-") and (user.rating < 0):
