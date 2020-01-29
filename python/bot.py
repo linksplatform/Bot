@@ -196,8 +196,8 @@ class V(Vk):
                 return True
 
     def send_top_langs(self, event):
-        text = regex.sub(patterns.TOP, r"", event["text"])
-        langs = regex.split(r"\s*", text)
+        text = regex.sub(r"\A\s*(топ|top)\s*", r"", event["text"])
+        langs = regex.split(r"\s+", text)
         print(langs, text)
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
