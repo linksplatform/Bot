@@ -101,7 +101,9 @@ class V(Vk):
                 self.send_rating_change(event, user_rating_change, selected_user_rating_change)
                 self.delete_message(event)
         elif regex.findall(patterns.TOP_LANGUAGES, message):
-            self.send_top_langs(event)
+            match = regex.match(patterns.TOP_LANGUAGES, message)
+            languages = match.group("languages")
+            self.send_top_languages(event, languages)
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
@@ -171,6 +173,26 @@ class V(Vk):
         else:
             return ""
 
+    def containsString(self, strings, matchedString, ignoreCase):
+        if ignoreCase:
+            for string in strings:
+                if string.lower() == matchedString.lower():
+                    return True
+        else:
+            for string in strings:
+                if string == matchedString:
+                    return True
+        return False
+
+    def containsAllStrings(self, strings, matchedStrings, ignoreCase):
+        matchedStringsCount = len(matchedStrings)
+        for string in strings:
+            if self.containsString(matchedStrings, string, ignoreCase):
+                matchedStringsCount -= 1
+                if matchedStringsCount == 0:
+                    return True
+        return False
+
     def send_rating_change(self, event, user_rating_change, selected_user_rating_change):
         if selected_user_rating_change and user_rating_change:
             self.send_message(event, "Рейтинг изменён: %s [%s]->[%s], %s [%s]->[%s]." % (user_rating_change + selected_user_rating_change))
@@ -184,43 +206,22 @@ class V(Vk):
             response = "Рейтинг %s - [%s]."
         self.send_message(event, response % (user.name, user.rating))
 
-    def send_top(self, event):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+    def send_top_users(self, event, users):
+        if not users:
+            return
         response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
         self.send_message(event, response)
 
-    def caseInsensitiveContains(self, array, value):
-        for i in array:
-            if i.lower() == value.lower():
-                return True
-        return False
-
-    def containsAll(self, target, other_list):
-        length = len(target)
-        now = 0
-        for _, item in enumerate(other_list):
-            if self.caseInsensitiveContains(target, item):
-                now += 1
-        if now >= length:
-            return True
-
-    def send_top_langs(self, event):
-        text = regex.sub(r"\A\s*(топ|top)\s*", r"", event["text"])
-        langs = regex.split(r"\s+", text)
-        print(langs, text)
+    def send_top(self, event):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        self.send_top_users(event, users)
 
-        response = "\n".join(
-            ["[%s] [id%s|%s] %s" % (
-                user["rating"],
-                user["uid"],
-                user["name"],
-                self.get_programming_languages_string_with_parentheses_or_empty(user))
-             for user in users if self.containsAll(langs, user["programming_languages"])]
-        )
-        self.send_message(event, response)
+    def send_top_languages(self, event, languages):
+        languages = regex.split(r"\s+", languages)
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
+        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.containsAllStrings(i["programming_languages"], languages, True)]
+        self.send_top_users(event, users)
 
     def send_help(self, event):
         self.send_message(event, help_string)
