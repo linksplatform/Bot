@@ -129,7 +129,7 @@ class V(Vk):
         if amount > 0:
             if user.rating < amount:
                 self.send_not_enough_rating_error(event, user)
-                return user_rating_change, selected_user_rating_change
+                return user_rating_change, selected_user_rating_change, voters
             else:
                 user_rating_change = self.apply_user_rating(user, -amount)
                 amount = -amount if operator == "-" else amount
