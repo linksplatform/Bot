@@ -3,7 +3,7 @@ from regex import compile, IGNORECASE
 from config import default_programming_languages_pattern_string as default_languages
 
 TOP = compile(r"\A\s*(топ|top)\s*\Z", IGNORECASE)
-TOP_LANGUAGES = compile(r"\A\s*(топ|top)\s*" + default_languages + r"\s*\Z", IGNORECASE)
+TOP_LANGUAGES = compile(r"\A\s*(топ|top)\s*(" + default_languages + r")+\s*\Z", IGNORECASE)
 HELP = compile(r"\A\s*(помощь|help)\s*\Z", IGNORECASE)
 RATING = compile(r"\A\s*(рейтинг|rating)\s*\Z", IGNORECASE)
 
