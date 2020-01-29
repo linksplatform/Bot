@@ -173,7 +173,7 @@ class V(Vk):
         else:
             return ""
 
-    def containsString(self, strings, matchedString, ignoreCase):
+    def contains_string(self, strings, matchedString, ignoreCase):
         if ignoreCase:
             for string in strings:
                 if string.lower() == matchedString.lower():
@@ -184,10 +184,10 @@ class V(Vk):
                     return True
         return False
 
-    def containsAllStrings(self, strings, matchedStrings, ignoreCase):
+    def contains_all_strings(self, strings, matchedStrings, ignoreCase):
         matchedStringsCount = len(matchedStrings)
         for string in strings:
-            if self.containsString(matchedStrings, string, ignoreCase):
+            if self.contains_string(matchedStrings, string, ignoreCase):
                 matchedStringsCount -= 1
                 if matchedStringsCount == 0:
                     return True
@@ -220,7 +220,7 @@ class V(Vk):
     def send_top_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
-        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.containsAllStrings(i["programming_languages"], languages, True)]
+        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
     def send_help(self, event):
