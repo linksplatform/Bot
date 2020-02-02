@@ -5,7 +5,7 @@ from social_ethosa import BetterBotBase
 from datetime import datetime, timedelta
 import regex
 
-import patterns as patterns
+import patterns
 
 from tokens import BotToken
 from userbot import UserBot
@@ -26,6 +26,9 @@ class V(Vk):
         self.debug = True
 
     def message_new(self, event):
+        """
+        Handling all new messages.
+        """
         event = event["object"]["message"]
 
         if event['peer_id'] in self.messages_to_delete:
@@ -61,6 +64,8 @@ class V(Vk):
             self.send_karma(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
+        elif regex.findall(patterns.INFO, message):
+            self.send_info(event)
         elif regex.findall(patterns.APPLY_KARMA, message):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
@@ -228,6 +233,16 @@ class V(Vk):
             response = "Карма [id%s|%s] - [%s]."
         self.send_message(event, response % (user.uid, user.name, user.rating))
 
+    def send_info(self, event, user, is_self=True):
+        programming_languages_string = self.get_programming_languages_string(user)
+        if is_self:
+            response = "[id%s|%s], Ваша карма - [%s].\nВаши языки программирования - %s"
+        else:
+            response = "Карма [id%s|%s] - [%s].\nЯзыки программирования - %s"
+        if not programming_languages_string:
+            programming_languages_string = "отсутствуют"
+        self.send_message(event, response % (user.uid, user.name, user.rating, programming_languages_string))
+
     def send_top_users(self, event, users):
         if not users:
             return
@@ -259,10 +274,16 @@ class V(Vk):
         self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления кармы." % (user.uid, user.name, event["peer_id"]))
 
     def send_not_enough_karma_error(self, event, user):
-        self.send_message(event, "Извините, [id%s|%s], но Вашей кармы [%s] недостаточно :(" % (user.uid, user.name, user.rating))
+        self.send_message(
+            event,
+            "Извините, [id%s|%s], но Вашей кармы [%s] недостаточно :(" % (user.uid, user.name, user.rating)
+        )
 
     def send_message(self, event, message):
-        self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=randint(-INT32, INT32))
+        self.messages.send(
+            message=message, peer_id=event["peer_id"],
+            disable_mentions=1, random_id=randint(-INT32, INT32)
+        )
 
 
 if __name__ == '__main__':
