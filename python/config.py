@@ -105,6 +105,8 @@ default_programming_languages = [
     "Dart",
     "Ada",
     "Julia",
+    "Malbolge",
+    "Лого",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
