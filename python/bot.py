@@ -65,7 +65,7 @@ class V(Vk):
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
         elif regex.findall(patterns.INFO, message):
-            self.send_info(event)
+            self.send_info(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.APPLY_KARMA, message):
             # Only for chat rooms
             if event["peer_id"] < 2000000000:
