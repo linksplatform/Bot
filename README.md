@@ -8,7 +8,7 @@ pip install -r requirements.txt
 ```
 
 ## Run
-Before the run add the `token.txt` file with API token.
+Before the run add tokens into `python/tokens.py` file.
 
 ```
 python python/bot.py
