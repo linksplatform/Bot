@@ -107,6 +107,8 @@ default_programming_languages = [
     "Julia",
     "Malbolge",
     "Лого",
+    "Verilog",
+    "VHDL",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
