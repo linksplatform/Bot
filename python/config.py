@@ -109,6 +109,18 @@ default_programming_languages = [
     "Лого",
     "Verilog",
     "VHDL",
+    "Altera",
+    "Processing",
+    "MetaQuotes",
+    "Algol",
+    "Piet",
+    "Shakespeare",
+    "G-code",
+    "HQ9+",
+    "Whirl",
+    "Chef",
+    "BIT",
+    "Ook",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
