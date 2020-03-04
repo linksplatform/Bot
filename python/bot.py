@@ -189,6 +189,7 @@ class V(Vk):
         else:
             languages = user.programming_languages
         if len(languages) > 0:
+            languages.sort()
             return ", ".join(languages)
         else:
             return ""
