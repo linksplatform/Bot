@@ -64,6 +64,8 @@ class V(Vk):
             self.send_karma(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
             self.send_top(event)
+        elif regex.findall(patterns.BOTTOM, message):
+            self.send_bottom(event)
         elif regex.findall(patterns.INFO, message):
             self.send_info(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.APPLY_KARMA, message):
@@ -247,8 +249,25 @@ class V(Vk):
     def send_top_users(self, event, users):
         if not users:
             return
-        response = "\n".join(["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users])
+        user_strings = ["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users];
+        
+        total_symbols = 0
+        i = 0
+        for user_string in user_strings:
+            user_string_length = len(user_string)
+            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
+                user_strings = user_strings[:i]
+            else:
+                total_symbols += user_string_length + 2
+                i += 1
+
+        response = "\n".join(user_strings)
         self.send_message(event, response)
+
+    def send_bottom(self, event):
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
+        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        self.send_top_users(event, reversed(users))
 
     def send_top(self, event):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
