@@ -131,3 +131,6 @@ dmypy.json
 
 # Database
 python/users/*
+
+# Visual Studio
+.vs
