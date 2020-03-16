@@ -32,7 +32,7 @@ class V(Vk):
         event = event["object"]["message"]
 
         if event['peer_id'] in self.messages_to_delete:
-            peer = 2000000000 + userbot_chats[event['peer_id']]
+            peer = 2e9 + userbot_chats[event['peer_id']]
             new_messages_to_delete = []
             ids = []
 
@@ -70,7 +70,7 @@ class V(Vk):
             self.send_info(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.APPLY_KARMA, message):
             # Only for chat rooms
-            if event["peer_id"] < 2000000000:
+            if event["peer_id"] < 2e9:
                 return
             # Only for whitelisted chat rooms
             if event["peer_id"] not in chats_whitelist:
