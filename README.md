@@ -21,3 +21,7 @@ To tell git to ignore this file:
 ```
 git update-index --assume-unchanged python/tokens.py
 ```
+
+## See the bot in action
+
+To see the bot in action you can [join](https://vk.me/join/AJQ1d9E/bxbPjY87MeKsXgMa) the chat with this bot.
