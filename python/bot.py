@@ -1,5 +1,3 @@
-from random import randint
-
 from saya import Vk
 from social_ethosa import BetterBotBase
 from datetime import datetime, timedelta
