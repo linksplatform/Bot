@@ -155,9 +155,9 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", 2, +1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", positive_votes_per_karma, +1)
             else:
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", 3, -1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", negative_votes_per_karma, -1)
 
         return user_karma_change, selected_user_karma_change, voters
 
@@ -246,10 +246,25 @@ class V(Vk):
             programming_languages_string = "отсутствуют"
         self.send_message(event, response % (user.uid, user.name, user.rating, programming_languages_string))
 
+    def get_rating_string(self, user):
+        plus_string = ""
+        minus_string = ""
+        plus_votes = len(user["current"])
+        minus_votes = len(user["current_sub"])
+        if plus_votes > 0:
+            plus_string = "+%.1f" % (plus_votes / positive_votes_per_karma)
+        if minus_votes > 0:
+            minus_string = "-%.1f" % (minus_votes / negative_votes_per_karma)
+
+        if plus_votes > 0 or minus_votes > 0:
+            return "[%s][%s%s]" % (user["rating"], plus_string, minus_string);
+        else:
+            return "[%s]" % (user["rating"]);
+
     def send_top_users(self, event, users):
         if not users:
             return
-        user_strings = ["[%s] [id%s|%s] %s" % (user["rating"], user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users];
+        user_strings = ["%s [id%s|%s] %s" % (self.get_rating_string(user), user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users];
         
         total_symbols = 0
         i = 0
@@ -265,18 +280,18 @@ class V(Vk):
         self.send_message(event, response)
 
     def send_bottom(self, event):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         self.send_top_users(event, reversed(users))
 
     def send_top(self, event):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         self.send_top_users(event, users)
 
     def send_top_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages"])
+        users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
