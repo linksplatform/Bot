@@ -56,17 +56,27 @@ class V(Vk):
         selected_user = base.autoInstall(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
-        if regex.findall(patterns.HELP, message):
-            self.send_help(event)
-        elif regex.findall(patterns.KARMA, message):
-            self.send_karma(event, selected_user if selected_user else user, not selected_user)
-        elif regex.findall(patterns.TOP, message):
-            self.send_top(event, message)
-        elif regex.findall(patterns.BOTTOM, message):
-            self.send_bottom(event)
-        elif regex.findall(patterns.INFO, message):
-            self.send_info(event, selected_user if selected_user else user, not selected_user)
-        elif regex.findall(patterns.APPLY_KARMA, message):
+        match = regex.match(patterns.HELP, message)
+        if match:
+            return self.send_help(event)
+        match = regex.match(patterns.KARMA, message)
+        if match:
+            return self.send_karma(event, selected_user if selected_user else user, not selected_user)
+        match = regex.match(patterns.TOP, message)
+        if match:
+            maximum_users = match.group("maximum_users")
+            maximum_users = int(maximum_users) if maximum_users else 0
+            return self.send_top(event, maximum_users)
+        match = regex.match(patterns.BOTTOM, message)
+        if match:
+            maximum_users = match.group("maximum_users")
+            maximum_users = int(maximum_users) if maximum_users else 0
+            return self.send_bottom(event, maximum_users)
+        match = regex.match(patterns.INFO, message)
+        if match:
+            return self.send_info(event, selected_user if selected_user else user, not selected_user)
+        match = regex.match(patterns.APPLY_KARMA, message)
+        if match:
             # Only for chat rooms
             if event["peer_id"] < 2e9:
                 return
@@ -79,9 +89,9 @@ class V(Vk):
                 return
 
             if selected_user and (user.uid != selected_user.uid):
-                match = regex.match(patterns.APPLY_KARMA, message)
                 operator = match.group("operator")[0]
                 amount = match.group("amount")
+                amount = int(amount) if amount else 0
 
                 # Downvotes disabled for users with negative rating
                 if (operator == "-") and (user.rating < 0):
@@ -94,8 +104,10 @@ class V(Vk):
                     base.save(user)
                 self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
                 self.delete_message(event)
-        elif regex.findall(patterns.ADD_PROGRAMMING_LANGUAGE, message):
-            language = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message).group('language')
+                return
+        match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
+        if match:
+            language = match.group('language')
             language = self.get_default_programming_language(language)
             if not language:
                 return
@@ -105,9 +117,10 @@ class V(Vk):
             if language not in user.programming_languages:
                 user.programming_languages.append(language)
                 base.save(user)
-            self.send_programming_languages_list(event, user)
-        elif regex.findall(patterns.REMOVE_PROGRAMMING_LANGUAGE, message):
-            language = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message).group('language')
+            return self.send_programming_languages_list(event, user)
+        match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
+        if match:
+            language = match.group('language')
             language = self.get_default_programming_language(language)
             if not language:
                 return
@@ -117,11 +130,11 @@ class V(Vk):
             if language in user.programming_languages:
                 user.programming_languages.remove(language)
                 base.save(user)
-            self.send_programming_languages_list(event, user)
-        elif regex.findall(patterns.TOP_LANGUAGES, message):
-            match = regex.match(patterns.TOP_LANGUAGES, message)
+            return self.send_programming_languages_list(event, user)
+        match = regex.match(patterns.TOP_LANGUAGES, message)
+        if match:
             languages = match.group("languages")
-            self.send_top_languages(event, languages)
+            return self.send_top_languages(event, languages)
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
@@ -137,8 +150,6 @@ class V(Vk):
         selected_user_karma_change = None
         user_karma_change = None
         voters = None
-
-        amount = int(amount) if amount else 0
 
         # Personal karma transfer
         if amount > 0:
@@ -213,11 +224,11 @@ class V(Vk):
         return False
 
     def contains_all_strings(self, strings, matchedStrings, ignoreCase):
-        matchedStringsCount = len(matchedStrings)
+        matched_strings_count = len(matchedStrings)
         for string in strings:
             if self.contains_string(matchedStrings, string, ignoreCase):
-                matchedStringsCount -= 1
-                if matchedStringsCount == 0:
+                matched_strings_count -= 1
+                if matched_strings_count == 0:
                     return True
         return False
 
@@ -225,99 +236,108 @@ class V(Vk):
         if selected_user_karma_change and user_karma_change:
             self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_karma_change + selected_user_karma_change))
         elif selected_user_karma_change:
-            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_karma_change + (", ".join(["@id%s" % (voter) for voter in voters]),)))
+            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
 
     def send_karma(self, event, user, is_self=True):
         if is_self:
-            response = "[id%s|%s], Ваша карма - [%s]."
+            response = "[id%s|%s], Ваша карма - %s."
         else:
-            response = "Карма [id%s|%s] - [%s]."
-        self.send_message(event, response % (user.uid, user.name, user.rating))
+            response = "Карма [id%s|%s] - %s."
+        self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user)))
 
     def send_info(self, event, user, is_self=True):
         programming_languages_string = self.get_programming_languages_string(user)
-        if is_self:
-            response = "[id%s|%s], Ваша карма - [%s].\nВаши языки программирования - %s"
-        else:
-            response = "Карма [id%s|%s] - [%s].\nЯзыки программирования - %s"
         if not programming_languages_string:
             programming_languages_string = "отсутствуют"
-        self.send_message(event, response % (user.uid, user.name, user.rating, programming_languages_string))
+        if is_self:
+            response = "[id%s|%s], Ваша карма - %s.\nВаши языки программирования - %s"
+        else:
+            response = "Карма [id%s|%s] - %s.\nЯзыки программирования - %s"
+        self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string))
 
-    def get_rating_string(self, user):
+    def get_karma_string(self, user):
         plus_string = ""
         minus_string = ""
-        plus_votes = len(user["current"])
-        minus_votes = len(user["current_sub"])
+        if isinstance(user, dict):
+            karma = user["rating"]
+            plus_votes = len(user["current"])
+            minus_votes = len(user["current_sub"])
+        else:
+            karma = user.rating
+            plus_votes = len(user.current)
+            minus_votes = len(user.current_sub)
         if plus_votes > 0:
             plus_string = "+%.1f" % (plus_votes / positive_votes_per_karma)
         if minus_votes > 0:
             minus_string = "-%.1f" % (minus_votes / negative_votes_per_karma)
-
         if plus_votes > 0 or minus_votes > 0:
-            return "[%s][%s%s]" % (user["rating"], plus_string, minus_string);
+            return f"[{karma}][{plus_string}{minus_string}]"
         else:
-            return "[%s]" % (user["rating"]);
+            return f"[{karma}]"
 
     def send_top_users(self, event, users):
         if not users:
             return
-        user_strings = ["%s [id%s|%s] %s" % (self.get_rating_string(user), user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users];
-
+        user_strings = ["%s [id%s|%s] %s" % (self.get_karma_string(user), user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
         for user_string in user_strings:
             user_string_length = len(user_string)
-            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
+            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
                 user_strings = user_strings[:i]
             else:
                 total_symbols += user_string_length + 2
                 i += 1
-
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
-    def send_bottom(self, event):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        self.send_top_users(event, reversed(users))
+    def get_users_sorted_by_karma(self):
+        return base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
 
-    def send_top(self, event, message):
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
+    def send_bottom(self, event, maximum_users):
+        users = self.get_users_sorted_by_karma()
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        if regex.search(r'\d+', message):
-            amount_to_out = message.split(' ')[-1]
-            if (amount_to_out > 0) and (len(users) >= amount_to_out):
-                users = users[:amount_to_out]
-        self.send_top_users(event, users)
+        if (maximum_users > 0) and (len(users) >= maximum_users):
+            users.reverse()
+            self.send_top_users(event, users[:maximum_users])
+        else:
+            self.send_top_users(event, reversed(users))
+
+    def send_top(self, event, maximum_users):
+        users = self.get_users_sorted_by_karma()
+        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        if (maximum_users > 0) and (len(users) >= maximum_users):
+            self.send_top_users(event, users[:maximum_users])
+        else:
+            self.send_top_users(event, users)
 
     def send_top_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
-        users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
+        users = self.get_users_sorted_by_karma()
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
     def send_programming_languages_list(self, event, user):
         programming_languages_string = self.get_programming_languages_string(user)
         if not programming_languages_string:
-            self.send_message(event, "[id%s|%s], у Вас не указано языков программирования." % (user.uid, user.name))
+            self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указано языков программирования.")
         else:
-            self.send_message(event, "[id%s|%s], Ваши языки программирования: %s." % (user.uid, user.name, programming_languages_string))
+            self.send_message(event, f"[id{user.uid}|{user.name}], Ваши языки программирования: {programming_languages_string}.")
 
     def send_help(self, event):
         self.send_message(event, help_string)
 
     def send_not_in_whitelist(self, event, user):
-        self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления кармы." % (user.uid, user.name, event["peer_id"]))
+        peer_id = event["peer_id"]
+        message = f"Извините, [id{user.uid}|{user.name}], но Ваша беседа [{peer_id}] отсутствует в белом списке для начисления кармы."
+        self.send_message(event, message)
 
     def send_not_enough_karma_error(self, event, user):
-        self.send_message(event, "Извините, [id%s|%s], но Вашей кармы [%s] недостаточно :(" % (user.uid, user.name, user.rating))
+        message = f"Извините, [{user.uid}|{user.name}], но Вашей кармы [{user.rating}] недостаточно :("
+        self.send_message(event, message)
 
     def send_message(self, event, message):
-        self.messages.send(
-            message=message, peer_id=event["peer_id"],
-            disable_mentions=1, random_id=0
-        )
+        self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=0)
 
 
 if __name__ == '__main__':
