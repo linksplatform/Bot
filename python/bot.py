@@ -61,7 +61,7 @@ class V(Vk):
         elif regex.findall(patterns.KARMA, message):
             self.send_karma(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
-            self.send_top(event)
+            self.send_top(event, message)
         elif regex.findall(patterns.BOTTOM, message):
             self.send_bottom(event)
         elif regex.findall(patterns.INFO, message):
@@ -170,7 +170,7 @@ class V(Vk):
 
     def apply_user_karma(self, user, amount):
         user.rating += amount
-        return (user.uid, user.name, user.rating-amount, user.rating)
+        return (user.uid, user.name, user.rating - amount, user.rating)
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
@@ -263,12 +263,12 @@ class V(Vk):
         if not users:
             return
         user_strings = ["%s [id%s|%s] %s" % (self.get_rating_string(user), user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users];
-        
+
         total_symbols = 0
         i = 0
         for user_string in user_strings:
             user_string_length = len(user_string)
-            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
+            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
                 user_strings = user_strings[:i]
             else:
                 total_symbols += user_string_length + 2
@@ -282,9 +282,13 @@ class V(Vk):
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         self.send_top_users(event, reversed(users))
 
-    def send_top(self, event):
+    def send_top(self, event, message):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        if regex.search(r'\d+', message):
+            amount_to_out = message.split(' ')[-1]
+            if (amount_to_out > 0) and (len(users) >= amount_to_out):
+                users = users[:amount_to_out]
         self.send_top_users(event, users)
 
     def send_top_languages(self, event, languages):
@@ -307,10 +311,7 @@ class V(Vk):
         self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления кармы." % (user.uid, user.name, event["peer_id"]))
 
     def send_not_enough_karma_error(self, event, user):
-        self.send_message(
-            event,
-            "Извините, [id%s|%s], но Вашей кармы [%s] недостаточно :(" % (user.uid, user.name, user.rating)
-        )
+        self.send_message(event, "Извините, [id%s|%s], но Вашей кармы [%s] недостаточно :(" % (user.uid, user.name, user.rating))
 
     def send_message(self, event, message):
         self.messages.send(
