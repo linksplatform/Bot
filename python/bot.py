@@ -1,5 +1,3 @@
-from random import randint
-
 from saya import Vk
 from social_ethosa import BetterBotBase
 from datetime import datetime, timedelta
@@ -317,7 +315,7 @@ class V(Vk):
     def send_message(self, event, message):
         self.messages.send(
             message=message, peer_id=event["peer_id"],
-            disable_mentions=1, random_id=randint(-INT32, INT32)
+            disable_mentions=1, random_id=0
         )
 
 
