@@ -299,7 +299,7 @@ class V(Vk):
                  (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if regex.search(r'\d+', message):
             amount_to_out = message.split(' ')[-1]
-            if len(users) >= amount_to_out:
+            if (amount_to_out > 0) and (len(users) >= amount_to_out):
                 users = users[:amount_to_out]
         self.send_top_users(event, users)
 
