@@ -63,7 +63,7 @@ class V(Vk):
         elif regex.findall(patterns.KARMA, message):
             self.send_karma(event, selected_user if selected_user else user, not selected_user)
         elif regex.findall(patterns.TOP, message):
-            self.send_top(event)
+            self.send_top(event, message)
         elif regex.findall(patterns.BOTTOM, message):
             self.send_bottom(event)
         elif regex.findall(patterns.INFO, message):
@@ -90,7 +90,9 @@ class V(Vk):
                     self.send_not_enough_karma_error(event, user)
                     return
 
-                user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
+                user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user,
+                                                                                                selected_user, operator,
+                                                                                                amount)
                 base.save(selected_user)
                 if user_karma_change:
                     base.save(user)
@@ -155,9 +157,11 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", positive_votes_per_karma, +1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current",
+                                                                                positive_votes_per_karma, +1)
             else:
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", negative_votes_per_karma, -1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub",
+                                                                                negative_votes_per_karma, -1)
 
         return user_karma_change, selected_user_karma_change, voters
 
@@ -172,7 +176,7 @@ class V(Vk):
 
     def apply_user_karma(self, user, amount):
         user.rating += amount
-        return (user.uid, user.name, user.rating-amount, user.rating)
+        return (user.uid, user.name, user.rating - amount, user.rating)
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
@@ -225,9 +229,11 @@ class V(Vk):
 
     def send_karma_change(self, event, user_karma_change, selected_user_karma_change, voters):
         if selected_user_karma_change and user_karma_change:
-            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_karma_change + selected_user_karma_change))
+            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (
+                    user_karma_change + selected_user_karma_change))
         elif selected_user_karma_change:
-            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_karma_change + (", ".join(["@id%s" % (voter) for voter in voters]),)))
+            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (
+                    selected_user_karma_change + (", ".join(["@id%s" % (voter) for voter in voters]),)))
 
     def send_karma(self, event, user, is_self=True):
         if is_self:
@@ -264,13 +270,15 @@ class V(Vk):
     def send_top_users(self, event, users):
         if not users:
             return
-        user_strings = ["%s [id%s|%s] %s" % (self.get_rating_string(user), user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users];
-        
+        user_strings = ["%s [id%s|%s] %s" % (self.get_rating_string(user), user["uid"], user["name"],
+                                             self.get_programming_languages_string_with_parentheses_or_empty(user)) for
+                        user in users];
+
         total_symbols = 0
         i = 0
         for user_string in user_strings:
             user_string_length = len(user_string)
-            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
+            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
                 user_strings = user_strings[:i]
             else:
                 total_symbols += user_string_length + 2
@@ -281,18 +289,26 @@ class V(Vk):
 
     def send_bottom(self, event):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        users = [i for i in users if
+                 (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         self.send_top_users(event, reversed(users))
 
-    def send_top(self, event):
+    def send_top(self, event, message):
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        users = [i for i in users if
+                 (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        if regex.search(r'\d+', message):
+            amount_to_out = message.split(' ')[-1]
+            if len(users) >= amount_to_out:
+                users = users[:amount_to_out]
         self.send_top_users(event, users)
 
     def send_top_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
         users = base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
-        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
+        users = [i for i in users if
+                 ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(
+                     i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
     def send_programming_languages_list(self, event, user):
@@ -300,13 +316,16 @@ class V(Vk):
         if not programming_languages_string:
             self.send_message(event, "[id%s|%s], у Вас не указано языков программирования." % (user.uid, user.name))
         else:
-            self.send_message(event, "[id%s|%s], Ваши языки программирования: %s." % (user.uid, user.name, programming_languages_string))
+            self.send_message(event, "[id%s|%s], Ваши языки программирования: %s." % (
+                user.uid, user.name, programming_languages_string))
 
     def send_help(self, event):
         self.send_message(event, help_string)
 
     def send_not_in_whitelist(self, event, user):
-        self.send_message(event, "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления кармы." % (user.uid, user.name, event["peer_id"]))
+        self.send_message(event,
+                          "Извините, [id%s|%s], но Ваша беседа [%s] отсутствует в белом списке для начисления кармы." % (
+                              user.uid, user.name, event["peer_id"]))
 
     def send_not_enough_karma_error(self, event, user):
         self.send_message(
