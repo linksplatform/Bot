@@ -333,7 +333,7 @@ class V(Vk):
         self.send_message(event, message)
 
     def send_not_enough_karma_error(self, event, user):
-        message = f"Извините, [{user.uid}|{user.name}], но Вашей кармы [{user.rating}] недостаточно :("
+        message = f"Извините, [id{user.uid}|{user.name}], но Вашей кармы [{user.rating}] недостаточно :("
         self.send_message(event, message)
 
     def send_message(self, event, message):
