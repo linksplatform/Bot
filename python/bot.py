@@ -7,7 +7,7 @@ import patterns
 
 from tokens import BotToken
 from userbot import UserBot
-from config import *
+import config
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
@@ -18,7 +18,7 @@ base.addPattern("current_sub", [])
 
 class V(Vk):
     def __init__(self):
-        Vk.__init__(self, token=BotToken, group_id=bot_group_id, debug=True)
+        Vk.__init__(self, token=BotToken, group_id=config.bot_group_id, debug=True)
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.debug = True
@@ -30,7 +30,7 @@ class V(Vk):
         event = event["object"]["message"]
 
         if event['peer_id'] in self.messages_to_delete:
-            peer = 2e9 + userbot_chats[event['peer_id']]
+            peer = 2e9 + config.userbot_chats[event['peer_id']]
             new_messages_to_delete = []
             ids = []
 
@@ -81,7 +81,7 @@ class V(Vk):
             if event["peer_id"] < 2e9:
                 return
             # Only for whitelisted chat rooms
-            if event["peer_id"] not in chats_whitelist:
+            if event["peer_id"] not in config.chats_whitelist:
                 self.send_not_in_whitelist(event, user)
                 return
             # Only regular users can be selected
@@ -138,7 +138,7 @@ class V(Vk):
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
-        if peer_id in userbot_chats and peer_id in chats_deleting:
+        if peer_id in config.userbot_chats and peer_id in config.chats_deleting:
             if peer_id not in self.messages_to_delete:
                 self.messages_to_delete.update({peer_id: []})
 
@@ -164,9 +164,9 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", positive_votes_per_karma, +1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", config.positive_votes_per_karma, +1)
             else:
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", negative_votes_per_karma, -1)
+                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", config.negative_votes_per_karma, -1)
 
         return user_karma_change, selected_user_karma_change, voters
 
@@ -206,7 +206,7 @@ class V(Vk):
             return ""
 
     def get_default_programming_language(self, language):
-        for default_programming_language in default_programming_languages:
+        for default_programming_language in config.default_programming_languages:
             default_programming_language = default_programming_language.replace('\\', '')
             if default_programming_language.lower() == language.lower():
                 return default_programming_language
@@ -267,9 +267,9 @@ class V(Vk):
             plus_votes = len(user.current)
             minus_votes = len(user.current_sub)
         if plus_votes > 0:
-            plus_string = "+%.1f" % (plus_votes / positive_votes_per_karma)
+            plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
         if minus_votes > 0:
-            minus_string = "-%.1f" % (minus_votes / negative_votes_per_karma)
+            minus_string = "-%.1f" % (minus_votes / config.negative_votes_per_karma)
         if plus_votes > 0 or minus_votes > 0:
             return f"[{karma}][{plus_string}{minus_string}]"
         else:
@@ -325,7 +325,7 @@ class V(Vk):
             self.send_message(event, f"[id{user.uid}|{user.name}], Ваши языки программирования: {programming_languages_string}.")
 
     def send_help(self, event):
-        self.send_message(event, help_string)
+        self.send_message(event, config.help_string)
 
     def send_not_in_whitelist(self, event, user):
         peer_id = event["peer_id"]

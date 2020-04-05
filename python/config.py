@@ -21,8 +21,6 @@ chats_whitelist = [
     2000000006
 ]
 
-INT32 = 2147483647
-
 positive_votes_per_karma = 3
 negative_votes_per_karma = 4
 
