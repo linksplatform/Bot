@@ -2,19 +2,20 @@ from saya import Vk
 from social_ethosa import BetterBotBase
 from datetime import datetime, timedelta
 import regex
+import requests
 
+import config
 import patterns
 
 from tokens import BotToken
 from userbot import UserBot
-import config
 
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
 base.addPattern("programming_languages", [])
+base.addPattern("github_profile", "")
 base.addPattern("current", [])
 base.addPattern("current_sub", [])
-
 
 class V(Vk):
     def __init__(self):
@@ -111,9 +112,6 @@ class V(Vk):
             language = self.get_default_programming_language(language)
             if not language:
                 return
-            if "programming_languages" not in user.obj:
-                user.programming_languages = []
-                base.save(user)
             if language not in user.programming_languages:
                 user.programming_languages.append(language)
                 base.save(user)
@@ -124,13 +122,29 @@ class V(Vk):
             language = self.get_default_programming_language(language)
             if not language:
                 return
-            if "programming_languages" not in user.obj:
-                user.programming_languages = []
-                base.save(user)
             if language in user.programming_languages:
                 user.programming_languages.remove(language)
                 base.save(user)
             return self.send_programming_languages_list(event, user)
+        match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
+        if match:
+            profile = match.group('profile')
+            if not profile:
+                return
+            if profile != user.github_profile:
+                if requests.get(f'https://github.com/{profile}').status_code == 200:
+                    user.github_profile = profile
+                    base.save(user)
+            return self.send_github_profile(event, user)
+        match = regex.match(patterns.REMOVE_GITHUB_PROFILE, message)
+        if match:
+            profile = match.group('profile')
+            if not profile:
+                return
+            if profile == user.github_profile:
+                user.github_profile = ""
+                base.save(user)
+            return self.send_github_profile(event, user)
         match = regex.match(patterns.TOP_LANGUAGES, message)
         if match:
             languages = match.group("languages")
@@ -194,6 +208,18 @@ class V(Vk):
         else:
             return "(" + programming_languages_string + ")"
 
+    def get_github_profile(self, user):
+        if isinstance(user, dict):
+            return user["github_profile"] if "github_profile" in user else ""
+        else:
+            return user.github_profile
+
+    def get_github_profile_top_string(self, user):
+        profile = self.get_github_profile(user)
+        if profile:
+            profile = f" — github.com/{profile}"
+        return profile
+
     def get_programming_languages_string(self, user):
         if isinstance(user, dict):
             languages = user["programming_languages"] if "programming_languages" in user else []
@@ -249,11 +275,16 @@ class V(Vk):
         programming_languages_string = self.get_programming_languages_string(user)
         if not programming_languages_string:
             programming_languages_string = "отсутствуют"
-        if is_self:
-            response = "[id%s|%s], Ваша карма - %s.\nВаши языки программирования - %s"
+        profile = self.get_github_profile(user)
+        if not profile:
+            profile = "отсутствует"
         else:
-            response = "Карма [id%s|%s] - %s.\nЯзыки программирования - %s"
-        self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string))
+            profile = f"github.com/{profile}"
+        if is_self:
+            response = "[id%s|%s], Ваша карма - %s.\nВаши языки программирования - %s\nВаша страничка на GitHub - %s"
+        else:
+            response = "Карма [id%s|%s] - %s.\nЯзыки программирования - %s\nВаша страничка на GitHub - %s"
+        self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string, profile))
 
     def get_karma_string(self, user):
         plus_string = ""
@@ -278,7 +309,7 @@ class V(Vk):
     def send_top_users(self, event, users):
         if not users:
             return
-        user_strings = ["%s [id%s|%s] %s" % (self.get_karma_string(user), user["uid"], user["name"], self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
+        user_strings = ["%s [id%s|%s]%s %s" % (self.get_karma_string(user), user["uid"], user["name"], self.get_github_profile_top_string(user), self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
         for user_string in user_strings:
@@ -292,7 +323,7 @@ class V(Vk):
         self.send_message(event, response)
 
     def get_users_sorted_by_karma(self):
-        return base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub"])
+        return base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub", "github_profile"])
 
     def send_bottom(self, event, maximum_users):
         users = self.get_users_sorted_by_karma()
@@ -316,6 +347,13 @@ class V(Vk):
         users = self.get_users_sorted_by_karma()
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
+
+    def send_github_profile(self, event, user):
+        profile = self.get_github_profile(user)
+        if not profile:
+            self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указана страничка на GitHub.")
+        else:
+            self.send_message(event, f"[id{user.uid}|{user.name}], Ваша страничка на GitHub: github.com/{profile}.")
 
     def send_programming_languages_list(self, event, user):
         programming_languages_string = self.get_programming_languages_string(user)
