@@ -266,9 +266,9 @@ class V(Vk):
 
     def send_karma(self, event, user, is_self=True):
         if is_self:
-            response = "[id%s|%s], Ваша карма - %s."
+            response = "[id%s|%s], Ваша карма — %s."
         else:
-            response = "Карма [id%s|%s] - %s."
+            response = "Карма [id%s|%s] — %s."
         self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user)))
 
     def send_info(self, event, user, is_self=True):
@@ -281,9 +281,9 @@ class V(Vk):
         else:
             profile = f"github.com/{profile}"
         if is_self:
-            response = "[id%s|%s], Ваша карма - %s.\nВаши языки программирования - %s\nВаша страничка на GitHub - %s"
+            response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
         else:
-            response = "Карма [id%s|%s] - %s.\nЯзыки программирования - %s\nВаша страничка на GitHub - %s"
+            response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nВаша страничка на GitHub — %s"
         self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string, profile))
 
     def get_karma_string(self, user):
@@ -353,7 +353,7 @@ class V(Vk):
         if not profile:
             self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указана страничка на GitHub.")
         else:
-            self.send_message(event, f"[id{user.uid}|{user.name}], Ваша страничка на GitHub: github.com/{profile}.")
+            self.send_message(event, f"[id{user.uid}|{user.name}], Ваша страничка на GitHub — github.com/{profile}.")
 
     def send_programming_languages_list(self, event, user):
         programming_languages_string = self.get_programming_languages_string(user)
