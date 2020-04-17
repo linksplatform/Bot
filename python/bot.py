@@ -10,6 +10,8 @@ import patterns
 from tokens import BotToken
 from userbot import UserBot
 
+CHAT_ID_OFFSET = 2e9
+
 base = BetterBotBase("users", "dat")
 base.addPattern("rating", 0)
 base.addPattern("programming_languages", [])
@@ -31,7 +33,7 @@ class V(Vk):
         event = event["object"]["message"]
 
         if event['peer_id'] in self.messages_to_delete:
-            peer = 2e9 + config.userbot_chats[event['peer_id']]
+            peer = CHAT_ID_OFFSET + config.userbot_chats[event['peer_id']]
             new_messages_to_delete = []
             ids = []
 
@@ -79,7 +81,7 @@ class V(Vk):
         match = regex.match(patterns.APPLY_KARMA, message)
         if match:
             # Only for chat rooms
-            if event["peer_id"] < 2e9:
+            if event["peer_id"] < CHAT_ID_OFFSET:
                 return
             # Only for whitelisted chat rooms
             if event["peer_id"] not in config.chats_whitelist:
