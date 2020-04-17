@@ -20,8 +20,8 @@ base.addPattern("current", [])
 base.addPattern("current_sub", [])
 
 class V(Vk):
-    def __init__(self):
-        Vk.__init__(self, token=BotToken, group_id=config.bot_group_id, debug=True)
+    def __init__(self, token, group_id, debug=True):
+        Vk.__init__(self, token=token, group_id=group_id, debug=debug)
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.debug = True
@@ -381,5 +381,5 @@ class V(Vk):
 
 
 if __name__ == '__main__':
-    vk = V()
+    vk = V(token=BotToken, group_id=config.bot_group_id)
     vk.start_listen()
