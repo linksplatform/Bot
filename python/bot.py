@@ -10,20 +10,23 @@ import patterns
 from tokens import BotToken
 from userbot import UserBot
 
-base = BetterBotBase("users", "dat")
-base.addPattern("rating", 0)
-base.addPattern("programming_languages", [])
-base.addPattern("github_profile", "")
-base.addPattern("current", [])
-base.addPattern("current_sub", [])
-base.addPattern("last_collective_vote", 0)
+CHAT_ID_OFFSET = 2e9
+
 
 class V(Vk):
-    def __init__(self):
-        Vk.__init__(self, token=BotToken, group_id=config.bot_group_id, debug=True)
+    def __init__(self, token, group_id, debug=True):
+        Vk.__init__(self, token=token, group_id=group_id, debug=debug)
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.debug = True
+
+        base = BetterBotBase("users", "dat")
+        base.addPattern("rating", 0)
+        base.addPattern("programming_languages", [])
+        base.addPattern("github_profile", "")
+        base.addPattern("current", [])
+        base.addPattern("current_sub", [])
+        self.base = base
 
     def message_new(self, event):
         """
@@ -32,7 +35,7 @@ class V(Vk):
         event = event["object"]["message"]
 
         if event['peer_id'] in self.messages_to_delete:
-            peer = 2e9 + config.userbot_chats[event['peer_id']]
+            peer = CHAT_ID_OFFSET + config.userbot_chats[event['peer_id']]
             new_messages_to_delete = []
             ids = []
 
@@ -50,12 +53,12 @@ class V(Vk):
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = base.autoInstall(event["from_id"], self) if event["from_id"] > 0 else None
+        user = self.base.autoInstall(event["from_id"], self) if event["from_id"] > 0 else None
 
         message = event["text"].lstrip("/")
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
-        selected_user = base.autoInstall(selected_message["from_id"], self) if selected_message else None
+        selected_user = self.base.autoInstall(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
         match = regex.match(patterns.HELP, message)
@@ -80,7 +83,7 @@ class V(Vk):
         match = regex.match(patterns.APPLY_KARMA, message)
         if match:
             # Only for chat rooms
-            if event["peer_id"] < 2e9:
+            if event["peer_id"] < CHAT_ID_OFFSET:
                 return
             # Only for whitelisted chat rooms
             if event["peer_id"] not in config.chats_whitelist:
@@ -115,14 +118,15 @@ class V(Vk):
                         return
 
                 user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
-                
+
                 if amount == 0:
                     user.last_collective_vote = int(utcnow.timestamp())
-                    base.save(user)
+                    self.base.save(user)
 
-                base.save(selected_user)
+                self.base.save(selected_user)
+
                 if user_karma_change:
-                    base.save(user)
+                    self.base.save(user)
                 self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
                 self.delete_message(event)
                 return
@@ -134,7 +138,7 @@ class V(Vk):
                 return
             if language not in user.programming_languages:
                 user.programming_languages.append(language)
-                base.save(user)
+                self.base.save(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
         if match:
@@ -144,7 +148,7 @@ class V(Vk):
                 return
             if language in user.programming_languages:
                 user.programming_languages.remove(language)
-                base.save(user)
+                self.base.save(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
         if match:
@@ -154,7 +158,7 @@ class V(Vk):
             if profile != user.github_profile:
                 if requests.get(f'https://github.com/{profile}').status_code == 200:
                     user.github_profile = profile
-                    base.save(user)
+                    self.base.save(user)
             return self.send_github_profile(event, user)
         match = regex.match(patterns.REMOVE_GITHUB_PROFILE, message)
         if match:
@@ -163,7 +167,7 @@ class V(Vk):
                 return
             if profile == user.github_profile:
                 user.github_profile = ""
-                base.save(user)
+                self.base.save(user)
             return self.send_github_profile(event, user)
         match = regex.match(patterns.TOP_LANGUAGES, message)
         if match:
@@ -350,7 +354,7 @@ class V(Vk):
         self.send_message(event, response)
 
     def get_users_sorted_by_karma(self):
-        return base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub", "github_profile"])
+        return self.base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub", "github_profile"])
 
     def send_bottom(self, event, maximum_users):
         users = self.get_users_sorted_by_karma()
@@ -410,5 +414,5 @@ class V(Vk):
 
 
 if __name__ == '__main__':
-    vk = V()
+    vk = V(token=BotToken, group_id=config.bot_group_id)
     vk.start_listen()
