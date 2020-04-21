@@ -410,7 +410,7 @@ class V(Vk):
         self.send_message(event, message)
 
     def send_not_enough_hours_error(self, event, user, hours_limit, difference_minutes):
-        message = f"Извините, [id{user.uid}|{user.name}], но с момента вашего последнего голоса ещё не прошло {hours_limit} часов :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} минут."
+        message = f"Извините, [id{user.uid}|{user.name}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
         self.send_message(event, message)
 
     def send_message(self, event, message):
