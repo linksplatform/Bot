@@ -206,7 +206,7 @@ class V(Vk):
         if amount > 0:
             if user.rating < amount:
                 self.send_not_enough_karma_error(event, user)
-                return user_karma_change, selected_user_karma_change, voters
+                return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
                 user_karma_change = self.apply_user_karma(user, -amount)
                 amount = -amount if operator == "-" else amount
