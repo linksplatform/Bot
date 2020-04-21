@@ -1,8 +1,8 @@
 from saya import Vk
 from social_ethosa import BetterBotBase
-from datetime import datetime, timedelta
 import regex
 import requests
+from datetime import datetime, timedelta
 
 import config
 import patterns
@@ -98,13 +98,33 @@ class V(Vk):
                 amount = match.group("amount")
                 amount = int(amount) if amount else 0
 
+                utcnow = datetime.utcnow()
+
                 # Downvotes disabled for users with negative rating
                 if (operator == "-") and (user.rating < 0):
+                    self.delete_message(event)
                     self.send_not_enough_karma_error(event, user)
                     return
 
+                # Collective votes limit
+                if amount == 0:
+                    utclast = datetime.fromtimestamp(float(user.last_collective_vote));
+                    difference = utcnow - utclast
+                    hours_difference = difference.total_seconds() // 3600;
+                    hours_limit = self.get_karma_hours_limit(user.rating);
+                    if hours_difference < hours_limit:
+                        self.delete_message(event)
+                        self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() // 60)
+                        return
+
                 user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
+
+                if amount == 0:
+                    user.last_collective_vote = int(utcnow.timestamp())
+                    self.base.save(user)
+
                 self.base.save(selected_user)
+
                 if user_karma_change:
                     self.base.save(user)
                 self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
@@ -163,6 +183,13 @@ class V(Vk):
             message_id = event['conversation_message_id']
             data = {'date': datetime.now() + timedelta(seconds=delay), 'id': message_id}
             self.messages_to_delete[peer_id].append(data)
+
+    def get_karma_hours_limit(self, karma):
+        for limit_item in config.karma_limit_hours:
+            if (not limit_item["min_karma"]) or (karma >= limit_item["min_karma"]):
+                if (not limit_item["max_karma"]) or (karma < limit_item["max_karma"]):
+                    return limit_item["limit"]
+        return 168 # hours (a week)
 
     def apply_karma_change(self, event, user, selected_user, operator, amount):
         selected_user_karma_change = None
@@ -376,6 +403,10 @@ class V(Vk):
 
     def send_not_enough_karma_error(self, event, user):
         message = f"Извините, [id{user.uid}|{user.name}], но Вашей кармы [{user.rating}] недостаточно :("
+        self.send_message(event, message)
+
+    def send_not_enough_hours_error(self, event, user, hours_limit, difference_minutes):
+        message = f"Извините, [id{user.uid}|{user.name}], но с момента вашего последнего голоса ещё не прошло {hours_limit} часов :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} минут."
         self.send_message(event, message)
 
     def send_message(self, event, message):
