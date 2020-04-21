@@ -26,6 +26,7 @@ class V(Vk):
         base.addPattern("github_profile", "")
         base.addPattern("current", [])
         base.addPattern("current_sub", [])
+        base.addPattern("last_collective_vote", 0)
         self.base = base
 
     def message_new(self, event):
