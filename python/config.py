@@ -21,8 +21,14 @@ chats_whitelist = [
     2000000006
 ]
 
-positive_votes_per_karma = 3
-negative_votes_per_karma = 4
+positive_votes_per_karma = 2
+negative_votes_per_karma = 3
+
+karma_limit_hours = [
+    { "min_karma": None, "max_karma": -20,  "limit": 12 },
+    { "min_karma": -20,  "max_karma": 20,   "limit": 3 },
+    { "min_karma": 20,   "max_karma": None, "limit": 1.5 },
+]
 
 help_string = """Вот что я умею:
 "помощь" или "help" — вывод этого сообщения.
