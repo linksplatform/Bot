@@ -118,9 +118,9 @@ class V(Vk):
                         self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
                         return
 
-                user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
+                user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
 
-                if amount == 0:
+                if collective_vote_applied:
                     user.last_collective_vote = int(utcnow.timestamp())
                     self.base.save(user)
 
@@ -195,6 +195,7 @@ class V(Vk):
     def apply_karma_change(self, event, user, selected_user, operator, amount):
         selected_user_karma_change = None
         user_karma_change = None
+        collective_vote_applied = None
         voters = None
 
         # Personal karma transfer
@@ -210,20 +211,22 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current", config.positive_votes_per_karma, +1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "current", config.positive_votes_per_karma, +1)
             else:
-                selected_user_karma_change, voters = self.apply_collective_vote(user, selected_user, "current_sub", config.negative_votes_per_karma, -1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "current_sub", config.negative_votes_per_karma, -1)
 
-        return user_karma_change, selected_user_karma_change, voters
+        return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
     def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
+        vote_applied = None
         if user.uid not in selected_user[current_voters]:
             selected_user[current_voters].append(user.uid)
+            vote_applied = True
         if len(selected_user[current_voters]) >= number_of_voters:
             voters = selected_user[current_voters]
             selected_user[current_voters] = []
-            return self.apply_user_karma(selected_user, amount), voters
-        return None, None
+            return self.apply_user_karma(selected_user, amount), voters, vote_applied
+        return None, None, vote_applied
 
     def apply_user_karma(self, user, amount):
         user.rating += amount
