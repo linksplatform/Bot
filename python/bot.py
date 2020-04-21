@@ -94,6 +94,10 @@ class V(Vk):
             if is_bot_selected:
                 return
 
+            if not selected_user:
+                selected_user_id = match.group("selectedUserId")
+                selected_user = self.base.autoInstall(int(selected_user_id), self)
+
             if selected_user and (user.uid != selected_user.uid):
                 operator = match.group("operator")[0]
                 amount = match.group("amount")

@@ -5,7 +5,7 @@ from config import default_programming_languages_pattern_string as default_langu
 HELP = compile(r"\A\s*(помощь|help)\s*\Z", IGNORECASE)
 INFO = compile(r"\A\s*(инфо|info)\s*\Z", IGNORECASE)
 KARMA = compile(r"\A\s*(карма|karma)\s*\Z", IGNORECASE)
-APPLY_KARMA = compile(r"\A\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z")
+APPLY_KARMA = compile(r"\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z")
 ADD_PROGRAMMING_LANGUAGE = compile(r"\A\s*\+=\s*(?P<language>" + default_languages + r")\s*\Z", IGNORECASE)
 REMOVE_PROGRAMMING_LANGUAGE = compile(r"\A\s*\-=\s*(?P<language>" + default_languages + r")\s*\Z", IGNORECASE)
 ADD_GITHUB_PROFILE = compile(r"\A\s*\+=\s*(https?://)?github.com/(?P<profile>[a-zA-Z0-9-_]+)/?\s*\Z", IGNORECASE)
