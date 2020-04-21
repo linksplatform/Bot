@@ -107,11 +107,11 @@ class V(Vk):
                 if amount == 0:
                     utclast = datetime.fromtimestamp(float(user.last_collective_vote));
                     difference = utcnow - utclast
-                    hours_difference = difference.total_seconds() // 3600;
+                    hours_difference = difference.total_seconds() / 3600;
                     hours_limit = self.get_karma_hours_limit(user.rating);
                     if hours_difference < hours_limit:
                         self.delete_message(event)
-                        self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() // 60)
+                        self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
                         return
 
                 user_karma_change, selected_user_karma_change, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
