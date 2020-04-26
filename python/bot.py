@@ -495,7 +495,7 @@ class V(Vk):
         if "error" in members:
             return None
         else:
-            return [m["id"] for m in members["response"]["profiles"]]
+            return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
 
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=0)
