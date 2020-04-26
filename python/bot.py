@@ -333,13 +333,13 @@ class V(Vk):
             if is_self:
                 response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
             else:
-                response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nВаша страничка на GitHub — %s"
+                response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nCтраничка на GitHub — %s"
             return self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string, profile))
         else:
             if is_self:
                 response = "[id%s|%s], \nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
             else:
-                response = "[id%s|%s]. \nЯзыки программирования: %s\nВаша страничка на GitHub — %s"
+                response = "[id%s|%s]. \nЯзыки программирования: %s\nCтраничка на GitHub — %s"
             return self.send_message(event, response % (user.uid, user.name, programming_languages_string, profile))
 
     def get_karma_string(self, user):
