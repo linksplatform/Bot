@@ -12,4 +12,6 @@ ADD_GITHUB_PROFILE = compile(r"\A\s*\+=\s*(https?://)?github.com/(?P<profile>[a-
 REMOVE_GITHUB_PROFILE = compile(r"\A\s*\-=\s*(https?://)?github.com/(?P<profile>[a-zA-Z0-9-_]+)/?\s*\Z", IGNORECASE)
 TOP = compile(r"\A\s*(топ|верх|top)\s*(?P<maximum_users>\d+)?\s*\Z", IGNORECASE)
 BOTTOM = compile(r"\A\s*(низ|дно|bottom)\s*(?P<maximum_users>\d+)?\s*\Z", IGNORECASE)
-TOP_LANGUAGES = compile(r"\A\s*(топ|top)\s*(?P<languages>(" + default_languages + r")(\s+(" + default_languages + r"))*)\s*\Z", IGNORECASE)
+TOP_LANGUAGES = compile(r"\A\s*(топ|верх|top)\s*(?P<languages>(" + default_languages + r")(\s+(" + default_languages + r"))*)\s*\Z", IGNORECASE)
+PEOPLE = compile(r"\A\s*(люди|народ|people)\s*(?P<maximum_users>\d+)?\s*\Z", IGNORECASE)
+PEOPLE_LANGUAGES = compile(r"\A\s*(люди|народ|people)\s*(?P<languages>(" + default_languages + r")(\s+(" + default_languages + r"))*)\s*\Z", IGNORECASE)

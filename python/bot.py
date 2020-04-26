@@ -62,80 +62,93 @@ class V(Vk):
         selected_user = self.base.autoInstall(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
-        match = regex.match(patterns.HELP, message)
-        if match:
-            return self.send_help(event)
-        match = regex.match(patterns.KARMA, message)
-        if match:
-            return self.send_karma(event, selected_user if selected_user else user, not selected_user)
-        match = regex.match(patterns.TOP, message)
-        if match:
-            maximum_users = match.group("maximum_users")
-            maximum_users = int(maximum_users) if maximum_users else 0
-            return self.send_top(event, maximum_users)
-        match = regex.match(patterns.BOTTOM, message)
-        if match:
-            maximum_users = match.group("maximum_users")
-            maximum_users = int(maximum_users) if maximum_users else 0
-            return self.send_bottom(event, maximum_users)
-        match = regex.match(patterns.INFO, message)
-        if match:
-            return self.send_info(event, selected_user if selected_user else user, not selected_user)
-        match = regex.match(patterns.APPLY_KARMA, message)
-        if match:
-            # Only for chat rooms
-            if event["peer_id"] < CHAT_ID_OFFSET:
-                return
-            # Only for whitelisted chat rooms
-            if event["peer_id"] not in config.chats_whitelist:
-                self.send_not_in_whitelist(event, user)
-                return
-            # Only regular users can be selected
-            if is_bot_selected:
-                return
+        karma_enabled = event["peer_id"] in config.chats_karma_whitelist
+        group_chat = event["peer_id"] >= CHAT_ID_OFFSET
 
-            if not selected_user:
-                selected_user_id = match.group("selectedUserId")
-                if selected_user_id:
-                    selected_user = self.base.autoInstall(int(selected_user_id), self)
-
-            if selected_user and (user.uid != selected_user.uid):
-                operator = match.group("operator")[0]
-                amount = match.group("amount")
-                amount = int(amount) if amount else 0
-
-                utcnow = datetime.utcnow()
-
-                # Downvotes disabled for users with negative rating
-                if (operator == "-") and (user.rating < 0):
-                    self.delete_message(event)
-                    self.send_not_enough_karma_error(event, user)
-                    return
-
-                # Collective votes limit
-                if amount == 0:
-                    utclast = datetime.fromtimestamp(float(user.last_collective_vote));
-                    difference = utcnow - utclast
-                    hours_difference = difference.total_seconds() / 3600;
-                    hours_limit = self.get_karma_hours_limit(user.rating);
-                    if hours_difference < hours_limit:
-                        self.delete_message(event)
-                        self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
+        if group_chat:
+            if karma_enabled:
+                match = regex.match(patterns.KARMA, message)
+                if match:
+                    return self.send_karma(event, selected_user if selected_user else user, not selected_user)
+                match = regex.match(patterns.TOP, message)
+                if match:
+                    maximum_users = match.group("maximum_users")
+                    maximum_users = int(maximum_users) if maximum_users else 0
+                    return self.send_top(event, maximum_users)
+                match = regex.match(patterns.BOTTOM, message)
+                if match:
+                    maximum_users = match.group("maximum_users")
+                    maximum_users = int(maximum_users) if maximum_users else 0
+                    return self.send_bottom(event, maximum_users)
+                match = regex.match(patterns.APPLY_KARMA, message)
+                if match:
+                    # Only regular users can be selected
+                    if is_bot_selected:
                         return
 
-                user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
+                    if not selected_user:
+                        selected_user_id = match.group("selectedUserId")
+                        if selected_user_id:
+                            selected_user = self.base.autoInstall(int(selected_user_id), self)
 
-                if collective_vote_applied:
-                    user.last_collective_vote = int(utcnow.timestamp())
-                    self.base.save(user)
+                    if selected_user and (user.uid != selected_user.uid):
+                        operator = match.group("operator")[0]
+                        amount = match.group("amount")
+                        amount = int(amount) if amount else 0
 
-                self.base.save(selected_user)
+                        utcnow = datetime.utcnow()
 
-                if user_karma_change:
-                    self.base.save(user)
-                self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
-                self.delete_message(event)
-                return
+                        # Downvotes disabled for users with negative rating
+                        if (operator == "-") and (user.rating < 0):
+                            self.delete_message(event)
+                            self.send_not_enough_karma_error(event, user)
+                            return
+
+                        # Collective votes limit
+                        if amount == 0:
+                            utclast = datetime.fromtimestamp(float(user.last_collective_vote));
+                            difference = utcnow - utclast
+                            hours_difference = difference.total_seconds() / 3600;
+                            hours_limit = self.get_karma_hours_limit(user.rating);
+                            if hours_difference < hours_limit:
+                                self.delete_message(event)
+                                self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
+                                return
+
+                        user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
+
+                        if collective_vote_applied:
+                            user.last_collective_vote = int(utcnow.timestamp())
+                            self.base.save(user)
+
+                        self.base.save(selected_user)
+
+                        if user_karma_change:
+                            self.base.save(user)
+                        self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
+                        self.delete_message(event)
+                        return
+                match = regex.match(patterns.TOP_LANGUAGES, message)
+                if match:
+                    languages = match.group("languages")
+                    return self.send_top_languages(event, languages)
+            else:
+                match = regex.match(patterns.PEOPLE, message)
+                if match:
+                    maximum_users = match.group("maximum_users")
+                    maximum_users = int(maximum_users) if maximum_users else 0
+                    return self.send_people(event, maximum_users)
+                match = regex.match(patterns.PEOPLE_LANGUAGES, message)
+                if match:
+                    languages = match.group("languages")
+                    return self.send_people_languages(event, languages)
+
+        match = regex.match(patterns.HELP, message)
+        if match:
+            return self.send_help(event, group_chat, karma_enabled)
+        match = regex.match(patterns.INFO, message)
+        if match:
+            return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
@@ -175,10 +188,6 @@ class V(Vk):
                 user.github_profile = ""
                 self.base.save(user)
             return self.send_github_profile(event, user)
-        match = regex.match(patterns.TOP_LANGUAGES, message)
-        if match:
-            languages = match.group("languages")
-            return self.send_top_languages(event, languages)
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
@@ -311,7 +320,7 @@ class V(Vk):
             response = "Карма [id%s|%s] — %s."
         self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user)))
 
-    def send_info(self, event, user, is_self=True):
+    def send_info(self, event, karma_enabled, user, is_self=True):
         programming_languages_string = self.get_programming_languages_string(user)
         if not programming_languages_string:
             programming_languages_string = "отсутствуют"
@@ -320,11 +329,18 @@ class V(Vk):
             profile = "отсутствует"
         else:
             profile = f"github.com/{profile}"
-        if is_self:
-            response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
+        if karma_enabled:
+            if is_self:
+                response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
+            else:
+                response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nВаша страничка на GitHub — %s"
+            return self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string, profile))
         else:
-            response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nВаша страничка на GitHub — %s"
-        self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string, profile))
+            if is_self:
+                response = "[id%s|%s], \nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
+            else:
+                response = "[id%s|%s]. \nЯзыки программирования: %s\nВаша страничка на GitHub — %s"
+            return self.send_message(event, response % (user.uid, user.name, programming_languages_string, profile))
 
     def get_karma_string(self, user):
         plus_string = ""
@@ -362,29 +378,76 @@ class V(Vk):
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
-    def get_users_sorted_by_karma(self):
-        return self.base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub", "github_profile"])
+    def get_users_sorted_by_karma(self, peer_id):
+        members = self.get_members_ids(peer_id);
+        users = self.base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub", "github_profile", "uid"])
+        if members:
+            users = [u for u in users if u["uid"] in members]
+        return users
+
+    def get_users_sorted_by_name(self, peer_id):
+        members = self.get_members_ids(peer_id);
+        users = self.base.getSortedByKeys("name", otherKeys=["programming_languages", "github_profile", "uid"])
+        if members:
+            users = [u for u in users if u["uid"] in members]
+        users.reverse()
+        return users
 
     def send_bottom(self, event, maximum_users):
-        users = self.get_users_sorted_by_karma()
+        peer_id = event["peer_id"]
+        users = self.get_users_sorted_by_karma(peer_id)
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             users.reverse()
             self.send_top_users(event, users[:maximum_users])
         else:
             self.send_top_users(event, reversed(users))
+    
+    def send_people_users(self, event, users):
+        if not users:
+            return
+        user_strings = ["[id%s|%s]%s %s" % (user["uid"], user["name"], self.get_github_profile_top_string(user), self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
+        total_symbols = 0
+        i = 0
+        for user_string in user_strings:
+            user_string_length = len(user_string)
+            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
+                user_strings = user_strings[:i]
+            else:
+                total_symbols += user_string_length + 2
+                i += 1
+        response = "\n".join(user_strings)
+        self.send_message(event, response)
+
+    def send_people(self, event, maximum_users):
+        peer_id = event["peer_id"]
+        users = self.get_users_sorted_by_name(peer_id)
+        users = [i for i in users if i["github_profile"] or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        if (maximum_users > 0) and (len(users) >= maximum_users):
+            self.send_people_users(event, users[:maximum_users])
+        else:
+            self.send_people_users(event, users)
 
     def send_top(self, event, maximum_users):
-        users = self.get_users_sorted_by_karma()
+        peer_id = event["peer_id"]
+        users = self.get_users_sorted_by_karma(peer_id)
         users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             self.send_top_users(event, users[:maximum_users])
         else:
             self.send_top_users(event, users)
 
+    def send_people_languages(self, event, languages):
+        languages = regex.split(r"\s+", languages)
+        peer_id = event["peer_id"]
+        users = self.get_users_sorted_by_name(peer_id)
+        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
+        self.send_people_users(event, users)
+
     def send_top_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
-        users = self.get_users_sorted_by_karma()
+        peer_id = event["peer_id"]
+        users = self.get_users_sorted_by_karma(peer_id)
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
@@ -402,8 +465,14 @@ class V(Vk):
         else:
             self.send_message(event, f"[id{user.uid}|{user.name}], Ваши языки программирования: {programming_languages_string}.")
 
-    def send_help(self, event):
-        self.send_message(event, config.help_string)
+    def send_help(self, event, group_chat, karma_enabled):
+        if group_chat:
+            if karma_enabled:
+                self.send_message(event, config.help_string_with_karma)
+            else:
+                self.send_message(event, config.help_string)
+        else:
+            self.send_message(event, config.help_string_private_chat)
 
     def send_not_in_whitelist(self, event, user):
         peer_id = event["peer_id"]
@@ -417,6 +486,16 @@ class V(Vk):
     def send_not_enough_hours_error(self, event, user, hours_limit, difference_minutes):
         message = f"Извините, [id{user.uid}|{user.name}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
         self.send_message(event, message)
+
+    def get_members(self, peer_id):
+        return self.messages.getConversationMembers(peer_id=peer_id)
+
+    def get_members_ids(self, peer_id):
+        members = self.get_members(peer_id)
+        if "error" in members:
+            return None
+        else:
+            return [m["id"] for m in members["response"]["profiles"]]
 
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=0)
