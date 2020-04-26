@@ -11,7 +11,7 @@ pip install -r requirements.txt
 Before the run add tokens into `python/tokens.py` file.
 
 ```
-python python/bot.py
+python3 -m python
 ```
 
 ## Do not upload tokens.py with your real tokens please
