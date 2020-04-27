@@ -156,6 +156,10 @@ default_programming_languages = [
     "Chef",
     "BIT",
     "Ook",
+    "MoonScript",
+    "PureScript",
+    "Idris",
+    "Elm",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
