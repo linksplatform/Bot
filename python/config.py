@@ -25,8 +25,10 @@ positive_votes_per_karma = 2
 negative_votes_per_karma = 3
 
 karma_limit_hours = [
-    { "min_karma": None, "max_karma": -20,  "limit": 12 },
-    { "min_karma": -20,  "max_karma": 20,   "limit": 3 },
+    { "min_karma": None, "max_karma": -19,  "limit": 24 },
+    { "min_karma": -19,  "max_karma": -1,   "limit": 12 },
+    { "min_karma": -1,  "max_karma": 2,   "limit": 6 },
+    { "min_karma": 2,  "max_karma": 20,   "limit": 3 },
     { "min_karma": 20,   "max_karma": None, "limit": 1.5 },
 ]
 
