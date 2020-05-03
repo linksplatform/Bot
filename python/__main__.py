@@ -21,12 +21,24 @@ class V(Vk):
         self.debug = True
 
         base = BetterBotBase("users", "dat")
-        base.addPattern("rating", 0)
+        #base.addPattern("rating", 0)
+        base.addPattern("karma", 0)
         base.addPattern("programming_languages", [])
         base.addPattern("github_profile", "")
-        base.addPattern("current", [])
-        base.addPattern("current_sub", [])
+        #base.addPattern("current", [])
+        base.addPattern("supporters", [])
+        #base.addPattern("current_sub", [])
+        base.addPattern("opponents", [])
         base.addPattern("last_collective_vote", 0)
+
+        #xusers = base.getSortedByKeys("karma", otherKeys=["current", "current_sub"])
+        #for xuser in xusers:
+        #    uuser = base.load(xuser["uid"])
+        #    uuser.supporters = []
+        #    uuser.opponents = []
+        #    uuser.karma = 0
+        #    base.save(uuser)
+
         self.base = base
 
     def message_new(self, event):
@@ -98,8 +110,8 @@ class V(Vk):
 
                         utcnow = datetime.utcnow()
 
-                        # Downvotes disabled for users with negative rating
-                        if (operator == "-") and (user.rating < 0):
+                        # Downvotes disabled for users with negative karma
+                        if (operator == "-") and (user.karma < 0):
                             self.delete_message(event)
                             self.send_not_enough_karma_error(event, user)
                             return
@@ -109,7 +121,7 @@ class V(Vk):
                             utclast = datetime.fromtimestamp(float(user.last_collective_vote));
                             difference = utcnow - utclast
                             hours_difference = difference.total_seconds() / 3600;
-                            hours_limit = self.get_karma_hours_limit(user.rating);
+                            hours_limit = self.get_karma_hours_limit(user.karma);
                             if hours_difference < hours_limit:
                                 self.delete_message(event)
                                 self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
@@ -214,7 +226,7 @@ class V(Vk):
 
         # Personal karma transfer
         if amount > 0:
-            if user.rating < amount:
+            if user.karma < amount:
                 self.send_not_enough_karma_error(event, user)
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
@@ -225,9 +237,9 @@ class V(Vk):
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "current", config.positive_votes_per_karma, +1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "supporters", config.positive_votes_per_karma, +1)
             else:
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "current_sub", config.negative_votes_per_karma, -1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "opponents", config.negative_votes_per_karma, -1)
 
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
@@ -243,8 +255,8 @@ class V(Vk):
         return None, None, vote_applied
 
     def apply_user_karma(self, user, amount):
-        user.rating += amount
-        return (user.uid, user.name, user.rating - amount, user.rating)
+        user.karma += amount
+        return (user.uid, user.name, user.karma - amount, user.karma)
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
@@ -346,13 +358,13 @@ class V(Vk):
         plus_string = ""
         minus_string = ""
         if isinstance(user, dict):
-            karma = user["rating"]
-            plus_votes = len(user["current"])
-            minus_votes = len(user["current_sub"])
+            karma = user["karma"]
+            plus_votes = len(user["supporters"])
+            minus_votes = len(user["opponents"])
         else:
-            karma = user.rating
-            plus_votes = len(user.current)
-            minus_votes = len(user.current_sub)
+            karma = user.karma
+            plus_votes = len(user.supporters)
+            minus_votes = len(user.opponents)
         if plus_votes > 0:
             plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
         if minus_votes > 0:
@@ -380,7 +392,7 @@ class V(Vk):
 
     def get_users_sorted_by_karma(self, peer_id):
         members = self.get_members_ids(peer_id);
-        users = self.base.getSortedByKeys("rating", otherKeys=["programming_languages", "current", "current_sub", "github_profile", "uid"])
+        users = self.base.getSortedByKeys("karma", otherKeys=["programming_languages", "supporters", "opponents", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
@@ -396,7 +408,7 @@ class V(Vk):
     def send_bottom(self, event, maximum_users):
         peer_id = event["peer_id"]
         users = self.get_users_sorted_by_karma(peer_id)
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        users = [i for i in users if (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             users.reverse()
             self.send_top_users(event, users[:maximum_users])
@@ -431,7 +443,7 @@ class V(Vk):
     def send_top(self, event, maximum_users):
         peer_id = event["peer_id"]
         users = self.get_users_sorted_by_karma(peer_id)
-        users = [i for i in users if (i["rating"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        users = [i for i in users if (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             self.send_top_users(event, users[:maximum_users])
         else:
@@ -480,7 +492,7 @@ class V(Vk):
         self.send_message(event, message)
 
     def send_not_enough_karma_error(self, event, user):
-        message = f"Извините, [id{user.uid}|{user.name}], но Вашей кармы [{user.rating}] недостаточно :("
+        message = f"Извините, [id{user.uid}|{user.name}], но Вашей кармы [{user.karma}] недостаточно :("
         self.send_message(event, message)
 
     def send_not_enough_hours_error(self, event, user, hours_limit, difference_minutes):
