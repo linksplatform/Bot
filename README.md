@@ -8,8 +8,8 @@ pip install -r requirements.txt
 ```
 
 ## Run
-1. add tokens into `python/tokens.py` file.
-2. `python3 -m python`
+1. Add tokens into `python/tokens.py` file
+2. Execute `python3 -m python`
 
 ## Do not upload tokens.py with your real tokens please
 
