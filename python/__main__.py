@@ -21,23 +21,12 @@ class V(Vk):
         self.debug = True
 
         base = BetterBotBase("users", "dat")
-        #base.addPattern("rating", 0)
         base.addPattern("karma", 0)
         base.addPattern("programming_languages", [])
         base.addPattern("github_profile", "")
-        #base.addPattern("current", [])
         base.addPattern("supporters", [])
-        #base.addPattern("current_sub", [])
         base.addPattern("opponents", [])
         base.addPattern("last_collective_vote", 0)
-
-        #xusers = base.getSortedByKeys("karma", otherKeys=["current", "current_sub"])
-        #for xuser in xusers:
-        #    uuser = base.load(xuser["uid"])
-        #    uuser.supporters = []
-        #    uuser.opponents = []
-        #    uuser.karma = 0
-        #    base.save(uuser)
 
         self.base = base
 
