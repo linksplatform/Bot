@@ -380,24 +380,19 @@ class V(Vk):
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
-    def get_sorted_by_karma(self, count=None, offset=0, sortType="1-9", formatting=False, otherKeys=[]):
+    def get_sorted_by_karma(self, other_keys):
         key = "karma"
         sup = "supporters"
         opp = "opponents"
-        sorted_users = sorted(self.base.getByKeys(key, "name", *otherKeys),
-                             key=itemgetter(key)+itemgetter(sup)-itemgetter(opp), reverse=True
-                             if sortType == "1-9" else False if sortType == "9-1" else True)
-        if formatting:
-            for user in sorted_users:
-                user["formatted"] = "[id%s|%s]" % (user["uid"], user["name"])
-        if count:
-            return sorted_users[offset:count+offset]
-        else:
-            return sorted_users[offset:]
+        sorted_users = sorted(
+            self.base.getByKeys(key, "name", *other_keys),
+            key=itemgetter(key) + len(itemgetter(sup))/config.positive_votes_per_karma - len(itemgetter(opp))/config.negative_votes_per_karma
+        )
+        return sorted_users
 
     def get_users_sorted_by_karma(self, peer_id):
         members = self.get_members_ids(peer_id);
-        users = self.get_sorted_by_karma(otherKeys=["programming_languages", "supporters", "opponents", "github_profile", "uid"])
+        users = self.get_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
