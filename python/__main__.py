@@ -3,6 +3,7 @@ from social_ethosa import BetterBotBase
 import regex
 import requests
 from datetime import datetime, timedelta
+from operator import itemgetter
 
 import config
 import patterns
@@ -371,7 +372,7 @@ class V(Vk):
         i = 0
         for user_string in user_strings:
             user_string_length = len(user_string)
-            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
+            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
                 user_strings = user_strings[:i]
             else:
                 total_symbols += user_string_length + 2
@@ -379,9 +380,19 @@ class V(Vk):
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
+    def get_sorted_by_karma(self, other_keys):
+        key = "karma"
+        sup = "supporters"
+        opp = "opponents"
+        sorted_users = sorted(
+            self.base.getByKeys(key, "name", *other_keys),
+            key=itemgetter(key) + len(itemgetter(sup))/config.positive_votes_per_karma - len(itemgetter(opp))/config.negative_votes_per_karma
+        )
+        return sorted_users
+
     def get_users_sorted_by_karma(self, peer_id):
         members = self.get_members_ids(peer_id);
-        users = self.base.getSortedByKeys("karma", otherKeys=["programming_languages", "supporters", "opponents", "github_profile", "uid"])
+        users = self.get_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
