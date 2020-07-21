@@ -486,7 +486,7 @@ class V(Vk):
             if karma_enabled:
                 self.send_message(event, config.help_string_with_karma)
             else:
-                self.send_message(event, config.help_string)
+                self.send_message(event, config.help_string % event["peer_id"])
         else:
             self.send_message(event, config.help_string_private_chat)
 

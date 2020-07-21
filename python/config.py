@@ -32,7 +32,7 @@ karma_limit_hours = [
     { "min_karma": 20,   "max_karma": None, "limit": 0.5 },
 ]
 
-help_string = """Вы находитесь в беседе с выключенной кармой.
+help_string = """Вы находитесь в беседе (# %d) с выключенной кармой.
 Документация — vk.cc/auqYdx"""
 
 help_string_private_chat = """Вы находитесь в личных сообщениях бота.
