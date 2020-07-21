@@ -380,13 +380,18 @@ class V(Vk):
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
+    def calculate_real_karma(self, user):
+        base_karma = user["karma"]
+        up_votes = len(user["supporters"])/config.positive_votes_per_karma
+        down_votes = len(user["opponents"])/config.negative_votes_per_karma
+        return base_karma + up_votes - down_votes
+
     def get_sorted_by_karma(self, other_keys):
-        key = "karma"
-        sup = "supporters"
-        opp = "opponents"
+        users = self.base.getByKeys("karma", "name", *other_keys)
         sorted_users = sorted(
-            self.base.getByKeys(key, "name", *other_keys),
-            key=itemgetter(key) + len(itemgetter(sup))/config.positive_votes_per_karma - len(itemgetter(opp))/config.negative_votes_per_karma
+            users,
+            key=self.calculate_real_karma,
+            reverse=True
         )
         return sorted_users
 
