@@ -3,7 +3,6 @@ from social_ethosa import BetterBotBase
 import regex
 import requests
 from datetime import datetime, timedelta
-from operator import itemgetter
 
 import config
 import patterns
