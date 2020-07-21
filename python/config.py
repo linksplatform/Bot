@@ -18,7 +18,7 @@ userbot_chats = {
 # Chats where you can change reputation of other users
 chats_karma_whitelist = [
     2000000001,
-    #2000000006
+    2000000011
 ]
 
 positive_votes_per_karma = 2
