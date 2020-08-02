@@ -126,7 +126,7 @@ default_programming_languages = [
     "Elm",
     "Minecraft",
     "Crystal",
-    "С--",
+    "C--",
     "Go!",
 ]
 
