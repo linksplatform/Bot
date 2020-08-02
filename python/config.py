@@ -124,6 +124,10 @@ default_programming_languages = [
     "PureScript",
     "Idris",
     "Elm",
+    "Minecraft",
+    "Crystal",
+    "С--",
+    "Go!",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
