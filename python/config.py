@@ -128,6 +128,8 @@ default_programming_languages = [
     "Crystal",
     "C--",
     "Go!",
+    "Tcl",
+    "Solidity",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
