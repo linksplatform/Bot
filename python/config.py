@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Bot group id
+# Bot's VK group id (change it to your group id)
 bot_group_id = 190877945
 
 # Pluses and minuses will be removed in these chats
