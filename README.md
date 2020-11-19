@@ -15,8 +15,8 @@ pip3 install -r requirements.txt
 
 1. Set bot group id in [config.py](https://github.com/linksplatform/Bot/blob/e10f51c7e3711c43708ce5659c7de9e76cab6702/python/config.py#L3-L4).
 2. Add tokens into `python/tokens.py` file
-* BotToken (an access token of your VK group). This token should have two access settings `community management` and `community messages`. This token is required.
-* UserToken (an access token to your VK user via KateMobile). This token is used to delete messages in the chats where your user is administrator. This token is optional.
+    * BotToken (an access token of your VK group). This token should have two access settings `community management` and `community messages`. This token is required.
+    * UserToken (an access token to your VK user via KateMobile). This token is used to delete messages in the chats where your user is administrator. This token is optional.
 
 ## Run
 
