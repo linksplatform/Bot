@@ -150,6 +150,11 @@ class V(Vk):
         match = regex.match(patterns.INFO, message)
         if match:
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
+        match = regex.match(patterns.UPDATE, message)
+        if match:
+            user.name = self.users.get(user_ids=event["from_id"])['response'][0]["first_name"]
+            self.base.save(user)
+            return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
