@@ -4,6 +4,7 @@ from config import default_programming_languages_pattern_string as default_langu
 
 HELP = compile(r"\A\s*(помощь|help)\s*\Z", IGNORECASE)
 INFO = compile(r"\A\s*(инфо|info)\s*\Z", IGNORECASE)
+UPDATE = compile(r"\A\s*(обновить|update)\s*\Z", IGNORECASE)
 KARMA = compile(r"\A\s*(карма|karma)\s*\Z", IGNORECASE)
 APPLY_KARMA = compile(r"\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z")
 ADD_PROGRAMMING_LANGUAGE = compile(r"\A\s*\+=\s*(?P<language>" + default_languages + r")\s*\Z", IGNORECASE)
