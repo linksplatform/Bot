@@ -27,7 +27,7 @@ namespace projects
             {
                 var issue = new Issue();
                 issue = issues.Result[i];
-                if (issue.Title.ToLower() == "hello world")
+                if ((issue.Title.ToLower() == "hello world")&&(issue.State.Value == ItemState.Open))
                 {
                     return issue;
                 }
