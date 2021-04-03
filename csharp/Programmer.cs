@@ -9,11 +9,11 @@ namespace GitHubBot
 {
     internal class Programmer
     {
-        private GitHubClient Client;
+        private GitHubClient client;
 
-        private Credentials Credentials;
+        private Credentials credentials;
 
-        private static readonly int delay = 1000;
+        private static readonly int interval = 1000;
 
         private readonly string owner;
 
@@ -40,7 +40,7 @@ namespace GitHubBot
             };
             try
             {
-                return Client.Issue.GetAllForCurrent(request).Result.Single(issue =>
+                return client.Issue.GetAllForCurrent(request).Result.Single(issue =>
                 issue.Title.Equals("hello world", StringComparison.OrdinalIgnoreCase));
             }
             catch (InvalidOperationException)
@@ -49,25 +49,25 @@ namespace GitHubBot
             }
         }
 
-        private void CreateOrUpdateFile(string repository, string branch, string output, string targetFile)
+        private void CreateOrUpdateFile(string repository, string branch, string content, string path)
         {
-            var content = Client.Repository.Content;
+            var repositoryContent = client.Repository.Content;
             try
             {
-                var existingFile = content.GetAllContentsByRef(owner, repository, targetFile, branch);
-                var updateChangeSet = content.UpdateFile(owner, repository, targetFile,
-                new UpdateFileRequest("Update File", output, existingFile.Result.First().Sha, branch));
+                var existingFile = repositoryContent.GetAllContentsByRef(owner, repository, path, branch);
+                var updateChangeSet = repositoryContent.UpdateFile(owner, repository, path,
+                new UpdateFileRequest("Update File", content, existingFile.Result.First().Sha, branch));
             }
-            catch(NotFoundException)
+            catch (NotFoundException)
             {
-                content.CreateFile(owner, repository, targetFile, new CreateFileRequest("Creation File", output, branch));
+                repositoryContent.CreateFile(owner, repository, path, new CreateFileRequest("Creation File", content, branch));
             }
         }
 
         private void CreateFiles(Issue issue)
         {
             string repository = issue.Repository.Name;
-            string branch =  issue.Repository.DefaultBranch;
+            string branch = issue.Repository.DefaultBranch;
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCs, "program.cs");
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCsproj, "HelloWorld.csproj");
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.dotnetYml, ".github/workflows/CD.yml");
@@ -81,7 +81,7 @@ namespace GitHubBot
                 State = ItemState.Closed,
                 Body = issue.Body,
             };
-            Client.Issue.Update(owner, issue.Repository.Name, issue.Number, issueUpdate);
+            client.Issue.Update(owner, issue.Repository.Name, issue.Number, issueUpdate);
         }
 
         private void Run(CancellationToken token)
@@ -93,16 +93,16 @@ namespace GitHubBot
                 {
                     lastIssue = issue.CreatedAt;
                     ProcessIssue(issue);
-                 }
-                Thread.Sleep(delay);
+                }
+                Thread.Sleep(interval);
             }
         }
 
         public void Start(CancellationToken cancellationToken)
         {
-            Client = new GitHubClient(new ProductHeaderValue(name));
-            Credentials = new Credentials(token);
-            Client.Credentials = Credentials;
+            client = new GitHubClient(new ProductHeaderValue(name));
+            credentials = new Credentials(token);
+            client.Credentials = credentials;
             Run(cancellationToken);
         }
     }
