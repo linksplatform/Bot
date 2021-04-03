@@ -8,9 +8,9 @@ namespace GitHubBot
 {
     internal class Programmer
     {
-        private static GitHubClient Client { get; set; }
+        private static GitHubClient Client;
 
-        private static Credentials Credentials { get; set; }
+        private static Credentials Credentials;
 
         private static readonly int delay = 1000;
 
@@ -34,7 +34,7 @@ namespace GitHubBot
             IssueRequest request = new IssueRequest
             {
                 Filter = IssueFilter.All,
-                State = ItemStateFilter.All,
+                State = ItemStateFilter.Open,
                 Since = lastIssue
             };
             try
@@ -57,7 +57,7 @@ namespace GitHubBot
                 var updateChangeSet = content.UpdateFile(owner, repository, targetFile,
                 new UpdateFileRequest("Update File", output, existingFile.Result.First().Sha, branch));
             }
-            catch
+            catch(Octokit.NotFoundException)
             {
                 content.CreateFile(owner, repository, targetFile, new CreateFileRequest("Creation File", output, branch));
             }
