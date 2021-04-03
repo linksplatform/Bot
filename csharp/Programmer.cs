@@ -89,7 +89,7 @@ namespace GitHubBot
 
         private void Run(CancellationToken token)
         {
-            while (token.IsCancellationRequested)
+            while (!token.IsCancellationRequested)
             {
                 try
                 {
