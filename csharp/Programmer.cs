@@ -1,8 +1,8 @@
 ﻿using Octokit;
-using Platform.IO;
 using System;
 using System.Linq;
 using System.Threading;
+using Platform.Exceptions;
 
 namespace GitHubBot
 {
@@ -125,7 +125,7 @@ namespace GitHubBot
             }
             catch (FormatException e)
             {
-                Console.WriteLine(e.Message);
+                Console.Write(e.ToStringWithAllInnerExceptions());
             }
         }
     }
