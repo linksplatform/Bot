@@ -20,7 +20,7 @@ namespace GitHubBot
 
         private readonly string name;
 
-        private DateTimeOffset lastIssue;
+        private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
         public Programmer(string owner, string token, string name)
         {
