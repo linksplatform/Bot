@@ -1,16 +1,17 @@
 ﻿using Octokit;
+using Platform.Exceptions;
+using Platform.IO;
 using System;
 using System.Linq;
 using System.Threading;
-using Platform.Exceptions;
 
 namespace GitHubBot
 {
     internal class Programmer
     {
-        private static GitHubClient Client;
+        private  GitHubClient Client;
 
-        private static Credentials Credentials;
+        private  Credentials Credentials;
 
         private static readonly int delay = 1000;
 
@@ -40,7 +41,7 @@ namespace GitHubBot
             try
             {
                 return Client.Issue.GetAllForCurrent(request).Result.Single(issue =>
-                issue.Title.Equals("hello world", StringComparison.OrdinalIgnoreCase) && issue.State.Value == ItemState.Open);
+                issue.Title.Equals("hello world", StringComparison.OrdinalIgnoreCase));
             }
             catch (InvalidOperationException)
             {
@@ -91,8 +92,6 @@ namespace GitHubBot
         {
             while (!token.IsCancellationRequested)
             {
-                try
-                {
                     Issue issue = GetIssue();
                     if (issue != null)
                     {
@@ -100,33 +99,15 @@ namespace GitHubBot
                         ProcessIssue(issue);
                     }
                     Thread.Sleep(delay);
-
-                }
-                catch (AggregateException e)
-                {
-                    if (e.Message.Contains("Bad credentials"))
-                    {
-                        Console.WriteLine("Invalid login or password.");
-                        return;
-                    }
-                }
             }
         }
 
         public void Start(CancellationToken cancellationToken)
         {
-            try
-            {
-                Client = new GitHubClient(new ProductHeaderValue(name));
-                Credentials = new Credentials(token);
-                Client.Credentials = Credentials;
-
-                Run(cancellationToken);
-            }
-            catch (FormatException e)
-            {
-                Console.Write(e.ToStringWithAllInnerExceptions());
-            }
+         Client = new GitHubClient(new ProductHeaderValue(name));
+         Credentials = new Credentials(token);
+         Client.Credentials = Credentials;
+         Run(cancellationToken);
         }
     }
 }
