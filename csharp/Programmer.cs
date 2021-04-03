@@ -58,7 +58,7 @@ namespace GitHubBot
                 var updateChangeSet = content.UpdateFile(owner, repository, targetFile,
                 new UpdateFileRequest("Update File", output, existingFile.Result.First().Sha, branch));
             }
-            catch(Octokit.NotFoundException)
+            catch(NotFoundException)
             {
                 content.CreateFile(owner, repository, targetFile, new CreateFileRequest("Creation File", output, branch));
             }
@@ -67,7 +67,7 @@ namespace GitHubBot
         private void CreateFiles(Issue issue)
         {
             string repository = issue.Repository.Name;
-            string branch = "main";
+            string branch =  issue.Repository.DefaultBranch;
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCs, "program.cs");
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCsproj, "HelloWorld.csproj");
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.dotnetYml, ".github/workflows/CD.yml");
