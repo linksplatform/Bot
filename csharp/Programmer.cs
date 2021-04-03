@@ -9,9 +9,9 @@ namespace GitHubBot
 {
     internal class Programmer
     {
-        private  GitHubClient Client;
+        private GitHubClient Client;
 
-        private  Credentials Credentials;
+        private Credentials Credentials;
 
         private static readonly int delay = 1000;
 
@@ -68,13 +68,9 @@ namespace GitHubBot
         {
             string repository = issue.Repository.Name;
             string branch = "main";
-
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCs, "program.cs");
-
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCsproj, "HelloWorld.csproj");
-
             CreateOrUpdateFile(repository, branch, CSharpHelloWorld.dotnetYml, ".github/workflows/CD.yml");
-
         }
 
         private void ProcessIssue(Issue issue)
@@ -92,22 +88,22 @@ namespace GitHubBot
         {
             while (!token.IsCancellationRequested)
             {
-                    Issue issue = GetIssue();
-                    if (issue != null)
-                    {
-                        lastIssue = issue.CreatedAt;
-                        ProcessIssue(issue);
-                    }
-                    Thread.Sleep(delay);
+                Issue issue = GetIssue();
+                if (issue != null)
+                {
+                    lastIssue = issue.CreatedAt;
+                    ProcessIssue(issue);
+                 }
+                Thread.Sleep(delay);
             }
         }
 
         public void Start(CancellationToken cancellationToken)
         {
-         Client = new GitHubClient(new ProductHeaderValue(name));
-         Credentials = new Credentials(token);
-         Client.Credentials = Credentials;
-         Run(cancellationToken);
+            Client = new GitHubClient(new ProductHeaderValue(name));
+            Credentials = new Credentials(token);
+            Client.Credentials = Credentials;
+            Run(cancellationToken);
         }
     }
 }
