@@ -16,11 +16,11 @@ namespace GitHubBot
 
     internal class Programmer
     {
+        private static readonly int interval = 1200;
+
         private GitHubClient client;
 
         private Credentials credentials;
-
-        private static readonly int interval = 1000;
 
         private readonly string owner;
 
@@ -28,7 +28,7 @@ namespace GitHubBot
 
         private readonly string name;
 
-        private readonly List<ITrigger<Issue>> triggers = new List<ITrigger<Issue>> {  };
+        private readonly List<ITrigger<Issue>> triggers;
 
         private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
@@ -37,6 +37,7 @@ namespace GitHubBot
             this.owner = owner;
             this.token = token;
             this.name = name;
+            triggers = new List<ITrigger<Issue>> { new HelloWorldTrigger(this, CSharpHelloWorld.files) };
         }
 
         private IReadOnlyList<Issue> GetIssues()
@@ -50,19 +51,18 @@ namespace GitHubBot
             return client.Issue.GetAllForCurrent(request).Result;
         }
 
-        public void CreateOrUpdateFile(string repository, string branch, string content, string path)
+        public void CreateOrUpdateFile(string repository, string branch, IFile file)
         {
             var repositoryContent = client.Repository.Content;
             try
             {
-                var existingFile = repositoryContent.GetAllContentsByRef(owner, repository, path, branch);
-                var updateChangeSet = repositoryContent.UpdateFile(owner, repository, path,
-                new UpdateFileRequest("Update File", content, existingFile.Result.First().Sha, branch));
+                var existingFile = repositoryContent.GetAllContentsByRef(owner, repository, file.Path, branch);
+                var updateChangeSet = repositoryContent.UpdateFile(owner, repository, file.Path,
+                new UpdateFileRequest("Update File", file.Content, existingFile.Result.First().Sha, branch));
             }
-            catch (AggregateException ex)//если файл не найден,Octokit кидает именно его
+            catch (AggregateException)//если файл не найден,Octokit кидает именно его
             {
-                Console.WriteLine(ex.Message);
-                repositoryContent.CreateFile(owner, repository, path, new CreateFileRequest("Creation File", content, branch));
+                repositoryContent.CreateFile(owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
             }
         }
 
@@ -100,12 +100,6 @@ namespace GitHubBot
             client = new GitHubClient(new ProductHeaderValue(name));
             credentials = new Credentials(token);
             client.Credentials = credentials;
-            var ProgramCs = new File { Path = "program.cs", Content = CSharpHelloWorld.ProgramCs };
-            var dotnetYml = new File { Path = "CD.yml", Content = CSharpHelloWorld.dotnetYml };
-            var HelloCsproj = new File { Path = "HelloWorld.csproj", Content = CSharpHelloWorld.ProgramCsproj };
-            List<File> files = new List<File> { ProgramCs, dotnetYml, HelloCsproj };
-            var Trigger = new HelloWorldTrigger(this,files);
-            triggers.Add(Trigger);
             ProcessIssues(cancellationToken);
         }
     }

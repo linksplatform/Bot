@@ -21,21 +21,15 @@ namespace csharp
         {
             foreach(var file in files)
             {
-                programmer.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file.Content, file.Path);
+                programmer.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch,file);
             }
             programmer.CloseIssue(obj);
         }
 
         public bool Condition(Issue obj)
         {
-            if(obj.Title.ToLower() == "hello world")
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return obj.Title.ToLower() == "hello world";
         }
     }
 }
+

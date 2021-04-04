@@ -1,4 +1,5 @@
 ﻿using GitHubBot;
+using System.Collections.Generic;
 
 namespace Interfaces
 {

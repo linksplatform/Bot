@@ -1,9 +1,18 @@
-﻿
+﻿using csharp;
+using System.Collections.Generic;
+
 namespace GitHubBot
 {
-    internal class CSharpHelloWorld
-    {
-        public static readonly string ProgramCs =
+    internal class CSharpHelloWorld { 
+
+        public static readonly List<File> files = new List<File>
+        { 
+            new File { Path = "program.cs", Content = ProgramCs },
+            new File { Path = "HelloWorld.csproj", Content = ProgramCsproj },
+            new File { Path = "CD.yml", Content = dotnetYml }
+        };
+
+        static readonly string ProgramCs =
   @"
 using System;
 
@@ -18,7 +27,7 @@ namespace helloworld
     }
 }";
 
-        public static readonly string ProgramCsproj =
+        static readonly string ProgramCsproj =
  @"
 <Project Sdk=""Microsoft.NET.Sdk"">
 
@@ -31,7 +40,7 @@ namespace helloworld
 
 </Project> ";
 
-        public static readonly string dotnetYml =
+        static readonly string dotnetYml =
  @"name: .NET
 
 on:
