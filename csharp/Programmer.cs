@@ -1,7 +1,6 @@
-﻿using Interfaces;
+﻿using csharp;
+using Interfaces;
 using Octokit;
-using Platform.Exceptions;
-using Platform.IO;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,12 +8,7 @@ using System.Threading;
 
 namespace GitHubBot
 {
-    class Action : IAction
-    {
-        public string Trigger { get; set; }
-        public List<IContent> Content { get; set; }
-    }
-    class Contents : IContent
+    class Contents : IFile
     {
         public string Path { get; set; }
         public string Content { get; set; }
@@ -34,7 +28,7 @@ namespace GitHubBot
 
         private readonly string name;
 
-        private readonly List<IAction> actions = new List<IAction> {  };
+        private readonly List<ITrigger<Issue>> triggers = new List<ITrigger<Issue>> {  };
 
         private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
@@ -45,7 +39,7 @@ namespace GitHubBot
             this.name = name;
         }
 
-        private Issue GetIssue()
+        private IReadOnlyList<Issue> GetIssues()
         {
             IssueRequest request = new IssueRequest
             {
@@ -53,23 +47,10 @@ namespace GitHubBot
                 State = ItemStateFilter.Open,
                 Since = lastIssue
             };
-            try
-            {
-                Issue issue = new Issue();
-                foreach (var a in actions)
-                {
-                    issue= client.Issue.GetAllForCurrent(request).Result.Single(issue =>
-                    issue.Title.Equals(a.Trigger, StringComparison.OrdinalIgnoreCase));
-                }
-                return issue;
-            }
-            catch (InvalidOperationException)
-            {
-                return null;
-            }
+            return client.Issue.GetAllForCurrent(request).Result;
         }
 
-        private void CreateOrUpdateFile(string repository, string branch, string content, string path)
+        public void CreateOrUpdateFile(string repository, string branch, string content, string path)
         {
             var repositoryContent = client.Repository.Content;
             try
@@ -85,23 +66,8 @@ namespace GitHubBot
             }
         }
 
-        private void CreateFiles(Issue issue)
+        public void CloseIssue(Issue issue)
         {
-            string repository = issue.Repository.Name;
-            string branch = issue.Repository.DefaultBranch;
-            var Action = actions.FirstOrDefault(Action => Action.Trigger == issue.Title);
-            foreach(var file in Action.Content)
-            {
-                CreateOrUpdateFile(repository, branch, file.Content, file.Path);
-            }
-            //CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCs, "program.cs");
-            //CreateOrUpdateFile(repository, branch, CSharpHelloWorld.ProgramCsproj, "HelloWorld.csproj");
-            //CreateOrUpdateFile(repository, branch, CSharpHelloWorld.dotnetYml, ".github/workflows/CD.yml");
-        }
-
-        private void ProcessIssue(Issue issue)
-        {
-            CreateFiles(issue);
             IssueUpdate issueUpdate = new IssueUpdate()
             {
                 State = ItemState.Closed,
@@ -110,15 +76,20 @@ namespace GitHubBot
             client.Issue.Update(owner, issue.Repository.Name, issue.Number, issueUpdate);
         }
 
-        private void Run(CancellationToken token)
+        private void ProcessIssues(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
             {
-                Issue issue = GetIssue();
-                if (issue != null)
+                var issues = GetIssues();
+                foreach (var trigger in triggers)
                 {
-                    lastIssue = issue.CreatedAt;
-                    ProcessIssue(issue);
+                    foreach (var issue in issues)
+                    {
+                        if (trigger.Condition(issue))
+                        {
+                            trigger.Action(issue);
+                        }
+                    }
                 }
                 Thread.Sleep(interval);
             }
@@ -129,13 +100,13 @@ namespace GitHubBot
             client = new GitHubClient(new ProductHeaderValue(name));
             credentials = new Credentials(token);
             client.Credentials = credentials;
-            var Content = new Contents { Content = CSharpHelloWorld.dotnetYml, Path = "da/net/dotda.yml" };
-            var Content2 = new Contents { Content = CSharpHelloWorld.ProgramCs, Path = "da/net/program.cs" };
-            var Action = new Action { Content = new List<IContent> { Content, Content2 }, Trigger = "okay thats issue" };
-            actions.Add(Action);
-            Run(cancellationToken);
-
-
+            var ProgramCs = new File { Path = "program.cs", Content = CSharpHelloWorld.ProgramCs };
+            var dotnetYml = new File { Path = "CD.yml", Content = CSharpHelloWorld.dotnetYml };
+            var HelloCsproj = new File { Path = "HelloWorld.csproj", Content = CSharpHelloWorld.ProgramCsproj };
+            List<File> files = new List<File> { ProgramCs, dotnetYml, HelloCsproj };
+            var Trigger = new HelloWorldTrigger(this,files);
+            triggers.Add(Trigger);
+            ProcessIssues(cancellationToken);
         }
     }
 }
