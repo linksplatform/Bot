@@ -8,12 +8,6 @@ using System.Threading;
 
 namespace GitHubBot
 {
-    class Contents : IFile
-    {
-        public string Path { get; set; }
-        public string Content { get; set; }
-    }
-
     internal class Programmer
     {
         private static readonly int interval = 1200;

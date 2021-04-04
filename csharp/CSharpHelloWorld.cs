@@ -7,13 +7,11 @@ namespace GitHubBot
 
         public static readonly List<File> files = new List<File>
         { 
-            new File { Path = "program.cs", Content = ProgramCs },
-            new File { Path = "HelloWorld.csproj", Content = ProgramCsproj },
-            new File { Path = "CD.yml", Content = dotnetYml }
-        };
-
-        static readonly string ProgramCs =
-  @"
+            new File
+            {
+                Path = "program.cs",
+                Content = 
+@"
 using System;
 
 namespace helloworld
@@ -25,10 +23,13 @@ namespace helloworld
             Console.WriteLine(""Hello World!"");
         }
     }
-}";
-
-        static readonly string ProgramCsproj =
- @"
+}"
+            },
+            new File
+            {
+                Path = "HelloWorld.csproj",
+                Content =
+@"
 <Project Sdk=""Microsoft.NET.Sdk"">
 
   <PropertyGroup>
@@ -38,10 +39,13 @@ namespace helloworld
      </PropertyGroup>
    
 
-</Project> ";
-
-        static readonly string dotnetYml =
- @"name: .NET
+</Project>"
+            },
+            new File
+            { 
+                Path = "CD.yml",
+                Content = 
+@"name: .NET
 
 on:
   push:
@@ -57,7 +61,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Run 
-      run: dotnet run";
-
+      run: dotnet run"
+            }
+        };
     }
 }

@@ -1,6 +1,4 @@
-﻿using GitHubBot;
-using System.Collections.Generic;
-
+﻿
 namespace Interfaces
 {
     interface ITrigger<TContext>
