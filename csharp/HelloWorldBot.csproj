@@ -7,7 +7,6 @@
 
   <ItemGroup>
     <PackageReference Include="Octokit" Version="0.50.0" />
-    <PackageReference Include="Platform.IO" Version="0.2.1" />
   </ItemGroup>
 
 </Project>

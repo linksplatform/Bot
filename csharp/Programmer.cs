@@ -20,18 +20,29 @@ namespace GitHubBot
 
         private readonly string token;
 
+        private bool HwDisable = false;
+
         private readonly string name;
 
-        private readonly List<ITrigger<Issue>> triggers;
+        // private readonly List<ITrigger<Issue>> triggers;
+        private readonly List<File> Files;
 
         private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
-        public Programmer(string owner, string token, string name)
+        public Programmer(string owner, string token, string name, List<File> files)
         {
             this.owner = owner;
             this.token = token;
             this.name = name;
-            triggers = new List<ITrigger<Issue>> { new HelloWorldTrigger(this, CSharpHelloWorld.files) };
+            this.Files = files;
+        }
+        public Programmer(string owner, string token, string name,bool hwDisavle, List<File> files)
+        {
+            this.owner = owner;
+            this.token = token;
+            this.name = name;
+            this.HwDisable = true;
+            this.Files = files;
         }
 
         private IReadOnlyList<Issue> GetIssues()
@@ -75,13 +86,17 @@ namespace GitHubBot
             while (!token.IsCancellationRequested)
             {
                 var issues = GetIssues();
-                foreach (var trigger in triggers)
+                foreach(var issue in issues)
                 {
-                    foreach (var issue in issues)
+                    if (!(issue.Title.ToLower() == "hello world" && HwDisable == true))
                     {
-                        if (trigger.Condition(issue))
+                        foreach (var file in Files)
                         {
-                            trigger.Action(issue);
+                            if (issue.Title == file.Trigger)
+                            {
+                                CreateOrUpdateFile(issue.Repository.Name, issue.Repository.DefaultBranch, file);
+                                CloseIssue(issue);
+                            }
                         }
                     }
                 }

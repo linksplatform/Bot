@@ -1,12 +1,13 @@
 ﻿using csharp;
+using System;
 using System.Collections.Generic;
 
 namespace GitHubBot
 {
-    internal class CSharpHelloWorld { 
+    internal class CSharpHelloWorld {
 
         public static readonly List<File> files = new List<File>
-        { 
+        {
             new File
             {
                 Path = "program.cs",
@@ -20,7 +21,7 @@ namespace helloworld
     {
         static void Main(string[] args)
         {
-            Console.WriteLine(""Hello World!"");
+            Console.WriteLine(""Utc now is " + DateTime.UtcNow+ @""");
         }
     }
 }"
