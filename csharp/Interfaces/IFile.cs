@@ -1,5 +1,4 @@
-﻿
-namespace Interfaces
+﻿namespace Interfaces
 {
     interface IFile
     {
