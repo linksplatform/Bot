@@ -11,7 +11,7 @@ namespace csharp
 
         private readonly List<File> files;
 
-        public HelloWorldTrigger(Programmer programmer,List<File> files)
+        public HelloWorldTrigger(Programmer programmer, List<File> files)
         {
             this.programmer = programmer;
             this.files = files;
@@ -19,9 +19,9 @@ namespace csharp
 
         public void Action(Issue obj)
         {
-            foreach(var file in files)
+            foreach (var file in files)
             {
-                programmer.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch,file);
+                programmer.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file);
             }
             programmer.CloseIssue(obj);
         }
@@ -32,4 +32,3 @@ namespace csharp
         }
     }
 }
-

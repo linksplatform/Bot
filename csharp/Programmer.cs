@@ -1,4 +1,5 @@
 ﻿using csharp;
+using Database;
 using Interfaces;
 using Octokit;
 using System;
@@ -24,14 +25,17 @@ namespace GitHubBot
 
         private readonly List<ITrigger<Issue>> triggers;
 
+        private readonly DBContext dbContext;
+
         private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
-        public Programmer(string owner, string token, string name)
+        public Programmer(string owner, string token, string name,DBContext dbContext)
         {
             this.owner = owner;
             this.token = token;
             this.name = name;
-            triggers = new List<ITrigger<Issue>> { new HelloWorldTrigger(this, CSharpHelloWorld.files) };
+            this.dbContext = dbContext;
+            triggers = new List<ITrigger<Issue>> { new HelloWorldTrigger(this, CSharpHelloWorld.Files(dbContext)) };
         }
 
         private IReadOnlyList<Issue> GetIssues()

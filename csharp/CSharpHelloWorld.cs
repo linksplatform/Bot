@@ -1,68 +1,19 @@
 ﻿using csharp;
+using Database;
+using System;
 using System.Collections.Generic;
 
 namespace GitHubBot
 {
-    internal class CSharpHelloWorld { 
-
-        public static readonly List<File> files = new List<File>
-        { 
-            new File
-            {
-                Path = "program.cs",
-                Content = 
-@"
-using System;
-
-namespace helloworld
-{
-    class Program
+    class CSharpHelloWorld
     {
-        static void Main(string[] args)
+        public static List<File> Files(DBContext dBContext)
         {
-            Console.WriteLine(""Hello World!"");
+            var Files = new List<File>() { };
+            Files.Add(new File() { Path = "Program.cs", Content = dBContext.GetOrLoadFile(@"E:\Projects\Test\HelloWorld\HelloWorld\Program.cs", "Program.cs") });
+            Files.Add(new File() { Path = "HelloWorld.csproj", Content = dBContext.GetOrLoadFile(@"E:\Projects\Test\HelloWorld\HelloWorld\HelloWorld.csproj", "HelloWorld.csproj") });
+            Files.Add(new File() { Path = "CD.yml", Content = dBContext.GetOrLoadFile(@"E:\Projects\Test\HelloWorld\HelloWorld\CD.yml", "CD.yml") });
+            return Files;
         }
-    }
-}"
-            },
-            new File
-            {
-                Path = "HelloWorld.csproj",
-                Content =
-@"
-<Project Sdk=""Microsoft.NET.Sdk"">
-
-  <PropertyGroup>
-     <OutputType>Exe</OutputType>
-    <TargetFramework>net5.0</TargetFramework>
-   
-     </PropertyGroup>
-   
-
-</Project>"
-            },
-            new File
-            { 
-                Path = "CD.yml",
-                Content = 
-@"name: .NET
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  build:
-
-    runs-on: ubuntu-latest
-
-    steps:
-    - uses: actions/checkout@v2
-    - name: Run 
-      run: dotnet run"
-            }
-        };
     }
 }
