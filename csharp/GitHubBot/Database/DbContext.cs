@@ -80,8 +80,5 @@ namespace Database
                 throw new FileNotFoundException();
             }
         }
-
-        public void Delete(TLinkAddress link) => Links.Delete(link);
-
     }
 }
