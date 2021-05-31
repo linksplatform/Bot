@@ -19,16 +19,8 @@ class V(Vk):
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.debug = True
-
-        base = BetterBotBase("users", "dat")
-        base.addPattern("karma", 0)
-        base.addPattern("programming_languages", [])
-        base.addPattern("github_profile", "")
-        base.addPattern("supporters", [])
-        base.addPattern("opponents", [])
-        base.addPattern("last_collective_vote", 0)
-
-        self.base = base
+        
+        from DataService import *
 
     def message_new(self, event):
         """
