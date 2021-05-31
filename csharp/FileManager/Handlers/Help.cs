@@ -4,7 +4,7 @@ namespace FileManager
 {
     class Help : IInputHandler
     {
-        public string Trigger => "Help";
+        public string Trigger => "help";
 
         public bool Run(string[] args, Manager fileManager)
         {
@@ -12,7 +12,8 @@ namespace FileManager
                 "Avalible commands:\n" +
                 "1. Delete [addres]\n" +
                 "2. Create [addres] [path to file]\n" +
-                "3. Help\n");
+                "3. Help\n" +
+                "4. Ls All\n");
             return true;
         }
     }

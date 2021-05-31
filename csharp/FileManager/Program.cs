@@ -15,6 +15,7 @@ namespace FileManager
             Handlers.Add(new CreateHandle());
             Handlers.Add(new DeleteHandler());
             Handlers.Add(new Help());
+            Handlers.Add(new LsHandler());
         }
 
         static void Main(string[] args)
@@ -24,14 +25,17 @@ namespace FileManager
             var dbContext = new Manager(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
             try
             {
-                Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == "Help").Run(args, dbContext);
+                Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == "help").Run(args, dbContext);
                 while (!cancellation.Token.IsCancellationRequested)
                 {
                     var command = Console.ReadLine();
-                    var exitCode = Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == command.Split().First()).Run(command.Split(), dbContext);
-                    if(exitCode == true)
+                    if (command.Contains(" "))
                     {
-                        Console.WriteLine("Done!");
+                        var exitCode = Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == command.Split().First().ToLower()).Run(command.Split(), dbContext);
+                        if (exitCode == true)
+                        {
+                            Console.WriteLine("Done!");
+                        }
                     }
                 }
             }

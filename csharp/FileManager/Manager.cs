@@ -9,11 +9,12 @@ using Platform.Data.Doublets.Sequences.Walkers;
 using Platform.Data.Doublets.Sequences.Converters;
 using Platform.Data.Doublets.CriterionMatchers;
 using Platform.Data.Doublets.Memory.United.Generic;
-using TLinkAddress = System.UInt16;
-using System.IO;
+using TLinkAddress = System.UInt64;
 using System.Collections.Generic;
 using Platform.Collections.Lists;
 using System;
+using Platform.Data.Doublets.Memory;
+using Platform.Memory;
 
 namespace FileManager
 {
@@ -31,11 +32,9 @@ namespace FileManager
 
         private readonly IConverter<TLinkAddress, string> _unicodeSequenceToStringConverter;
 
-        private readonly UnitedMemoryLinks<ushort> Links;
+        private readonly UnitedMemoryLinks<UInt64> Links;
 
         private readonly TLinkAddress _unicodeSymbolMarker;
-
-        private readonly string DBFilename;
 
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => Links.Exists(currentMappingIndex) ? currentMappingIndex : Links.CreateAndUpdate(_meaningRoot, Links.Constants.Itself);
 
@@ -43,10 +42,11 @@ namespace FileManager
 
         public Manager(string DBFilename)
         {
-            Links = new UnitedMemoryLinks<ushort>(DBFilename);
+            var linksConstants = new LinksConstants<TLinkAddress>(enableExternalReferencesSupport: true);
+            var dataMemory = new FileMappedResizableDirectMemory(DBFilename);
+            Links = new UnitedMemoryLinks<UInt64>(dataMemory, UnitedMemoryLinks<UInt64>.DefaultLinksSizeStep , linksConstants, IndexTreeType.Default);
             var link = Links.Create();
             link = Links.Update(link, newSource: link, newTarget: link);
-            this.DBFilename = DBFilename;
             ushort currentMappingLinkIndex = 1;
             _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
             _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
@@ -68,7 +68,7 @@ namespace FileManager
         {
             var nameLink = _stringToUnicodeSequenceConverter.Convert(name);
             var any = Links.Constants.Any;
-            var query = new Link<ushort>(index: any, source: nameLink, target: any);
+            var query = new Link<UInt64>(index: any, source: nameLink, target: any);
             var list = new List<IList<TLinkAddress>>();
             var listFiller = new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue);
             Links.Each(listFiller.AddAndReturnConstant, query);
@@ -104,6 +104,39 @@ namespace FileManager
 
         public void Delete(TLinkAddress link) => Links.Delete(link);
 
-        public void Delete(string addres) => Links.Delete(GetFileLink(addres));
+        public void Delete(string addres)
+        {
+            if (GetFileLink(addres) != 0)
+            {
+                Console.WriteLine("before: " + Links.Count());
+                Links.Delete(GetFileLink(addres));
+                Console.WriteLine("After: " + Links.Count());
+            }
+        }
+
+        public string GetAllLinks()
+        {
+            var any = Links.Constants.Any; // Means any link address or no restriction on link address
+                                           // Arguments of the query are interpreted as restrictions
+            string links = "";
+            var query = new Link<UInt64>(index: any, source: any, target: any);
+            Links.Each((link) => {
+                links += Links.Format(link) + "\n";
+                return Links.Constants.Continue;
+            }, query);
+            return links;
+        }
+
+        public bool LinkExist(string addres)
+        {
+            if (GetFileLink(addres) != 0)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }
