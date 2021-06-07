@@ -14,8 +14,10 @@ namespace FileManager
         {
             Handlers.Add(new CreateHandle());
             Handlers.Add(new DeleteHandler());
-            Handlers.Add(new Help());
+            Handlers.Add(new HelpHandler());
             Handlers.Add(new LsHandler());
+            Handlers.Add(new ShowHandler());
+            Handlers.Add(new HelpHandler());
         }
 
         static void Main(string[] args)
@@ -29,13 +31,10 @@ namespace FileManager
                 while (!cancellation.Token.IsCancellationRequested)
                 {
                     var command = Console.ReadLine();
-                    if (command.Contains(" "))
+                    var exitCode = Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == command.Split().First().ToLower()).Run(command.Split(), dbContext);
+                    if (exitCode == true)
                     {
-                        var exitCode = Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == command.Split().First().ToLower()).Run(command.Split(), dbContext);
-                        if (exitCode == true)
-                        {
-                            Console.WriteLine("Done!");
-                        }
+                        Console.WriteLine("Done!");
                     }
                 }
             }

@@ -9,16 +9,16 @@ using Platform.Data.Doublets.Sequences.Walkers;
 using Platform.Data.Doublets.Sequences.Converters;
 using Platform.Data.Doublets.CriterionMatchers;
 using Platform.Data.Doublets.Memory.United.Generic;
-using TLinkAddress = System.UInt64;
 using System.Collections.Generic;
 using Platform.Collections.Lists;
 using System;
 using Platform.Data.Doublets.Memory;
 using Platform.Memory;
+using TLinkAddress = System.UInt64;
 
 namespace FileManager
 {
-    class Manager
+    public class Manager
     {
         private readonly TLinkAddress _unicodeSequenceMarker;
 
@@ -82,7 +82,7 @@ namespace FileManager
             }
         }
 
-        public string PutFile(string addres, string content)
+        public string PutFile(string addres)
         {
             if(GetFileLink(addres) != 0)
             {
@@ -90,8 +90,7 @@ namespace FileManager
             }
             else
             {
-               AddFile(addres, content);
-               return content;
+                return "File does not exists";
             }
         }
 
@@ -108,16 +107,13 @@ namespace FileManager
         {
             if (GetFileLink(addres) != 0)
             {
-                Console.WriteLine("before: " + Links.Count());
                 Links.Delete(GetFileLink(addres));
-                Console.WriteLine("After: " + Links.Count());
             }
         }
 
         public string GetAllLinks()
         {
-            var any = Links.Constants.Any; // Means any link address or no restriction on link address
-                                           // Arguments of the query are interpreted as restrictions
+            var any = Links.Constants.Any;
             string links = "";
             var query = new Link<UInt64>(index: any, source: any, target: any);
             Links.Each((link) => {

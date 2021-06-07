@@ -1,9 +1,8 @@
-﻿
-using System;
+﻿using System;
 
 namespace FileManager
 {
-    class DeleteHandler : IInputHandler
+    public class DeleteHandler : IInputHandler
     {
         public string Trigger => "delete";
 

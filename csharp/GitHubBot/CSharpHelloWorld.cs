@@ -12,7 +12,7 @@ namespace GitHubBot
             var Files = new List<File>() { };
             Files.Add(new File() { Path = "Program.cs", Content = dBContext.GetFile("Program.cs") });
             Files.Add(new File() { Path = "HelloWorld.csproj", Content = dBContext.GetFile("HelloWorld.csproj") });
-            Files.Add(new File() { Path = "CD.yml", Content = dBContext.GetFile("CD.yml") });
+            Files.Add(new File() { Path = ".github/workflows/CD.yml", Content = dBContext.GetFile("CD.yml") });
             return Files;
         }
     }
