@@ -8,11 +8,11 @@ namespace csharp
 {
     class HelloWorldTrigger : ITrigger<Issue>
     {
-        private readonly GitHubAPI gitHubAPI;
+        private readonly GitHubStorage gitHubAPI;
 
         private readonly List<File> files;
 
-        public HelloWorldTrigger(GitHubAPI gitHubAPI, List<File> files)
+        public HelloWorldTrigger(GitHubStorage gitHubAPI, List<File> files)
         {
             this.gitHubAPI = gitHubAPI;
             this.files = files;

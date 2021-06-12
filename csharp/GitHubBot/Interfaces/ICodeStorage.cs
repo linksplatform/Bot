@@ -1,14 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Threading;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Interfaces
 {
-    interface ICodeStorage<TIssue,TClient>
+    interface ICodeStorage<TIssue>
     {
-        public TClient client { get; set; }
+        public TimeSpan MinimumInteractionInterval { get; set; }
 
-        public string owner { get; set; }
-        
         public IReadOnlyList<TIssue> GetIssues();
 
         public void CreateOrUpdateFile(string repository, string branch, IFile file);

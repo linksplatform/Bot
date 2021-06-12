@@ -22,7 +22,7 @@ namespace GitHubBot
             Console.WriteLine("Bot has been started.\nPress CTRL+C to close");
             try
             {
-                var api = new GitHubAPI(username,token,appName);
+                var api = new GitHubStorage(username,token,appName);
                 new Programmer(new List<ITrigger<Issue>> { new HelloWorldTrigger(api, CSharpHelloWorld.Files(dbContext)) }, api).Start(cancellation.Token);
             }
             catch (Exception ex)

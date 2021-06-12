@@ -1,26 +1,24 @@
-﻿using csharp;
-using Database;
-using Interfaces;
+﻿using Interfaces;
 using Octokit;
 using Services.GitHubAPI;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+
 using System.Threading;
 
 namespace GitHubBot
 {
     internal class Programmer
     {
-        private readonly GitHubAPI gitHubAPI;
+        private readonly GitHubStorage gitHubAPI;
 
         private static readonly TimeSpan MinimumInteractionInterval = new(0, 0, 0, 0, 1200);
 
         private readonly List<ITrigger<Issue>> triggers;
 
-        public Programmer(List<ITrigger<Issue>> triggers,GitHubAPI gitHubAPI)
+        public Programmer(List<ITrigger<Issue>> triggers,ICodeStorage<Issue> gitHubAPI)
         {
-            this.gitHubAPI = gitHubAPI;
+            this.gitHubAPI = (GitHubStorage)gitHubAPI;
             this.triggers = triggers;
         }
 
