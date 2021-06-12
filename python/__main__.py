@@ -20,7 +20,7 @@ class V(Vk):
         self.userbot = UserBot()
         self.debug = True
                   
-        from DS import DataService
+        from DataService import DS
 
     def message_new(self, event):
         """
