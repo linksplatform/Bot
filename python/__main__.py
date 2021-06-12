@@ -19,8 +19,8 @@ class V(Vk):
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.debug = True
-        
-        from DataService import *
+                  
+        from DS import DataService
 
     def message_new(self, event):
         """
