@@ -1,10 +1,11 @@
-def DataService():
-        base = BetterBotBase("users", "dat")
-        base.addPattern("karma", 0)
-        base.addPattern("programming_languages", [])
-        base.addPattern("github_profile", "")
-        base.addPattern("supporters", [])
-        base.addPattern("opponents", [])
-        base.addPattern("last_collective_vote", 0)
+Class DS:
+        def DataService():
+                base = BetterBotBase("users", "dat")
+                base.addPattern("karma", 0)
+                base.addPattern("programming_languages", [])
+                base.addPattern("github_profile", "")
+                base.addPattern("supporters", [])
+                base.addPattern("opponents", [])
+                base.addPattern("last_collective_vote", 0)
 
-        self.base = base
+                self.base = base
