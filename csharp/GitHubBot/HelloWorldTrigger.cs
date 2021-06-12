@@ -1,19 +1,20 @@
 ﻿using GitHubBot;
 using Interfaces;
 using Octokit;
+using Services.GitHubAPI;
 using System.Collections.Generic;
 
 namespace csharp
 {
     class HelloWorldTrigger : ITrigger<Issue>
     {
-        private readonly Programmer programmer;
+        private readonly GitHubAPI gitHubAPI;
 
         private readonly List<File> files;
 
-        public HelloWorldTrigger(Programmer programmer, List<File> files)
+        public HelloWorldTrigger(GitHubAPI gitHubAPI, List<File> files)
         {
-            this.programmer = programmer;
+            this.gitHubAPI = gitHubAPI;
             this.files = files;
         }
 
@@ -21,9 +22,9 @@ namespace csharp
         {
             foreach (var file in files)
             {
-                programmer.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file);
+                gitHubAPI.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file);
             }
-            programmer.CloseIssue(obj);
+            gitHubAPI.CloseIssue(obj);
         }
 
         public bool Condition(Issue obj)

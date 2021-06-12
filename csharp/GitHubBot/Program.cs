@@ -1,6 +1,11 @@
-﻿using Platform.Exceptions;
+﻿using csharp;
+using Interfaces;
+using Octokit;
+using Platform.Exceptions;
 using Platform.IO;
+using Services.GitHubAPI;
 using System;
+using System.Collections.Generic;
 
 namespace GitHubBot
 {
@@ -17,7 +22,8 @@ namespace GitHubBot
             Console.WriteLine("Bot has been started.\nPress CTRL+C to close");
             try
             {
-                new Programmer(username, token, appName, dbContext).Start(cancellation.Token);
+                var api = new GitHubAPI(username,token,appName);
+                new Programmer(new List<ITrigger<Issue>> { new HelloWorldTrigger(api, CSharpHelloWorld.Files(dbContext)) }, api).Start(cancellation.Token);
             }
             catch (Exception ex)
             {

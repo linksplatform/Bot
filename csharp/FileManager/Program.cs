@@ -15,7 +15,7 @@ namespace FileManager
             Handlers.Add(new CreateHandle());
             Handlers.Add(new DeleteHandler());
             Handlers.Add(new HelpHandler());
-            Handlers.Add(new LsHandler());
+            Handlers.Add(new LinksPrinterHandler());
             Handlers.Add(new ShowHandler());
             Handlers.Add(new HelpHandler());
         }

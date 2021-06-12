@@ -15,6 +15,7 @@ using System;
 using Platform.Data.Doublets.Memory;
 using Platform.Memory;
 using TLinkAddress = System.UInt64;
+using System.Text;
 
 namespace FileManager
 {
@@ -74,7 +75,7 @@ namespace FileManager
             Links.Each(listFiller.AddAndReturnConstant, query);
             if (list.Count != 0)
             {
-                return list.First()[Links.Constants.TargetPart];
+                return Links.GetTarget(list.First());
             }
             else
             {
@@ -84,9 +85,9 @@ namespace FileManager
 
         public string PutFile(string addres)
         {
-            if(GetFileLink(addres) != 0)
+            if (GetFileLink(addres) != 0)
             {
-               return _unicodeSequenceToStringConverter.Convert(GetFileLink(addres));
+                return _unicodeSequenceToStringConverter.Convert(GetFileLink(addres));
             }
             else
             {
@@ -111,28 +112,21 @@ namespace FileManager
             }
         }
 
-        public string GetAllLinks()
+        public string AllLinksToString()
         {
             var any = Links.Constants.Any;
-            string links = "";
+            StringBuilder builder = new StringBuilder();
             var query = new Link<UInt64>(index: any, source: any, target: any);
             Links.Each((link) => {
-                links += Links.Format(link) + "\n";
+                builder.Append(Links.Format(link) + "\n");
                 return Links.Constants.Continue;
             }, query);
-            return links;
+            return builder.ToString();
         }
 
         public bool LinkExist(string addres)
         {
-            if (GetFileLink(addres) != 0)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
+            return GetFileLink(addres) != 0;
         }
     }
 }

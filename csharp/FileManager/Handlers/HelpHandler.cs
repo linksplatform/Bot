@@ -13,7 +13,7 @@ namespace FileManager
                 "1. Delete [addres]\n" +
                 "2. Create [addres] [path to file]\n" +
                 "3. Help\n" +
-                "4. Ls\n" +
+                "4. Print\n" +
                 "5. Show [addres]");
             return true;
         }
