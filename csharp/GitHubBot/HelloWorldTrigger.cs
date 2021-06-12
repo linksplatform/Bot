@@ -1,5 +1,4 @@
-﻿using GitHubBot;
-using Interfaces;
+﻿using Interfaces;
 using Octokit;
 using Services.GitHubAPI;
 using System.Collections.Generic;
