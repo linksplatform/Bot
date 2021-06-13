@@ -1,5 +1,6 @@
 ﻿using Platform.Exceptions;
 using Platform.IO;
+using Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ namespace FileManager
 {
     class Program
     {
-        public static List<IInputHandler> Handlers = new List<IInputHandler> { }; 
+        public static List<IInputHandler> Handlers = new() { }; 
 
         private static void CreateArrayOfTriggers()
         {
@@ -23,8 +24,8 @@ namespace FileManager
         static void Main(string[] args)
         {
             CreateArrayOfTriggers();
-            using ConsoleCancellation cancellation = new ConsoleCancellation();
-            var dbContext = new Manager(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
+            using ConsoleCancellation cancellation = new();
+            var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
             try
             {
                 Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == "help").Run(args, dbContext);

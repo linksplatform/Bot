@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Storage;
+using System;
 
 namespace FileManager
 {
@@ -6,7 +7,7 @@ namespace FileManager
     {
         public string Trigger => "print";
 
-        public bool Run(string[] args, Manager fileManager)
+        public bool Run(string[] args, FileStorage fileManager)
         {
             Console.WriteLine(fileManager.AllLinksToString());
             return true;

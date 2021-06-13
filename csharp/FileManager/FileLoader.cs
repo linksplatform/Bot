@@ -6,7 +6,7 @@ namespace FileManager
     {
         public static string LoadContent(string pathToFile)
         {
-            using StreamReader sr = new StreamReader(pathToFile);
+            using StreamReader sr = new(pathToFile);
             return sr.ReadToEnd();
         }
     }

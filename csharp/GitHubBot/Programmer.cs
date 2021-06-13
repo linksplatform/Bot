@@ -3,7 +3,6 @@ using Octokit;
 using Services.GitHubAPI;
 using System;
 using System.Collections.Generic;
-
 using System.Threading;
 
 namespace GitHubBot
@@ -22,7 +21,6 @@ namespace GitHubBot
             this.triggers = triggers;
         }
 
-       
         private void ProcessIssues(CancellationToken token)
         {
             while (!token.IsCancellationRequested)

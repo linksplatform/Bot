@@ -1,4 +1,6 @@
 ﻿using System;
+using Storage;
+
 
 namespace FileManager
 {
@@ -6,7 +8,7 @@ namespace FileManager
     {
         public string Trigger => "delete";
 
-        public bool Run(string[] args, Manager fileManager)
+        public bool Run(string[] args, FileStorage fileManager)
         {
             if (fileManager.LinkExist(args[1]))
             {

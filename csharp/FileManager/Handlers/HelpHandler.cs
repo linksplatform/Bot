@@ -1,4 +1,6 @@
 ﻿using System;
+using Storage;
+
 
 namespace FileManager
 {
@@ -6,7 +8,7 @@ namespace FileManager
     {
         public string Trigger => "help";
 
-        public bool Run(string[] args, Manager fileManager)
+        public bool Run(string[] args, FileStorage fileManager)
         {
             Console.WriteLine("Use this program to manage links in your links repository. For close just press CTRL+C.\n\n " +
                 "Avalible commands:\n" +
