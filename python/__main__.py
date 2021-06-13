@@ -1,5 +1,5 @@
 from saya import Vk
-from social_ethosa import BetterBotBase
+from DataService import DS
 import regex
 import requests
 from datetime import datetime, timedelta
@@ -20,7 +20,7 @@ class V(Vk):
         self.userbot = UserBot()
         self.debug = True
                   
-        from DataService import DS
+        
 
     def message_new(self, event):
         """
