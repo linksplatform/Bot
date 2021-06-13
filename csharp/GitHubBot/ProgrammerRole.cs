@@ -1,6 +1,6 @@
 ﻿using Interfaces;
 using Octokit;
-using Services.GitHubAPI;
+using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,7 +16,7 @@ namespace Bot
 
         private readonly List<ITrigger<Issue>> triggers;
 
-        public ProgrammerRole(List<ITrigger<Issue>> triggers,ICodeStorage<Issue> gitHubAPI)
+        public ProgrammerRole(List<ITrigger<Issue>> triggers,IRemoteCodeStorage<Issue> gitHubAPI)
         {
             this.gitHubAPI = (GitHubStorage)gitHubAPI;
             this.triggers = triggers;

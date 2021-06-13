@@ -1,6 +1,7 @@
-﻿using Platform.Exceptions;
+﻿using Interfaces;
+using Platform.Exceptions;
 using Platform.IO;
-using Storage;
+using Storage.Local;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace FileManager
 {
     class Program
     {
-        public static List<IInputHandler> Handlers = new() { }; 
+        public static List<ITrigger<Arguments>> Handlers = new() { }; 
 
         private static void CreateArrayOfTriggers()
         {
@@ -26,18 +27,10 @@ namespace FileManager
             CreateArrayOfTriggers();
             using ConsoleCancellation cancellation = new();
             var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
+            new HelpHandler().Action(new Arguments { FileStorage = dbContext, Args = args });
             try
             {
-                Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == "help").Run(args, dbContext);
-                while (!cancellation.Token.IsCancellationRequested)
-                {
-                    var command = Console.ReadLine();
-                    var exitCode = Handlers.FirstOrDefault(IInputHandler => IInputHandler.Trigger == command.Split().First().ToLower()).Run(command.Split(), dbContext);
-                    if (exitCode == true)
-                    {
-                        Console.WriteLine("Done!");
-                    }
-                }
+                Handlers.FirstOrDefault(Handler => Handler.Condition(new Arguments { FileStorage = dbContext, Args = args })).Action(new Arguments { FileStorage = dbContext, Args = args });
             }
             catch (Exception ex)
             {

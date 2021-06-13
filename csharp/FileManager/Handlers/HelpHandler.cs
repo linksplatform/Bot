@@ -1,14 +1,25 @@
 ﻿using System;
+using Interfaces;
 using Storage;
 
 
 namespace FileManager
 {
-    public class HelpHandler : IInputHandler
+    public class HelpHandler : ITrigger<Arguments>
     {
-        public string Trigger => "help";
+        public bool Condition(Arguments arguments)
+        {
+            if (arguments.Args[0].ToLower() == "help")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-        public bool Run(string[] args, FileStorage fileManager)
+        public void Action(Arguments arguments)
         {
             Console.WriteLine("Use this program to manage links in your links repository. For close just press CTRL+C.\n\n " +
                 "Avalible commands:\n" +
@@ -17,7 +28,6 @@ namespace FileManager
                 "3. Help\n" +
                 "4. Print\n" +
                 "5. Show [addres]");
-            return true;
         }
     }
 }

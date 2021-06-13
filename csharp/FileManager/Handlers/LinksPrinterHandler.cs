@@ -1,16 +1,26 @@
-﻿using Storage;
+﻿using Interfaces;
+using Storage;
 using System;
 
 namespace FileManager
 {
-    public class LinksPrinterHandler : IInputHandler
+    public class LinksPrinterHandler : ITrigger<Arguments>
     {
-        public string Trigger => "print";
-
-        public bool Run(string[] args, FileStorage fileManager)
+        public bool Condition(Arguments arguments)
         {
-            Console.WriteLine(fileManager.AllLinksToString());
-            return true;
+            if (arguments.Args[0].ToLower() == "print")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public void Action(Arguments arguments)
+        {
+            Console.WriteLine(arguments.FileStorage.AllLinksToString());
         }
     }
 }

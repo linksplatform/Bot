@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Interfaces
 {
-    public interface ICodeStorage<TIssue>
+    public interface IRemoteCodeStorage<TIssue>
     {
         public TimeSpan MinimumInteractionInterval { get; set; }
 

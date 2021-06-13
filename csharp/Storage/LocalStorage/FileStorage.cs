@@ -16,10 +16,11 @@ using Platform.Data.Doublets.Memory;
 using Platform.Memory;
 using TLinkAddress = System.UInt64;
 using System.Text;
+using Interfaces;
 
-namespace Storage
+namespace Storage.Local
 {
-    public class FileStorage
+    public class FileStorage : ILocalCodeStorage
     {
         private readonly TLinkAddress _unicodeSequenceMarker;
 

@@ -1,16 +1,24 @@
-﻿using Storage;
+﻿using Interfaces;
 using System;
 
 namespace FileManager
 {
-    public class ShowHandler : IInputHandler
+    public class ShowHandler : ITrigger<Arguments>
     {
-        public string Trigger => "show";
-
-        public bool Run(string[] args, FileStorage fileManager)
+        public bool Condition(Arguments arguments)
         {
-            Console.WriteLine(fileManager.PutFile(args[1]));
-            return true;
+            if (arguments.Args[0].ToLower() == "show")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public void Action(Arguments arguments)
+        {
+            Console.WriteLine(arguments.FileStorage.PutFile(arguments.Args[1]));
         }
     }
 }

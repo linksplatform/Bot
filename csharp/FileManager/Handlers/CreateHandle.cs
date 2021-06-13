@@ -1,18 +1,28 @@
 ﻿using System;
+using Interfaces;
 using Storage;
 
 namespace FileManager
 {
-    public class CreateHandle : ITrigger
+    public class CreateHandle : ITrigger<Arguments>
     {
-        public string Trigger => "create";
+        public bool Condition(Arguments arguments)
+        {
+            if (arguments.Args[0].ToLower() == "create")
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
 
-        public bool Run(string[] args, FileStorage fileManager)
+        public void Action(Arguments arguments)
         {
             var time = DateTime.Now;
-            Console.WriteLine(fileManager.AddFile(args[1], FileLoader.LoadContent(args[2])));
+            Console.WriteLine(arguments.FileStorage.AddFile(arguments.Args[1], FileLoader.LoadContent(arguments.Args[2])));
             Console.WriteLine("Elapsed time: " + (DateTime.Now - time).TotalMilliseconds);
-            return true;
         }
     }
 }

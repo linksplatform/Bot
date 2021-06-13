@@ -1,6 +1,6 @@
 ﻿using Interfaces;
 using Octokit;
-using Services.GitHubAPI;
+using Storage.Remote.GitHub;
 using System.Collections.Generic;
 
 namespace csharp

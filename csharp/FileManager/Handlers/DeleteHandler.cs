@@ -1,24 +1,31 @@
 ﻿using System;
-using Storage;
-
+using Interfaces;
 
 namespace FileManager
 {
-    public class DeleteHandler : IInputHandler
+    public class DeleteHandler : ITrigger<Arguments>
     {
-        public string Trigger => "delete";
-
-        public bool Run(string[] args, FileStorage fileManager)
+        public bool Condition(Arguments arguments)
         {
-            if (fileManager.LinkExist(args[1]))
+            if (arguments.Args[0].ToLower() == "delete")
             {
-                fileManager.Delete(args[1]);
                 return true;
             }
             else
             {
-                Console.WriteLine("File does not exist");
                 return false;
+            }
+        }
+
+        public void Action(Arguments arguments)
+        {
+            if (arguments.FileStorage.LinkExist(arguments.Args[1]))
+            {
+                arguments.FileStorage.Delete(arguments.Args[1]);
+            }
+            else
+            {
+                Console.WriteLine("File does not exist");
             }
         }
     }

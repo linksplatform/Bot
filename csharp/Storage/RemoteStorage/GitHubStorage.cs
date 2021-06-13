@@ -1,12 +1,12 @@
-﻿using Interfaces;
-using Octokit;
+﻿using Octokit;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Interfaces;
 
-namespace Services.GitHubAPI
+namespace Storage.Remote.GitHub
 {
-    class GitHubStorage : ICodeStorage<Issue>
+    public class GitHubStorage : IRemoteCodeStorage<Issue>
     {
         public GitHubClient Сlient { get; set; }
 

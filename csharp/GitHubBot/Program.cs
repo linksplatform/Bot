@@ -3,8 +3,9 @@ using Interfaces;
 using Octokit;
 using Platform.Exceptions;
 using Platform.IO;
-using Services.GitHubAPI;
 using Storage;
+using Storage.Local;
+using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
 

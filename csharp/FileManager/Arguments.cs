@@ -1,12 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Interfaces;
+using Storage.Local;
 
-namespace FileManager.csharp.FileManager
+namespace FileManager
 {
-    class Arguments
+    public class Arguments : IArguments
     {
+        public string[] Args { get; set; }
+
+        public ILocalCodeStorage FileStorage { get; set; }
     }
 }
