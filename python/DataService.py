@@ -1,4 +1,6 @@
-Class DS:
+from social_ethosa import BetterBotBase
+
+сlass DS:
        base = BetterBotBase("users", "dat")
        base.addPattern("karma", 0)
        base.addPattern("programming_languages", [])
