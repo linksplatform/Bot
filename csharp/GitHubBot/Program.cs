@@ -8,7 +8,7 @@ using Storage;
 using System;
 using System.Collections.Generic;
 
-namespace GitHubBot
+namespace Bot
 {
     class Program
     {
@@ -24,7 +24,7 @@ namespace GitHubBot
             try
             {
                 var api = new GitHubStorage(username,token,appName);
-                new Programmer(new List<ITrigger<Issue>> { new HelloWorldTrigger(api, CSharpHelloWorld.Files(dbContext)) }, api).Start(cancellation.Token);
+                new ProgrammerRole(new List<ITrigger<Issue>> { new HelloWorldTrigger(api, CSharpHelloWorld.Files(dbContext)) }, api).Start(cancellation.Token);
             }
             catch (Exception ex)
             {

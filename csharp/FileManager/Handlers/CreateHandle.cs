@@ -3,7 +3,7 @@ using Storage;
 
 namespace FileManager
 {
-    public class CreateHandle : IInputHandler
+    public class CreateHandle : ITrigger
     {
         public string Trigger => "create";
 

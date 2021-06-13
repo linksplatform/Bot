@@ -3,7 +3,7 @@ using Storage;
 using System;
 using System.Collections.Generic;
 
-namespace GitHubBot
+namespace Bot
 {
     class CSharpHelloWorld
     {
