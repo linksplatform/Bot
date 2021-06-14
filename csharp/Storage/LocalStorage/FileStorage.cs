@@ -74,15 +74,7 @@ namespace Storage.Local
             var list = new List<IList<TLinkAddress>>();
             var listFiller = new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue);
             Links.Each(listFiller.AddAndReturnConstant, query);
-            
-            if (list.Count != 0)
-            {
-                return Links.GetTarget(list.First());
-            }
-            else
-            {
-                return 0;
-            }
+            return Links.GetTarget(list.First());
         }
 
         public string PutFile(string addres)
@@ -125,6 +117,39 @@ namespace Storage.Local
                 return Links.Constants.Continue;
             }, query);
             return builder.ToString();
+        }
+
+        public int CreateFileSet(List<IFile> files)
+        {
+            var FileSetName = "";
+            foreach (var a in files)
+            {
+                 FileSetName += " " + a.Path;
+                 AddFile(a.Path, a.Content);
+            }
+            FileSetName = FileSetName.Remove(0, 1);
+            AddFile(FileSetName.GetHashCode().ToString(), FileSetName);
+            return FileSetName.GetHashCode();
+        }
+
+        public string AddFileToSet(IFile file,string fileSetName)
+        {
+            var fileNames = PutFile(fileSetName.GetHashCode().ToString());
+            List<IFile> files = new() { };
+            files.Add(file);
+            AddFile(fileNames.GetHashCode().ToString(), fileNames + file.Path);
+            return fileNames + " " + file.Path; 
+        }
+
+        public List<IFile> GetFilesFromSet(string fileSetName)
+        {
+            var fileNames = PutFile(fileSetName.ToString()).Split();
+            var files = new List<IFile>();
+            foreach(var fileName in fileNames)
+            {
+                files.Add(new File() { Path = fileName, Content = PutFile(fileName) });
+            }
+            return files;
         }
 
         public bool LinkExist(string addres)

@@ -10,16 +10,18 @@ namespace FileManager
 {
     class Program
     {
-        public static List<ITrigger<Arguments>> Handlers = new() { }; 
+        public static List<ITrigger<Context>> Handlers = new() { }; 
 
         private static void CreateArrayOfTriggers()
         {
-            Handlers.Add(new CreateHandle());
-            Handlers.Add(new DeleteHandler());
-            Handlers.Add(new HelpHandler());
-            Handlers.Add(new LinksPrinterHandler());
-            Handlers.Add(new ShowHandler());
-            Handlers.Add(new HelpHandler());
+            Handlers.Add(new CreateTrigger());
+            Handlers.Add(new DeleteTrigger());
+            Handlers.Add(new HelpTrigger());
+            Handlers.Add(new LinksPrinterTrigger());
+            Handlers.Add(new ShowTrigger());
+            Handlers.Add(new HelpTrigger());
+            Handlers.Add(new CreateFileSetTrigger());
+            Handlers.Add(new GetFilesByFileSetNameTrigger());
         }
 
         static void Main(string[] args)
@@ -27,10 +29,14 @@ namespace FileManager
             CreateArrayOfTriggers();
             using ConsoleCancellation cancellation = new();
             var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
-            new HelpHandler().Action(new Arguments { FileStorage = dbContext, Args = args });
+            new HelpTrigger().Action(new Context { FileStorage = dbContext, Args = args });
             try
             {
-                Handlers.FirstOrDefault(Handler => Handler.Condition(new Arguments { FileStorage = dbContext, Args = args })).Action(new Arguments { FileStorage = dbContext, Args = args });
+                while (!cancellation.Token.IsCancellationRequested)
+                {
+                    var input = Console.ReadLine();
+                    Handlers.FirstOrDefault(Handler => Handler.Condition(new Context { FileStorage = dbContext, Args = input.Split()})).Action(new Context { FileStorage = dbContext, Args = input.Split() });
+                }
             }
             catch (Exception ex)
             {

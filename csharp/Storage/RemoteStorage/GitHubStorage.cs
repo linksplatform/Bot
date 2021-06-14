@@ -46,7 +46,7 @@ namespace Storage.Remote.GitHub
                 var updateChangeSet = repositoryContent.UpdateFile(owner, repository, file.Path,
                 new UpdateFileRequest("Update File", file.Content, existingFile.Result.First().Sha, branch));
             }
-            catch (AggregateException)//если файл не найден,Octokit кидает именно его
+            catch (AggregateException)
             {
                 repositoryContent.CreateFile(owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
             }
