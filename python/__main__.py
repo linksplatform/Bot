@@ -9,7 +9,7 @@ import patterns
 
 from tokens import BotToken
 from userbot import UserBot
-from DataService import DS
+from DataService import BetterBotBaseDataService
 
 CHAT_ID_OFFSET = 2e9
 
@@ -19,7 +19,9 @@ class V(Vk):
         Vk.__init__(self, token=token, group_id=group_id, debug=debug)
         self.messages_to_delete = {}
         self.userbot = UserBot()
+        self.DataService = BetterBotBaseDataService()
         self.debug = True
+       
                   
         
 
