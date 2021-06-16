@@ -1,5 +1,5 @@
 from saya import Vk
-from DataService import DS
+
 import regex
 import requests
 from datetime import datetime, timedelta
@@ -9,6 +9,7 @@ import patterns
 
 from tokens import BotToken
 from userbot import UserBot
+from DataService import DS
 
 CHAT_ID_OFFSET = 2e9
 
