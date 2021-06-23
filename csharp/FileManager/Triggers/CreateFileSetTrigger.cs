@@ -11,11 +11,11 @@ namespace FileManager
         public void Action(Context arguments)
         {
             List<IFile> files = new();
-            for(int i =1; i < arguments.Args.Length-1; i+=2)
+            for(int i =2; i < arguments.Args.Length-1; i+=2)
             {
                files.Add(new File() { Path = arguments.Args[i], Content = System.IO.File.ReadAllText(arguments.Args[i + 1])});
             }
-            Console.WriteLine("Name of your file set is "+arguments.FileStorage.CreateFileSet(files));
+            arguments.FileStorage.CreateFileSet(files, arguments.Args[1]);
         }
 
         public bool Condition(Context arguments)

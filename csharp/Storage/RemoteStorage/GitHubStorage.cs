@@ -44,7 +44,7 @@ namespace Storage.Remote.GitHub
             {
                 var existingFile = repositoryContent.GetAllContentsByRef(owner, repository, file.Path, branch);
                 var updateChangeSet = repositoryContent.UpdateFile(owner, repository, file.Path,
-                new UpdateFileRequest("Update File", file.Content, existingFile.Result.First().Sha, branch));
+                new UpdateFileRequest("Update File", file.Content, existingFile.Result[0].Sha, branch));
             }
             catch (AggregateException)
             {

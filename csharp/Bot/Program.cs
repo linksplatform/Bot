@@ -20,7 +20,7 @@ namespace Bot
             var token = ConsoleHelpers.GetOrReadArgument(1, "Token", args);
             var appName = ConsoleHelpers.GetOrReadArgument(2, "App Name", args);
             var databaseFileName = ConsoleHelpers.GetOrReadArgument(3, "Database file name", args);
-            var fileSetName = ConsoleHelpers.GetOrReadArgument(4, "File set name ", args);//for defoult db.links: 450817835
+            var fileSetName = ConsoleHelpers.GetOrReadArgument(4, "File set name ", args);
             var dbContext = new FileStorage(databaseFileName);
             Console.WriteLine("Bot has been started.\nPress CTRL+C to close");
             try

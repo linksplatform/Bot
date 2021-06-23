@@ -10,11 +10,11 @@ namespace FileManager
     {
         public void Action(Context arguments)
         {
-            var a = arguments.FileStorage.GetFilesFromSet(arguments.Args[1]);
-            foreach(var b in a)
+            var files = arguments.FileStorage.GetFilesFromSet(arguments.Args[1]);
+            foreach(var file in files)
             {
-                Console.WriteLine($"Path: "+b.Path+"\n" +
-                                  $"Content : " +b.Content);
+                Console.WriteLine($"Path: {file.Path}\n" +
+                                  $"Content: {file.Content}");
             }
         }
 

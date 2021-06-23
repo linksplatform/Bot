@@ -96,6 +96,14 @@ namespace Storage.Local
             return Links.GetOrCreate(source, target);
         }
 
+        public TLinkAddress AddFile(string name, string content,string fileSetName)
+        {
+            var source = _stringToUnicodeSequenceConverter.Convert(name);
+            var target = _stringToUnicodeSequenceConverter.Convert(content);
+            AddFileToSet(new File() { Content = content, Path = name }, fileSetName);
+            return Links.GetOrCreate(source, target);
+        }
+
         public void Delete(TLinkAddress link) => Links.Delete(link);
 
         public void Delete(string addres)
@@ -119,31 +127,30 @@ namespace Storage.Local
             return builder.ToString();
         }
 
-        public int CreateFileSet(List<IFile> files)
+        public void CreateFileSet(List<IFile> files,string fileSetName)
         {
-            var FileSetName = "";
+            var filesName = "";
             foreach (var a in files)
             {
-                 FileSetName += " " + a.Path;
+                filesName += " " + a.Path;
                  AddFile(a.Path, a.Content);
             }
-            FileSetName = FileSetName.Remove(0, 1);
-            AddFile(FileSetName.GetHashCode().ToString(), FileSetName);
-            return FileSetName.GetHashCode();
+            filesName = filesName.Remove(0, 1);
+            AddFile(fileSetName, filesName);
         }
 
         public string AddFileToSet(IFile file,string fileSetName)
         {
-            var fileNames = PutFile(fileSetName.GetHashCode().ToString());
+            var fileNames = PutFile(fileSetName);
             List<IFile> files = new() { };
             files.Add(file);
-            AddFile(fileNames.GetHashCode().ToString(), fileNames + file.Path);
+            AddFile(fileSetName, fileNames + file.Path);
             return fileNames + " " + file.Path; 
         }
 
         public List<IFile> GetFilesFromSet(string fileSetName)
         {
-            var fileNames = PutFile(fileSetName.ToString()).Split();
+            var fileNames = PutFile(fileSetName).Split();
             var files = new List<IFile>();
             foreach(var fileName in fileNames)
             {
