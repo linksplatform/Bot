@@ -3,6 +3,7 @@ using Interfaces;
 using Storage.Local;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace FileManager
 {
@@ -13,9 +14,14 @@ namespace FileManager
             List<IFile> files = new();
             for(int i =2; i < arguments.Args.Length-1; i+=2)
             {
-               files.Add(new File() { Path = arguments.Args[i], Content = System.IO.File.ReadAllText(arguments.Args[i + 1])});
+                files.Add(new File() {Path = arguments.Args[i], Content = System.IO.File.ReadAllText(arguments.Args[i + 1]) }); ;
             }
-            arguments.FileStorage.CreateFileSet(files, arguments.Args[1]);
+            var set = arguments.FileStorage.CreateFileSet(arguments.Args[1]);
+            foreach(var file in files)
+            {
+                arguments.FileStorage.AddFileToSet(file, set);
+            }
+            Console.WriteLine(set);
         }
 
         public bool Condition(Context arguments)

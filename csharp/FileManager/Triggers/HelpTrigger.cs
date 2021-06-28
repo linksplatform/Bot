@@ -20,7 +20,9 @@ namespace FileManager
                 "2. Create [addres] [path to file]\n" +
                 "3. Help\n" +
                 "4. Print\n" +
-                "5. Show [addres]");
+                "5. Show [addres]\n" +
+                "6. CreateFileSet [File set name] {[Path to file in remote storage] [path to file in local storage]}\n" +
+                "7. GetFilesByFilesSetName [File set name]");
         }
     }
 }

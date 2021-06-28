@@ -96,13 +96,6 @@ namespace Storage.Local
             return Links.GetOrCreate(source, target);
         }
 
-        public TLinkAddress AddFile(string name, string content,string fileSetName)
-        {
-            var source = _stringToUnicodeSequenceConverter.Convert(name);
-            var target = _stringToUnicodeSequenceConverter.Convert(content);
-            AddFileToSet(new File() { Content = content, Path = name }, fileSetName);
-            return Links.GetOrCreate(source, target);
-        }
 
         public void Delete(TLinkAddress link) => Links.Delete(link);
 
@@ -127,34 +120,35 @@ namespace Storage.Local
             return builder.ToString();
         }
 
-        public void CreateFileSet(List<IFile> files,string fileSetName)
+        public TLinkAddress CreateFileSet(string fileSetName)
         {
-            var filesName = "";
-            foreach (var a in files)
-            {
-                filesName += " " + a.Path;
-                 AddFile(a.Path, a.Content);
-            }
-            filesName = filesName.Remove(0, 1);
-            AddFile(fileSetName, filesName);
+            return Links.GetOrCreate(_unicodeSequenceMarker, _stringToUnicodeSequenceConverter.Convert(fileSetName));
         }
 
-        public string AddFileToSet(IFile file,string fileSetName)
+        public TLinkAddress AddFileToSet(IFile file, TLinkAddress set)
         {
-            var fileNames = PutFile(fileSetName);
-            List<IFile> files = new() { };
-            files.Add(file);
-            AddFile(fileSetName, fileNames + file.Path);
-            return fileNames + " " + file.Path; 
+            return Links.GetOrCreate(set,AddFile(file.Path, file.Content));
         }
 
-        public List<IFile> GetFilesFromSet(string fileSetName)
+        public List<IFile> GetFilesFromSet(string set)
         {
-            var fileNames = PutFile(fileSetName).Split();
             var files = new List<IFile>();
-            foreach(var fileName in fileNames)
+            var any = Links.Constants.Any;
+            var SetAddres = (_stringToUnicodeSequenceConverter.Convert(set));
+            SetAddres++;
+            var query = new Link<UInt64>(index: any, source: SetAddres, target: any);
+            var list = new List<IList<TLinkAddress>>();
+            var listFiller = new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue);
+            Links.Each(listFiller.AddAndReturnConstant, query); 
+            foreach(var file in list)
             {
-                files.Add(new File() { Path = fileName, Content = PutFile(fileName) });
+                var tmpList = new List<IList<TLinkAddress>>();
+                Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(tmpList, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: any, source: any, target: Links.GetTarget(Links.GetTarget(file.First()))));
+                files.Add(new File()
+                {
+                    Path = _unicodeSequenceToStringConverter.Convert(Links.GetSource(tmpList.First().First())),
+                    Content = _unicodeSequenceToStringConverter.Convert(Links.GetTarget(Links.GetTarget(file.First())))
+                });
             }
             return files;
         }

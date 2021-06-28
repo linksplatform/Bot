@@ -13,10 +13,9 @@ namespace FileManager
             var files = arguments.FileStorage.GetFilesFromSet(arguments.Args[1]);
             foreach(var file in files)
             {
-                Console.WriteLine($"Path: {file.Path}\n" +
-                                  $"Content: {file.Content}");
+                Console.WriteLine($"Path: {file.Path}\nContent: {file.Content}");
             }
-        }
+        }  
 
         public bool Condition(Context arguments)
         {

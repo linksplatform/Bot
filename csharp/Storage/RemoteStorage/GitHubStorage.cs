@@ -10,7 +10,7 @@ namespace Storage.Remote.GitHub
     {
         public GitHubClient Сlient { get; set; }
 
-        public string owner { get; set; }
+        public string Owner { get; set; }
 
         public TimeSpan MinimumInteractionInterval { get; set; }
 
@@ -18,7 +18,7 @@ namespace Storage.Remote.GitHub
 
         public GitHubStorage(string owner, string token, string name)
         {
-            this.owner = owner;
+            this.Owner = owner;
             this.Сlient = new GitHubClient(new ProductHeaderValue(name))
             {
                 Credentials = new Credentials(token)
@@ -42,13 +42,13 @@ namespace Storage.Remote.GitHub
             var repositoryContent = Сlient.Repository.Content;
             try
             {
-                var existingFile = repositoryContent.GetAllContentsByRef(owner, repository, file.Path, branch);
-                var updateChangeSet = repositoryContent.UpdateFile(owner, repository, file.Path,
+                var existingFile = repositoryContent.GetAllContentsByRef(Owner, repository, file.Path, branch);
+                var updateChangeSet = repositoryContent.UpdateFile(Owner, repository, file.Path,
                 new UpdateFileRequest("Update File", file.Content, existingFile.Result[0].Sha, branch));
             }
             catch (AggregateException)
             {
-                repositoryContent.CreateFile(owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
+                repositoryContent.CreateFile(Owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
             }
         }
 
@@ -59,7 +59,7 @@ namespace Storage.Remote.GitHub
                 State = ItemState.Closed,
                 Body = issue.Body,
             };
-            Сlient.Issue.Update(owner, issue.Repository.Name, issue.Number, issueUpdate);
+            Сlient.Issue.Update(Owner, issue.Repository.Name, issue.Number, issueUpdate);
         }
     }
 }
