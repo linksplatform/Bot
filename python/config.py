@@ -130,6 +130,12 @@ default_programming_languages = [
     "Go!",
     "Tcl",
     "Solidity",
+    "AssemblyScript",
+    "Vimscript",
+    "LOLCODE",
+    "Elixir",
+    "X\#",
+    "NVPTX",
 ]
 
 default_programming_languages_pattern_string = "|".join(default_programming_languages)
