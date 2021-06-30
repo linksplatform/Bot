@@ -13,7 +13,7 @@ pip3 install -r requirements.txt
 
 ## Configure
 
-0. Enable VK Long Poll API with `5.103` version for your bot's group.
+0. Enable VK Long Poll API with `5.103` version for your bot's group. ![Screenshot_20210630_110401](https://user-images.githubusercontent.com/1431904/123924747-eed01900-d992-11eb-8f8e-cf66b398ed90.png)
 1. Set bot group id in [config.py](https://github.com/linksplatform/Bot/blob/e10f51c7e3711c43708ce5659c7de9e76cab6702/python/config.py#L3-L4).
 2. Add tokens into `python/tokens.py` file
     * `BotToken` (an access token of your VK group). This token should have two access settings `community management` and `community messages`. This token is required.
