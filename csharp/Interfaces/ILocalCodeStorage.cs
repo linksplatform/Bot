@@ -10,8 +10,6 @@ namespace Interfaces
 
         public void Delete(TLinkAddress link);
 
-        public void Delete(string addres);
-
         public string AllLinksToString();
 
         public bool LinkExist(string addres);

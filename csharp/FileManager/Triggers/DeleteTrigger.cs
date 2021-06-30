@@ -14,7 +14,7 @@ namespace FileManager
         {
             if (arguments.FileStorage.LinkExist(arguments.Args[1]))
             {
-                arguments.FileStorage.Delete(arguments.Args[1]);
+                arguments.FileStorage.Delete(arguments.FileStorage.GetFileLink(arguments.Args[1]));
             }
             else
             {

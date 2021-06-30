@@ -38,6 +38,10 @@ namespace Storage.Local
 
         private readonly TLinkAddress _unicodeSymbolMarker;
 
+        private readonly TLinkAddress _setMarker;
+
+        private readonly TLinkAddress _fileMarker;
+
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => Links.Exists(currentMappingIndex) ? currentMappingIndex : Links.CreateAndUpdate(_meaningRoot, Links.Constants.Itself);
 
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => Links.Exists(meaningRootIndex) ? meaningRootIndex : Links.CreatePoint();
@@ -52,6 +56,8 @@ namespace Storage.Local
             ushort currentMappingLinkIndex = 1;
             _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
             _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _unicodeSequenceMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
@@ -66,7 +72,17 @@ namespace Storage.Local
             _unicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(new UnicodeSequenceToStringConverter<TLinkAddress>(Links, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter));
         }
 
-        private TLinkAddress GetFileLink(string name)
+        public TLinkAddress Convert(string str)
+        {
+            return _stringToUnicodeSequenceConverter.Convert(str);
+        }
+
+        public string Convert(TLinkAddress address)
+        {
+            return _unicodeSequenceToStringConverter.Convert(address);
+        }
+
+        public TLinkAddress GetFileLink(string name)
         {
             var nameLink = _stringToUnicodeSequenceConverter.Convert(name);
             var any = Links.Constants.Any;
@@ -91,21 +107,11 @@ namespace Storage.Local
 
         public TLinkAddress AddFile(string name, string content)
         {
-            var source = _stringToUnicodeSequenceConverter.Convert(name);
-            var target = _stringToUnicodeSequenceConverter.Convert(content);
-            return Links.GetOrCreate(source, target);
+            return Links.GetOrCreate(_fileMarker, _stringToUnicodeSequenceConverter.Convert(content));
         }
 
 
         public void Delete(TLinkAddress link) => Links.Delete(link);
-
-        public void Delete(string addres)
-        {
-            if (GetFileLink(addres) != 0)
-            {
-                Links.Delete(GetFileLink(addres));
-            }
-        }
 
         public string AllLinksToString()
         {
@@ -122,12 +128,12 @@ namespace Storage.Local
 
         public TLinkAddress CreateFileSet(string fileSetName)
         {
-            return Links.GetOrCreate(_unicodeSequenceMarker, _stringToUnicodeSequenceConverter.Convert(fileSetName));
+            return Links.GetOrCreate(_setMarker, _stringToUnicodeSequenceConverter.Convert(fileSetName));
         }
 
-        public TLinkAddress AddFileToSet(IFile file, TLinkAddress set)
+        public TLinkAddress AddFileToSet(TLinkAddress set,TLinkAddress file, string path)
         {
-            return Links.GetOrCreate(set,AddFile(file.Path, file.Content));
+            return Links.GetOrCreate(set, Links.GetOrCreate(_stringToUnicodeSequenceConverter.Convert(path), file));
         }
 
         public List<IFile> GetFilesFromSet(string set)

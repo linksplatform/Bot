@@ -19,7 +19,7 @@ namespace FileManager
             var set = arguments.FileStorage.CreateFileSet(arguments.Args[1]);
             foreach(var file in files)
             {
-                arguments.FileStorage.AddFileToSet(file, set);
+                arguments.FileStorage.AddFileToSet(set,arguments.FileStorage.Convert(file.Content),file.Path);
             }
             Console.WriteLine(set);
         }
