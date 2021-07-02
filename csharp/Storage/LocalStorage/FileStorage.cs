@@ -59,7 +59,8 @@ namespace Storage.Local
             ushort currentMappingLinkIndex = 1;
             Any = Links.Constants.Any;
             _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
-            _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++); 
+            _unicodeSequenceMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
