@@ -80,16 +80,6 @@ namespace Storage.Local
 
         public string Convert(TLinkAddress address) => _unicodeSequenceToStringConverter.Convert(address);
 
-        public TLinkAddress GetFileLink(string name)
-        {
-            var nameLink = Convert(name);
-            var query = new Link<UInt64>(index: Any, source: nameLink, target: Any);
-            var list = new List<IList<TLinkAddress>>();
-            var listFiller = new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue);
-            Links.Each(listFiller.AddAndReturnConstant, query);
-            return Links.GetTarget(list.First());
-        }
-
         public string GetFileContent(TLinkAddress address)
         {
             var link = Links.GetLink(address);
@@ -98,18 +88,6 @@ namespace Storage.Local
                 return Convert(Links.GetTarget(link));
             }
             throw new InvalidOperationException("Link is not a file.");
-        }
-
-        public string PutFile(string addres)
-        {
-            if (GetFileLink(addres) != 0)
-            {
-                return Convert(GetFileLink(addres));
-            }
-            else
-            {
-                return "File does not exists";
-            }
         }
 
         public void Delete(TLinkAddress link) => Links.Delete(link);
@@ -168,11 +146,6 @@ namespace Storage.Local
                 });
             }
             return files;
-        }
-
-        public bool LinkExist(string addres)
-        {
-            return GetFileLink(addres) != 0;
         }
     }
 }
