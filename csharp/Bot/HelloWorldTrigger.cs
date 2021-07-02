@@ -15,7 +15,7 @@ namespace csharp
         public HelloWorldTrigger(GitHubStorage gitHubAPI,FileStorage fileStorage, string fileSetName)
         {
             this.gitHubAPI = gitHubAPI;
-            this.files = fileStorage.GetFilesFromSet(fileSetName);
+            files = fileStorage.GetFilesFromSet(fileSetName);
         }
 
         public void Action(Issue obj)

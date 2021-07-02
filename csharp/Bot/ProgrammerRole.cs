@@ -26,10 +26,9 @@ namespace Bot
         {
             while (!token.IsCancellationRequested)
             {
-                var issues = gitHubAPI.GetIssues();
                 foreach (var trigger in triggers)
                 {
-                    foreach (var issue in issues)
+                    foreach (var issue in gitHubAPI.GetIssues())
                     {
                         if (trigger.Condition(issue))
                         {
