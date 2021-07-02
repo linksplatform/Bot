@@ -11,7 +11,7 @@ namespace FileManager
         }
         public void Action(Context arguments)
         {
-            Console.WriteLine(arguments.FileStorage.PutFile(arguments.Args[1]));
+            Console.WriteLine(arguments.FileStorage.GetFileContent(ulong.Parse(arguments.Args[1])));
         }
     }
 }

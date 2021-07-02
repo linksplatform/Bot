@@ -126,6 +126,11 @@ namespace Storage.Local
             return builder.ToString();
         }
 
+        public TLinkAddress AddFile(string content)
+        {
+            return Links.GetOrCreate(_fileMarker, _stringToUnicodeSequenceConverter.Convert(content));
+        }
+
         public TLinkAddress CreateFileSet(string fileSetName)
         {
             return Links.GetOrCreate(_setMarker, Convert(fileSetName));
@@ -136,12 +141,16 @@ namespace Storage.Local
             return Links.GetOrCreate(set, Links.GetOrCreate(Convert(path), file));
         }
 
+        public TLinkAddress GetFileSet(string fileSetName)
+        {
+            return Links.SearchOrDefault(_setMarker, Convert(fileSetName));
+        }
+
         private List<IList<TLinkAddress>> GetFiles(string set)
         {
-            var SetAddres = (Convert(set));
-            SetAddres++;
+            var fileSet = GetFileSet(set);
             var list = new List<IList<TLinkAddress>>();
-            Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: Any, source: SetAddres, target: Any));
+            Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: Any, source: fileSet, target: Any));
             return list;
         }
 
@@ -155,7 +164,7 @@ namespace Storage.Local
                 files.Add(new File()
                 {
                     Path = Convert(Links.GetSource(tmpList.First().First())),
-                    Content = GetFileContent(Links.GetTarget(Links.GetTarget(file.First())))
+                    Content = Convert(Links.GetTarget(Links.GetTarget(file.First())))
                 });
             }
             return files;
