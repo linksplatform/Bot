@@ -62,8 +62,6 @@ namespace Storage.Local
             _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
-            _unicodeSequenceMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
-            _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
             var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(Links);
@@ -95,17 +93,11 @@ namespace Storage.Local
         public List<IFile> GetAllFiles()
         {
             List<IFile> files = new() { };
-            for(ulong i = 1; i < Links.Count(); ++i)
+            var List = new List<IList<TLinkAddress>>();
+            Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(List, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: Any, source: _fileMarker, target: Any));
+            foreach(var file in List)
             {
-                try
-                {
-                    var content = GetFileContent(i);
-                    files.Add(new File { Path = i.ToString(), Content = content });
-                }
-                catch (Exception e)
-                {
-
-                }
+                files.Add(new File {Path = file.ToString(), Content = Convert(Links.GetTarget(file))});
             }
             return files;
         }
@@ -142,24 +134,21 @@ namespace Storage.Local
             return Links.SearchOrDefault(_setMarker, Convert(fileSetName));
         }
 
-        private List<IList<TLinkAddress>> GetFiles(string set)
+        private IList<IList<TLinkAddress>> GetFilesLinksFromSet(string set)
         {
             var fileSet = GetFileSet(set);
-            var list = new List<IList<TLinkAddress>>();
-            Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(list, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: Any, source: fileSet, target: Any));
+            var list = Links.All(new Link<UInt64>(index: Any, source: fileSet, target: Any));
             return list;
         }
 
         public List<IFile> GetFilesFromSet(string set)
         {
             List<IFile> files = new();
-            foreach(var file in GetFiles(set))
+            foreach(var file in GetFilesLinksFromSet(set))
             {
-                var tmpList = new List<IList<TLinkAddress>>();
-                Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(tmpList, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: Any, source: Any, target: Links.GetTarget(Links.GetTarget(file.First()))));
                 files.Add(new File()
                 {
-                    Path = Convert(Links.GetSource(tmpList.First().First())),
+                    Path = Convert(Links.GetSource(Links.All(new Link<UInt64>(index: Any, source: Any, target: Links.GetTarget(Links.GetTarget(file.First())))).First().First())),
                     Content = Convert(Links.GetTarget(Links.GetTarget(file.First())))
                 });
             }
