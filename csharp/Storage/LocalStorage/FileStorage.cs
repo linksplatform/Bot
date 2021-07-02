@@ -59,7 +59,7 @@ namespace Storage.Local
             ushort currentMappingLinkIndex = 1;
             Any = Links.Constants.Any;
             _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
-            _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++); 
+            _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _unicodeSequenceMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
@@ -94,9 +94,7 @@ namespace Storage.Local
         public List<IFile> GetAllFiles()
         {
             List<IFile> files = new() { };
-            var List = new List<IList<TLinkAddress>>();
-            Links.Each(new ListFiller<IList<TLinkAddress>, TLinkAddress>(List, Links.Constants.Continue).AddAndReturnConstant, new Link<UInt64>(index: Any, source: _fileMarker, target: Any));
-            foreach(var file in List)
+            foreach(var file in Links.All(new Link<UInt64>(index: Any, source: _fileMarker, target: Any)))
             {
                 files.Add(new File {Path = file.ToString(), Content = Convert(Links.GetTarget(file))});
             }
@@ -147,10 +145,11 @@ namespace Storage.Local
             List<IFile> files = new();
             foreach(var file in GetFilesLinksFromSet(set))
             {
+                var pathAndFile = Links.GetTarget(file);
                 files.Add(new File()
                 {
-                    Path = Convert(Links.GetSource(Links.All(new Link<UInt64>(index: Any, source: Any, target: Links.GetTarget(Links.GetTarget(file.First())))).First().First())),
-                    Content = Convert(Links.GetTarget(Links.GetTarget(file.First())))
+                    Path = Convert(Links.GetSource(pathAndFile)),
+                    Content = GetFileContent(Links.GetTarget(pathAndFile))
                 });
             }
             return files;
