@@ -12,14 +12,7 @@ namespace FileManager
 
         public void Action(Context arguments)
         {
-            if (arguments.FileStorage.LinkExist(arguments.Args[1]))
-            {
-                arguments.FileStorage.Delete(arguments.FileStorage.GetFileLink(arguments.Args[1]));
-            }
-            else
-            {
-                Console.WriteLine("File does not exist");
-            }
+            arguments.FileStorage.Delete(ulong.Parse(arguments.Args[1]));
         }
     }
 }

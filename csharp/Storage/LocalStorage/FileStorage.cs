@@ -92,11 +92,29 @@ namespace Storage.Local
 
         public void Delete(TLinkAddress link) => Links.Delete(link);
 
+        public List<IFile> GetAllFiles()
+        {
+            List<IFile> files = new() { };
+            for(ulong i = 1; i < Links.Count(); ++i)
+            {
+                try
+                {
+                    var content = GetFileContent(i);
+                    files.Add(new File { Path = i.ToString(), Content = content });
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+            return files;
+        }
+
         public string AllLinksToString()
         {
             StringBuilder builder = new();
             var query = new Link<UInt64>(index: Any, source: Any, target: Any);
-            Links.Each((link) =>
+            Links.Each(link =>
             {
                 builder.AppendLine(Links.Format(link));
                 return Links.Constants.Continue;

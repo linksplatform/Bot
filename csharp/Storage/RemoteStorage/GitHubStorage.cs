@@ -18,8 +18,8 @@ namespace Storage.Remote.GitHub
 
         public GitHubStorage(string owner, string token, string name)
         {
-            this.Owner = owner;
-            this.Сlient = new GitHubClient(new ProductHeaderValue(name))
+            Owner = owner;
+            Сlient = new GitHubClient(new ProductHeaderValue(name))
             {
                 Credentials = new Credentials(token)
             };
