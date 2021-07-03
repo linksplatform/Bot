@@ -10,11 +10,11 @@ namespace Bot
 {
     public class ProgrammerRole
     {
-        public GitHubStorage gitHubAPI;
+        public readonly GitHubStorage gitHubAPI;
 
-        public TimeSpan MinimumInteractionInterval;
+        public readonly TimeSpan MinimumInteractionInterval;
 
-        public List<ITrigger<Issue>> triggers;
+        public readonly List<ITrigger<Issue>> triggers;
 
         public ProgrammerRole(List<ITrigger<Issue>> triggers,IRemoteCodeStorage<Issue> gitHubAPI)
         {
