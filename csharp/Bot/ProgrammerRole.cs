@@ -8,13 +8,13 @@ using System.Threading;
 
 namespace Bot
 {
-    internal class ProgrammerRole
+    public class ProgrammerRole
     {
-        private readonly GitHubStorage gitHubAPI;
+        public GitHubStorage gitHubAPI;
 
-        private readonly TimeSpan MinimumInteractionInterval;
+        public TimeSpan MinimumInteractionInterval;
 
-        private readonly List<ITrigger<Issue>> triggers;
+        public List<ITrigger<Issue>> triggers;
 
         public ProgrammerRole(List<ITrigger<Issue>> triggers,IRemoteCodeStorage<Issue> gitHubAPI)
         {
