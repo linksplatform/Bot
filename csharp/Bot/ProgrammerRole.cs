@@ -12,7 +12,7 @@ namespace Bot
     {
         private readonly GitHubStorage gitHubAPI;
 
-        private static readonly TimeSpan MinimumInteractionInterval = new(0, 0, 0, 0, 1200);
+        private readonly TimeSpan MinimumInteractionInterval;
 
         private readonly List<ITrigger<Issue>> triggers;
 
@@ -20,6 +20,7 @@ namespace Bot
         {
             this.gitHubAPI = (GitHubStorage)gitHubAPI;
             this.triggers = triggers;
+            MinimumInteractionInterval = gitHubAPI.MinimumInteractionInterval;
         }
 
         private void ProcessIssues(CancellationToken token)
