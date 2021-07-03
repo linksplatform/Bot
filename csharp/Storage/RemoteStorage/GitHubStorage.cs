@@ -14,7 +14,7 @@ namespace Storage.Remote.GitHub
 
         public TimeSpan MinimumInteractionInterval { get; }
 
-        public DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
+        private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
         public GitHubStorage(string owner, string token, string name)
         {
@@ -34,7 +34,9 @@ namespace Storage.Remote.GitHub
                 State = ItemStateFilter.Open,
                 Since = lastIssue
             };
-            return Сlient.Issue.GetAllForCurrent(request).Result;
+            var issues = Сlient.Issue.GetAllForCurrent(request).Result;
+            lastIssue = issues[issues.Count - 1].CreatedAt;
+            return issues;
         }
 
         public void CreateOrUpdateFile(string repository, string branch, IFile file)

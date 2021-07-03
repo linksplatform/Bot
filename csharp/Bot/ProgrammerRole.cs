@@ -10,16 +10,16 @@ namespace Bot
 {
     public class ProgrammerRole
     {
-        public readonly GitHubStorage gitHubAPI;
+        public readonly GitHubStorage GitHubAPI;
 
         public readonly TimeSpan MinimumInteractionInterval;
 
-        public readonly List<ITrigger<Issue>> triggers;
+        public readonly List<ITrigger<Issue>> Triggers;
 
         public ProgrammerRole(List<ITrigger<Issue>> triggers,IRemoteCodeStorage<Issue> gitHubAPI)
         {
-            this.gitHubAPI = (GitHubStorage)gitHubAPI;
-            this.triggers = triggers;
+            GitHubAPI = (GitHubStorage)gitHubAPI;
+            Triggers = triggers;
             MinimumInteractionInterval = gitHubAPI.MinimumInteractionInterval;
         }
 
@@ -27,9 +27,9 @@ namespace Bot
         {
             while (!token.IsCancellationRequested)
             {
-                foreach (var trigger in triggers)
+                foreach (var trigger in Triggers)
                 {
-                    foreach (var issue in gitHubAPI.GetIssues())
+                    foreach (var issue in GitHubAPI.GetIssues())
                     {
                         if (trigger.Condition(issue))
                         {
