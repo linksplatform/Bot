@@ -35,7 +35,7 @@ namespace Storage.Remote.GitHub
                 Since = lastIssue
             };
             var issues = Сlient.Issue.GetAllForCurrent(request).Result;
-            lastIssue = issues[issues.Count - 1].CreatedAt;
+            lastIssue = issues.Max().CreatedAt;
             return issues;
         }
 
