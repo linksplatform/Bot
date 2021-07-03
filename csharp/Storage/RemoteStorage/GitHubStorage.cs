@@ -8,11 +8,11 @@ namespace Storage.Remote.GitHub
 {
     public class GitHubStorage : IRemoteCodeStorage<Issue>
     {
-        public GitHubClient Сlient { get; set; }
+        public readonly GitHubClient Сlient;
 
-        public string Owner { get; set; }
+        public readonly string Owner;
 
-        public TimeSpan MinimumInteractionInterval { get; set; }
+        public TimeSpan MinimumInteractionInterval { get; }
 
         public DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 

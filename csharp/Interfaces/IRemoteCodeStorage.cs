@@ -5,7 +5,7 @@ namespace Interfaces
 {
     public interface IRemoteCodeStorage<TIssue>
     {
-        public TimeSpan MinimumInteractionInterval { get; set; }
+        public TimeSpan MinimumInteractionInterval { get; }
 
         public IReadOnlyList<TIssue> GetIssues();
 
