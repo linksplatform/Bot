@@ -22,7 +22,7 @@ namespace Bot
             var databaseFileName = ConsoleHelpers.GetOrReadArgument(3, "Database file name", args);
             var fileSetName = ConsoleHelpers.GetOrReadArgument(4, "File set name ", args);//For defoult Hello World: HelloWorldSet
             var dbContext = new FileStorage(databaseFileName);
-            Console.WriteLine("Bot has been started.\nPress CTRL+C to close");
+            Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
             try
             {
                 var api = new GitHubStorage(username,token,appName);
