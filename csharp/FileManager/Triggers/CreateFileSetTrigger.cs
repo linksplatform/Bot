@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace FileManager
 {
-    class CreateFileSetTrigger : ITrigger<Context>
+    public class CreateFileSetTrigger : ITrigger<Context>
     {
         public void Action(Context arguments)
         {

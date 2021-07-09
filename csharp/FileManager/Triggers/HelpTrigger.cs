@@ -9,20 +9,20 @@ namespace FileManager
     {
         public bool Condition(Context arguments)
         {
-            return (arguments.Args[0].ToLower() == "help");
+            return arguments.Args[0].ToLower() == "help";
         }
 
         public void Action(Context arguments)
         {
-            Console.WriteLine("Use this program to manage links in your links repository. For close just press CTRL+C.\n\n " +
-                "Avalible commands:\n" +
-                "1. Delete [address]\n" +
-                "2. Create [address] [path to file]\n" +
-                "3. Help\n" +
-                "4. Print\n" +
-                "5. Show [file number]\n" +
-                "6. CreateFileSet [File set name] {[Path to file in remote storage] [path to file in local storage]}\n" +
-                "7. GetFilesByFilesSetName [File set name]");
+            Console.WriteLine(@"Use this program to manage links in your links repository. For close just press CTRL+C. 
+                Avalible commands:
+                1. Delete [address]
+                2. Create [address] [path to file]
+                3. Help
+                4. Print
+                5. Show [file number]
+                6. CreateFileSet [File set name] {[Path to file in remote storage] [path to file in local storage]}
+                7. GetFilesByFilesSetName [File set name]");
         }
     }
 }

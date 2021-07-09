@@ -10,23 +10,20 @@ namespace FileManager
 {
     class Program
     {
-        public static List<ITrigger<Context>> Handlers = new() { }; 
-
-        private static void CreateArrayOfTriggers()
+        public static List<ITrigger<Context>> Handlers = new() 
         {
-            Handlers.Add(new CreateTrigger());
-            Handlers.Add(new DeleteTrigger());
-            Handlers.Add(new HelpTrigger());
-            Handlers.Add(new LinksPrinterTrigger());
-            Handlers.Add(new ShowTrigger());
-            Handlers.Add(new HelpTrigger());
-            Handlers.Add(new CreateFileSetTrigger());
-            Handlers.Add(new GetFilesByFileSetNameTrigger());
-        }
+           new CreateTrigger(),
+           new DeleteTrigger(),
+           new HelpTrigger(),
+           new LinksPrinterTrigger(),
+           new ShowTrigger(),
+           new HelpTrigger(),
+           new CreateFileSetTrigger(),
+           new GetFilesByFileSetNameTrigger()
+        }; 
 
         static void Main(string[] args)
         {
-            CreateArrayOfTriggers();
             using ConsoleCancellation cancellation = new();
             var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
             new HelpTrigger().Action(new Context { FileStorage = dbContext, Args = args });
@@ -35,7 +32,14 @@ namespace FileManager
                 while (!cancellation.Token.IsCancellationRequested)
                 {
                     var input = Console.ReadLine();
-                    Handlers.FirstOrDefault(Handler => Handler.Condition(new Context { FileStorage = dbContext, Args = input.Split()})).Action(new Context { FileStorage = dbContext, Args = input.Split() });
+                    var Context = new Context { FileStorage = dbContext, Args = input.Split() };
+                    foreach(var handler in Handlers)
+                    {
+                        if (handler.Condition(Context))
+                        {
+                            handler.Action(Context);
+                        }
+                    }
                 }
             }
             catch (Exception ex)

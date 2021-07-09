@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using Interfaces;
 using Storage;
 
@@ -14,7 +15,7 @@ namespace FileManager
         public void Action(Context arguments)
         {
             var time = DateTime.Now;
-            Console.WriteLine(arguments.FileStorage.AddFile(FileLoader.LoadContent(arguments.Args[2])));
+            Console.WriteLine(arguments.FileStorage.AddFile(File.ReadAllText(arguments.Args[2])));
             Console.WriteLine("Elapsed time: " + (DateTime.Now - time).TotalMilliseconds);
         }
     }

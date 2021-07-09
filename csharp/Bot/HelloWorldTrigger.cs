@@ -10,17 +10,20 @@ namespace csharp
     {
         private readonly GitHubStorage gitHubAPI;
 
-        private readonly List<IFile> files;
+        private readonly FileStorage fileStorage;
+
+        private readonly string fileSetName;
 
         public HelloWorldTrigger(GitHubStorage gitHubAPI,FileStorage fileStorage, string fileSetName)
         {
             this.gitHubAPI = gitHubAPI;
-            files = fileStorage.GetFilesFromSet(fileSetName);
+            this.fileStorage = fileStorage;
+            this.fileSetName = fileSetName;
         }
 
         public void Action(Issue obj)
         {
-            foreach (var file in files)
+            foreach (var file in fileStorage.GetFilesFromSet(fileSetName))
             {
                 gitHubAPI.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file);
             }

@@ -3,12 +3,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Interfaces;
+using Platform.Exceptions;
 
 namespace Storage.Remote.GitHub
 {
     public class GitHubStorage : IRemoteCodeStorage<Issue>
     {
-        public readonly GitHubClient Сlient;
+        public readonly GitHubClient Client;
 
         public readonly string Owner;
 
@@ -19,7 +20,7 @@ namespace Storage.Remote.GitHub
         public GitHubStorage(string owner, string token, string name)
         {
             Owner = owner;
-            Сlient = new GitHubClient(new ProductHeaderValue(name))
+            Client = new GitHubClient(new ProductHeaderValue(name))
             {
                 Credentials = new Credentials(token)
             };
@@ -34,22 +35,42 @@ namespace Storage.Remote.GitHub
                 State = ItemStateFilter.Open,
                 Since = lastIssue
             };
-            var issues = Сlient.Issue.GetAllForCurrent(request).Result;
+            var issues = Client.Issue.GetAllForCurrent(request).Result;
             lastIssue = issues.Max(x => x.CreatedAt);
             return issues;
         }
 
         public void CreateOrUpdateFile(string repository, string branch, IFile file)
-        {
-            var repositoryContent = Сlient.Repository.Content;
+         {
+            var a = Client.Repository.Commit.GetAll("linksplatform", "Bot", new CommitRequest() { Since = new DateTimeOffset(new DateTime(2021,6,9))});
+            var f = Client.Repository.Get("linksplatform", "Bot");
+            Console.WriteLine(f.Result.NodeId);
+            foreach (var b in a.Result)
+            {
+                Console.WriteLine(b.Author.Login);
+            }
+            var repositoryContent = Client.Repository.Content;
             try
             {
-                var existingFile = repositoryContent.GetAllContentsByRef(Owner, repository, file.Path, branch);
-                var updateChangeSet = repositoryContent.UpdateFile(Owner, repository, file.Path,
-                new UpdateFileRequest("Update File", file.Content, existingFile.Result[0].Sha, branch));
+                repositoryContent.UpdateFile(
+                    Owner,
+                    repository,
+                    file.Path,
+                    new UpdateFileRequest(
+                        "Update file.",
+                        file.Content,
+                        repositoryContent.GetAllContentsByRef(
+                            Owner,
+                            repository,
+                            file.Path,
+                            branch
+                        ).Result[0].Sha
+                    )
+                );
             }
-            catch (AggregateException)
+            catch (Exception ex)
             {
+                ex.Ignore();
                 repositoryContent.CreateFile(Owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
             }
         }
@@ -60,7 +81,7 @@ namespace Storage.Remote.GitHub
             {
                 State = ItemState.Closed
             };
-            Сlient.Issue.Update(Owner, issue.Repository.Name, issue.Number, issueUpdate);
+            Client.Issue.Update(Owner, issue.Repository.Name, issue.Number, issueUpdate);
         }
     }
 }
