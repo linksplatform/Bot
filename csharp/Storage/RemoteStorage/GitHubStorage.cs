@@ -58,8 +58,7 @@ namespace Storage.Remote.GitHub
         {
             IssueUpdate issueUpdate = new()
             {
-                State = ItemState.Closed,
-                Body = issue.Body,
+                State = ItemState.Closed
             };
             Сlient.Issue.Update(Owner, issue.Repository.Name, issue.Number, issueUpdate);
         }
