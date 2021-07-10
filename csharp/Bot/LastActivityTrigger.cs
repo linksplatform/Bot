@@ -64,8 +64,8 @@ namespace Bot
                 sb.AppendLine(a);
             }
             Console.WriteLine(sb.ToString());
-           // Storage.Client.Issue.Comment.Create(obj.Repository.Owner.Login, obj.Repository.Name, obj.Number, sb.ToString());
-           //Storage.Client.Issue.Update(obj.Repository.Owner.Login, obj.Repository.Name,obj.Number, new IssueUpdate { State = ItemState.Closed});
+            Storage.Client.Issue.Comment.Create(obj.Repository.Owner.Login, obj.Repository.Name, obj.Number, sb.ToString());
+            Storage.Client.Issue.Update(obj.Repository.Owner.Login, obj.Repository.Name,obj.Number, new IssueUpdate { State = ItemState.Closed});
         }
 
         public bool Condition(Issue obj)
