@@ -4,36 +4,35 @@ using Platform.IO;
 using Storage.Local;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FileManager
 {
-    class Program
+    internal class Program
     {
-        public static List<ITrigger<Context>> Handlers = new() 
+        public static List<ITrigger<Context>> Handlers = new()
         {
-           new CreateTrigger(),
-           new DeleteTrigger(),
-           new HelpTrigger(),
-           new LinksPrinterTrigger(),
-           new ShowTrigger(),
-           new HelpTrigger(),
-           new CreateFileSetTrigger(),
-           new GetFilesByFileSetNameTrigger()
-        }; 
+            new CreateTrigger(),
+            new DeleteTrigger(),
+            new HelpTrigger(),
+            new LinksPrinterTrigger(),
+            new ShowTrigger(),
+            new HelpTrigger(),
+            new CreateFileSetTrigger(),
+            new GetFilesByFileSetNameTrigger()
+        };
 
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             using ConsoleCancellation cancellation = new();
-            var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name" , args));
+            FileStorage dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name", args));
             new HelpTrigger().Action(new Context { FileStorage = dbContext, Args = args });
             try
             {
                 while (!cancellation.Token.IsCancellationRequested)
                 {
-                    var input = Console.ReadLine();
-                    var Context = new Context { FileStorage = dbContext, Args = input.Split() };
-                    foreach(var handler in Handlers)
+                    string input = Console.ReadLine();
+                    Context Context = new Context { FileStorage = dbContext, Args = input.Split() };
+                    foreach (ITrigger<Context> handler in Handlers)
                     {
                         if (handler.Condition(Context))
                         {

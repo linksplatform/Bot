@@ -1,9 +1,9 @@
-﻿using Octokit;
+﻿using Interfaces;
+using Octokit;
+using Platform.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Interfaces;
-using Platform.Exceptions;
 
 namespace Storage.Remote.GitHub
 {
@@ -35,7 +35,7 @@ namespace Storage.Remote.GitHub
                 State = ItemStateFilter.Open,
                 Since = lastIssue
             };
-            var issues = Client.Issue.GetAllForCurrent(request).Result;
+            IReadOnlyList<Issue> issues = Client.Issue.GetAllForCurrent(request).Result;
             if (issues.Count != 0)
             {
                 lastIssue = issues.Max(x => x.CreatedAt);
@@ -44,10 +44,10 @@ namespace Storage.Remote.GitHub
             return new List<Issue>();
         }
 
-        public IReadOnlyList<GitHubCommit> GetCommits(string owner,string reposiroty)
+        public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty)
         {
             DateTime date;
-            if(DateTime.Now.Month != 1)
+            if (DateTime.Now.Month != 1)
             {
                 date = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, DateTime.Now.Day);
             }
@@ -74,12 +74,12 @@ namespace Storage.Remote.GitHub
             {
                 date = new DateTime(DateTime.Now.Year, 12, DateTime.Now.Day - 1);
             }
-            return Client.Issue.GetAllForRepository(owner, reposiroty,new RepositoryIssueRequest() {Since = date }).Result;
+            return Client.Issue.GetAllForRepository(owner, reposiroty, new RepositoryIssueRequest() { Since = date }).Result;
         }
 
         public void CreateOrUpdateFile(string repository, string branch, IFile file)
-         {
-            var repositoryContent = Client.Repository.Content;
+        {
+            IRepositoryContentsClient repositoryContent = Client.Repository.Content;
             try
             {
                 repositoryContent.UpdateFile(

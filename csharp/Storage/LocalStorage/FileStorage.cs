@@ -1,23 +1,21 @@
-﻿using System.Linq;
+﻿using Interfaces;
 using Platform.Collections.Stacks;
 using Platform.Converters;
 using Platform.Data;
-using Platform.Data.Numbers.Raw;
 using Platform.Data.Doublets;
-using Platform.Data.Doublets.Unicode;
-using Platform.Data.Doublets.Sequences.Walkers;
-using Platform.Data.Doublets.Sequences.Converters;
 using Platform.Data.Doublets.CriterionMatchers;
-using Platform.Data.Doublets.Memory.United.Generic;
-using System.Collections.Generic;
-using Platform.Collections.Lists;
-using System;
 using Platform.Data.Doublets.Memory;
+using Platform.Data.Doublets.Memory.United.Generic;
+using Platform.Data.Doublets.Sequences.Converters;
+using Platform.Data.Doublets.Sequences.Walkers;
+using Platform.Data.Doublets.Unicode;
+using Platform.Data.Numbers.Raw;
 using Platform.Memory;
-using TLinkAddress = System.UInt64;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text;
-using Interfaces;
-using System.IO;
+using TLinkAddress = System.UInt64;
 
 namespace Storage.Local
 {
@@ -45,16 +43,22 @@ namespace Storage.Local
 
         private readonly TLinkAddress Any;
 
-        private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => Links.Exists(currentMappingIndex) ? currentMappingIndex : Links.CreateAndUpdate(_meaningRoot, Links.Constants.Itself);
+        private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex)
+        {
+            return Links.Exists(currentMappingIndex) ? currentMappingIndex : Links.CreateAndUpdate(_meaningRoot, Links.Constants.Itself);
+        }
 
-        private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => Links.Exists(meaningRootIndex) ? meaningRootIndex : Links.CreatePoint();
+        private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex)
+        {
+            return Links.Exists(meaningRootIndex) ? meaningRootIndex : Links.CreatePoint();
+        }
 
         public FileStorage(string DBFilename)
         {
-            var linksConstants = new LinksConstants<TLinkAddress>(enableExternalReferencesSupport: true);
-            var dataMemory = new FileMappedResizableDirectMemory(DBFilename);
+            LinksConstants<ulong> linksConstants = new LinksConstants<TLinkAddress>(enableExternalReferencesSupport: true);
+            FileMappedResizableDirectMemory dataMemory = new FileMappedResizableDirectMemory(DBFilename);
             Links = new UnitedMemoryLinks<UInt64>(dataMemory, UnitedMemoryLinks<UInt64>.DefaultLinksSizeStep, linksConstants, IndexTreeType.Default);
-            var link = Links.Create();
+            ulong link = Links.Create();
             link = Links.Update(link, newSource: link, newTarget: link);
             ushort currentMappingLinkIndex = 1;
             Any = Links.Constants.Any;
@@ -65,23 +69,29 @@ namespace Storage.Local
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
-            var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(Links);
-            var unicodeSymbolCriterionMatcher = new TargetMatcher<TLinkAddress>(Links, _unicodeSymbolMarker);
-            var unicodeSequenceCriterionMatcher = new TargetMatcher<TLinkAddress>(Links, _unicodeSequenceMarker);
-            var charToUnicodeSymbolConverter = new CharToUnicodeSymbolConverter<TLinkAddress>(Links, _addressToNumberConverter, _unicodeSymbolMarker);
-            var unicodeSymbolToCharConverter = new UnicodeSymbolToCharConverter<TLinkAddress>(Links, _numberToAddressConverter, unicodeSymbolCriterionMatcher);
-            var sequenceWalker = new RightSequenceWalker<TLinkAddress>(Links, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
+            BalancedVariantConverter<ulong> balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(Links);
+            TargetMatcher<ulong> unicodeSymbolCriterionMatcher = new TargetMatcher<TLinkAddress>(Links, _unicodeSymbolMarker);
+            TargetMatcher<ulong> unicodeSequenceCriterionMatcher = new TargetMatcher<TLinkAddress>(Links, _unicodeSequenceMarker);
+            CharToUnicodeSymbolConverter<ulong> charToUnicodeSymbolConverter = new CharToUnicodeSymbolConverter<TLinkAddress>(Links, _addressToNumberConverter, _unicodeSymbolMarker);
+            UnicodeSymbolToCharConverter<ulong> unicodeSymbolToCharConverter = new UnicodeSymbolToCharConverter<TLinkAddress>(Links, _numberToAddressConverter, unicodeSymbolCriterionMatcher);
+            RightSequenceWalker<ulong> sequenceWalker = new RightSequenceWalker<TLinkAddress>(Links, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
             _stringToUnicodeSequenceConverter = new CachingConverterDecorator<string, TLinkAddress>(new StringToUnicodeSequenceConverter<TLinkAddress>(Links, charToUnicodeSymbolConverter, balancedVariantConverter, _unicodeSequenceMarker));
             _unicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(new UnicodeSequenceToStringConverter<TLinkAddress>(Links, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter));
         }
 
-        public TLinkAddress Convert(string str) => _stringToUnicodeSequenceConverter.Convert(str);
+        public TLinkAddress Convert(string str)
+        {
+            return _stringToUnicodeSequenceConverter.Convert(str);
+        }
 
-        public string Convert(TLinkAddress address) => _unicodeSequenceToStringConverter.Convert(address);
+        public string Convert(TLinkAddress address)
+        {
+            return _unicodeSequenceToStringConverter.Convert(address);
+        }
 
         public string GetFileContent(TLinkAddress address)
         {
-            var link = Links.GetLink(address);
+            IList<ulong> link = Links.GetLink(address);
             if (Links.GetSource(link) == _fileMarker)
             {
                 return Convert(Links.GetTarget(link));
@@ -89,14 +99,17 @@ namespace Storage.Local
             throw new InvalidOperationException("Link is not a file.");
         }
 
-        public void Delete(TLinkAddress link) => Links.Delete(link);
+        public void Delete(TLinkAddress link)
+        {
+            Links.Delete(link);
+        }
 
         public List<IFile> GetAllFiles()
         {
             List<IFile> files = new() { };
-            foreach(var file in Links.All(new Link<UInt64>(index: Any, source: _fileMarker, target: Any)))
+            foreach (IList<ulong> file in Links.All(new Link<UInt64>(index: Any, source: _fileMarker, target: Any)))
             {
-                files.Add(new File {Path = file.ToString(), Content = Convert(Links.GetTarget(file))});
+                files.Add(new File { Path = file.ToString(), Content = Convert(Links.GetTarget(file)) });
             }
             return files;
         }
@@ -104,7 +117,7 @@ namespace Storage.Local
         public string AllLinksToString()
         {
             StringBuilder builder = new();
-            var query = new Link<UInt64>(index: Any, source: Any, target: Any);
+            Link<ulong> query = new Link<UInt64>(index: Any, source: Any, target: Any);
             Links.Each(link =>
             {
                 builder.AppendLine(Links.Format(link));
@@ -123,7 +136,7 @@ namespace Storage.Local
             return Links.GetOrCreate(_setMarker, Convert(fileSetName));
         }
 
-        public TLinkAddress AddFileToSet(TLinkAddress set,TLinkAddress file, string path)
+        public TLinkAddress AddFileToSet(TLinkAddress set, TLinkAddress file, string path)
         {
             return Links.GetOrCreate(set, Links.GetOrCreate(Convert(path), file));
         }
@@ -135,17 +148,17 @@ namespace Storage.Local
 
         private IList<IList<TLinkAddress>> GetFilesLinksFromSet(string set)
         {
-            var fileSet = GetFileSet(set);
-            var list = Links.All(new Link<UInt64>(index: Any, source: fileSet, target: Any));
+            ulong fileSet = GetFileSet(set);
+            IList<IList<ulong>> list = Links.All(new Link<UInt64>(index: Any, source: fileSet, target: Any));
             return list;
         }
 
         public List<IFile> GetFilesFromSet(string set)
         {
             List<IFile> files = new();
-            foreach(var file in GetFilesLinksFromSet(set))
+            foreach (IList<ulong> file in GetFilesLinksFromSet(set))
             {
-                var pathAndFile = Links.GetTarget(file);
+                ulong pathAndFile = Links.GetTarget(file);
                 files.Add(new File()
                 {
                     Path = Convert(Links.GetSource(pathAndFile)),

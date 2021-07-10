@@ -8,17 +8,20 @@ using System.Linq;
 
 namespace Bot
 {
-    class OrganizationLastMonthActivityTrigger : ITrigger<Issue>
+    internal class OrganizationLastMonthActivityTrigger : ITrigger<Issue>
     {
         private readonly GitHubStorage Storage;
 
-        public OrganizationLastMonthActivityTrigger(GitHubStorage storage) => this.Storage = storage;
+        public OrganizationLastMonthActivityTrigger(GitHubStorage storage)
+        {
+            Storage = storage;
+        }
 
         public void Action(Issue obj)
         {
-            var links = (new Parser()).Parse(obj.Body);
+            IList<Link> links = (new Parser()).Parse(obj.Body);
             HashSet<Link> ignoredRepos = new() { };
-            foreach (var link in links)
+            foreach (Link link in links)
             {
                 if (link.Values.Count == 3 && string.Equals(link.Values.First().Id, "ignore", StringComparison.OrdinalIgnoreCase) && string.Equals(link.Values.Last().Id.Trim('.'), "repository", StringComparison.OrdinalIgnoreCase))
                 {
@@ -26,31 +29,31 @@ namespace Bot
                 }
             }
             HashSet<string> activeUsers = new();
-            foreach (var repos in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
+            foreach (Repository repos in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
             {
                 if (ignoredRepos.Contains(repos.Name))
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repos.Owner.Login, repos.Name))
+                foreach (GitHubCommit commit in Storage.GetCommits(repos.Owner.Login, repos.Name))
                 {
                     activeUsers.Add(commit.Author.Login);
                 }
-                foreach (var pullRequest in Storage.GetPullRequests(repos.Owner.Login, repos.Name))
+                foreach (PullRequest pullRequest in Storage.GetPullRequests(repos.Owner.Login, repos.Name))
                 {
-                    foreach (var a in pullRequest.RequestedReviewers)
+                    foreach (User a in pullRequest.RequestedReviewers)
                     {
                         activeUsers.Add(a.Login);
                     }
                 }
-                foreach (var isuue in Storage.GetIssues(repos.Owner.Login, repos.Name))
+                foreach (Issue isuue in Storage.GetIssues(repos.Owner.Login, repos.Name))
                 {
                     activeUsers.Add(isuue.User.Login);
                 }
             }
-            var activeUsersString = string.Join("\n", activeUsers);
+            string activeUsersString = string.Join("\n", activeUsers);
             Storage.Client.Issue.Comment.Create(obj.Repository.Owner.Login, obj.Repository.Name, obj.Number, activeUsersString);
-            Storage.Client.Issue.Update(obj.Repository.Owner.Login, obj.Repository.Name,obj.Number, new IssueUpdate { State = ItemState.Closed});
+            Storage.Client.Issue.Update(obj.Repository.Owner.Login, obj.Repository.Name, obj.Number, new IssueUpdate { State = ItemState.Closed });
         }
 
         public bool Condition(Issue obj)

@@ -1,6 +1,4 @@
-﻿using FileManager;
-using Interfaces;
-using Storage.Local;
+﻿using Interfaces;
 using System;
 using System.Collections.Generic;
 
@@ -15,11 +13,11 @@ namespace FileManager
 
         public void Action(Context arguments)
         {
-            var files = arguments.FileStorage.GetFilesFromSet(arguments.Args[1]);
-            foreach(var file in files)
+            List<IFile> files = arguments.FileStorage.GetFilesFromSet(arguments.Args[1]);
+            foreach (IFile file in files)
             {
                 Console.WriteLine($"Path: {file.Path}\nContent: {file.Content}");
             }
-        }  
+        }
     }
 }

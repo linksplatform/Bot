@@ -15,7 +15,7 @@ namespace Bot
 
         public readonly List<ITrigger<Issue>> Triggers;
 
-        public ProgrammerRole(List<ITrigger<Issue>> triggers,IRemoteCodeStorage<Issue> gitHubAPI)
+        public ProgrammerRole(List<ITrigger<Issue>> triggers, IRemoteCodeStorage<Issue> gitHubAPI)
         {
             GitHubAPI = (GitHubStorage)gitHubAPI;
             Triggers = triggers;
@@ -26,9 +26,9 @@ namespace Bot
         {
             while (!token.IsCancellationRequested)
             {
-                foreach (var trigger in Triggers)
+                foreach (ITrigger<Issue> trigger in Triggers)
                 {
-                    foreach (var issue in GitHubAPI.GetIssues())
+                    foreach (Issue issue in GitHubAPI.GetIssues())
                     {
                         if (trigger.Condition(issue))
                         {

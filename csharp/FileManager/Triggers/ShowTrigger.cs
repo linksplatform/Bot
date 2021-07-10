@@ -1,6 +1,5 @@
 ﻿using Interfaces;
 using System;
-using System.Text;
 
 namespace FileManager
 {
@@ -15,7 +14,7 @@ namespace FileManager
         {
             if (arguments.Args[1] == "allFiles")
             {
-                foreach(var file in arguments.FileStorage.GetAllFiles())
+                foreach (IFile file in arguments.FileStorage.GetAllFiles())
                 {
                     if (file.Content.Length < 50)
                     {
