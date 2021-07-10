@@ -49,7 +49,7 @@ namespace Storage.Remote.GitHub
             DateTime date;
             if(DateTime.Now.Month != 1)
             {
-                date = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, DateTime.Now.Day - 1);
+                date = new DateTime(DateTime.Now.Year, DateTime.Now.Month - 1, DateTime.Now.Day);
             }
             else
             {

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace FileManager
 {
-    class GetFilesByFileSetNameTrigger : ITrigger<Context>
+    public class GetFilesByFileSetNameTrigger : ITrigger<Context>
     {
         public bool Condition(Context arguments)
         {

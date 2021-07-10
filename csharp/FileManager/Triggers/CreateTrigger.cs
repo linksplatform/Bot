@@ -14,9 +14,7 @@ namespace FileManager
 
         public void Action(Context arguments)
         {
-            var time = DateTime.Now;
             Console.WriteLine(arguments.FileStorage.AddFile(File.ReadAllText(arguments.Args[2])));
-            Console.WriteLine("Elapsed time: " + (DateTime.Now - time).TotalMilliseconds);
         }
     }
 }
