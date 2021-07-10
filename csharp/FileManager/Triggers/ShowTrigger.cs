@@ -5,16 +5,13 @@ namespace FileManager
 {
     public class ShowTrigger : ITrigger<Context>
     {
-        public bool Condition(Context arguments)
-        {
-            return (arguments.Args[0].ToLower() == "show");
-        }
+        public bool Condition(Context arguments) => (arguments.Args[0].ToLower() == "show");
 
         public void Action(Context arguments)
         {
             if (arguments.Args[1] == "allFiles")
             {
-                foreach (IFile file in arguments.FileStorage.GetAllFiles())
+                foreach (var file in arguments.FileStorage.GetAllFiles())
                 {
                     if (file.Content.Length < 50)
                     {

@@ -24,15 +24,15 @@ namespace FileManager
         private static void Main(string[] args)
         {
             using ConsoleCancellation cancellation = new();
-            FileStorage dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name", args));
+            var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name", args));
             new HelpTrigger().Action(new Context { FileStorage = dbContext, Args = args });
             try
             {
                 while (!cancellation.Token.IsCancellationRequested)
                 {
-                    string input = Console.ReadLine();
-                    Context Context = new Context { FileStorage = dbContext, Args = input.Split() };
-                    foreach (ITrigger<Context> handler in Handlers)
+                    var input = Console.ReadLine();
+                    var Context = new Context { FileStorage = dbContext, Args = input.Split() };
+                    foreach (var handler in Handlers)
                     {
                         if (handler.Condition(Context))
                         {

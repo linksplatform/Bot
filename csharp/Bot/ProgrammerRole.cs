@@ -26,9 +26,9 @@ namespace Bot
         {
             while (!token.IsCancellationRequested)
             {
-                foreach (ITrigger<Issue> trigger in Triggers)
+                foreach (var trigger in Triggers)
                 {
-                    foreach (Issue issue in GitHubAPI.GetIssues())
+                    foreach (var issue in GitHubAPI.GetIssues())
                     {
                         if (trigger.Condition(issue))
                         {
@@ -40,9 +40,6 @@ namespace Bot
             }
         }
 
-        public void Start(CancellationToken cancellationToken)
-        {
-            ProcessIssues(cancellationToken);
-        }
+        public void Start(CancellationToken cancellationToken) => ProcessIssues(cancellationToken);
     }
 }

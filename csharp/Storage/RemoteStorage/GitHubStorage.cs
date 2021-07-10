@@ -35,7 +35,7 @@ namespace Storage.Remote.GitHub
                 State = ItemStateFilter.Open,
                 Since = lastIssue
             };
-            IReadOnlyList<Issue> issues = Client.Issue.GetAllForCurrent(request).Result;
+            var issues = Client.Issue.GetAllForCurrent(request).Result;
             if (issues.Count != 0)
             {
                 lastIssue = issues.Max(x => x.CreatedAt);
@@ -58,10 +58,7 @@ namespace Storage.Remote.GitHub
             return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
         }
 
-        public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty)
-        {
-            return Client.PullRequest.GetAllForRepository(owner, reposiroty).Result;
-        }
+        public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) => Client.PullRequest.GetAllForRepository(owner, reposiroty).Result;
 
         public IReadOnlyList<Issue> GetIssues(string owner, string reposiroty)
         {
@@ -79,7 +76,7 @@ namespace Storage.Remote.GitHub
 
         public void CreateOrUpdateFile(string repository, string branch, IFile file)
         {
-            IRepositoryContentsClient repositoryContent = Client.Repository.Content;
+            var repositoryContent = Client.Repository.Content;
             try
             {
                 repositoryContent.UpdateFile(

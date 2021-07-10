@@ -22,16 +22,13 @@ namespace csharp
 
         public void Action(Issue obj)
         {
-            foreach (IFile file in fileStorage.GetFilesFromSet(fileSetName))
+            foreach (var file in fileStorage.GetFilesFromSet(fileSetName))
             {
                 gitHubAPI.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file);
             }
             gitHubAPI.CloseIssue(obj);
         }
 
-        public bool Condition(Issue obj)
-        {
-            return obj.Title.ToLower() == "hello world";
-        }
+        public bool Condition(Issue obj) => obj.Title.ToLower() == "hello world";
     }
 }

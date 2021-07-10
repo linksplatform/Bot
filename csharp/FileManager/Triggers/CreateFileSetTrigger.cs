@@ -7,15 +7,12 @@ namespace FileManager
 {
     public class CreateFileSetTrigger : ITrigger<Context>
     {
-        public bool Condition(Context arguments)
-        {
-            return arguments.Args[0].ToLower() == "createfileset";
-        }
+        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "createfileset";
 
         public void Action(Context arguments)
         {
             List<IFile> files = new();
-            for (int i = 2; i < arguments.Args.Length - 1; i += 2)
+            for (var i = 2; i < arguments.Args.Length - 1; i += 2)
             {
                 files.Add(new File()
                 {
@@ -23,8 +20,8 @@ namespace FileManager
                     Content = System.IO.File.ReadAllText(arguments.Args[i + 1])
                 });
             }
-            ulong set = arguments.FileStorage.CreateFileSet(arguments.Args[1]);
-            foreach (IFile file in files)
+            var set = arguments.FileStorage.CreateFileSet(arguments.Args[1]);
+            foreach (var file in files)
             {
                 arguments.FileStorage.AddFileToSet(set, arguments.FileStorage.AddFile(file.Content), file.Path);
             }
