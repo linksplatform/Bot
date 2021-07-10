@@ -55,7 +55,7 @@ namespace Bot
 
         public bool Condition(Issue obj)
         {
-            return obj.Title == "organization last month activity";
+            return obj.Title.ToLower() == "organization last month activity";
         }
     }
 }
