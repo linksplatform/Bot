@@ -3,7 +3,6 @@ using Interfaces;
 using Octokit;
 using Platform.Exceptions;
 using Platform.IO;
-using Storage;
 using Storage.Local;
 using Storage.Remote.GitHub;
 using System;
@@ -26,7 +25,7 @@ namespace Bot
             try
             {
                 var api = new GitHubStorage(username,token,appName);
-                new ProgrammerRole(new List<ITrigger<Issue>> { new HelloWorldTrigger(api,dbContext,fileSetName)}, api).Start(cancellation.Token);
+                new ProgrammerRole(new List<ITrigger<Issue>> { new HelloWorldTrigger(api,dbContext,fileSetName), new LastActivityTrigger(api)}, api).Start(cancellation.Token);
             }
             catch (Exception ex)
             {

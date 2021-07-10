@@ -19,7 +19,7 @@ namespace FileManager
                 {
                     if (file.Content.Length < 50)
                     {
-                        Console.WriteLine($"{file.Path}: {file.Content} (Hash: {file.Content.GetHashCode()})")
+                        Console.WriteLine($"{file.Path}: {file.Content} (Hash: {file.Content.GetHashCode()})");
                     }
                     else
                     {

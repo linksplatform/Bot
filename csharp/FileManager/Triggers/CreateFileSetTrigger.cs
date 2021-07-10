@@ -1,14 +1,17 @@
-﻿using FileManager;
-using Interfaces;
+﻿using Interfaces;
 using Storage.Local;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace FileManager
 {
     public class CreateFileSetTrigger : ITrigger<Context>
     {
+        public bool Condition(Context arguments)
+        {
+            return arguments.Args[0].ToLower() == "createfileset";
+        }
+
         public void Action(Context arguments)
         {
             List<IFile> files = new();
@@ -26,11 +29,6 @@ namespace FileManager
                 arguments.FileStorage.AddFileToSet(set,arguments.FileStorage.AddFile(file.Content),file.Path);
             }
             Console.WriteLine(set);
-        }
-
-        public bool Condition(Context arguments)
-        {
-            return arguments.Args[0].ToLower() == "createfileset";
         }
     }
 }

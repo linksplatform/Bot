@@ -2,7 +2,6 @@
 using Octokit;
 using Storage.Local;
 using Storage.Remote.GitHub;
-using System.Collections.Generic;
 
 namespace csharp
 {
