@@ -42,13 +42,6 @@ namespace Storage.Remote.GitHub
 
         public void CreateOrUpdateFile(string repository, string branch, IFile file)
          {
-            var a = Client.Repository.Commit.GetAll("linksplatform", "Bot", new CommitRequest() { Since = new DateTimeOffset(new DateTime(2021,6,9))});
-            var f = Client.Repository.Get("linksplatform", "Bot");
-            Console.WriteLine(f.Result.NodeId);
-            foreach (var b in a.Result)
-            {
-                Console.WriteLine(b.Author.Login);
-            }
             var repositoryContent = Client.Repository.Content;
             try
             {
