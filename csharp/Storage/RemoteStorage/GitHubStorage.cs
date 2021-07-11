@@ -46,16 +46,7 @@ namespace Storage.Remote.GitHub
 
         public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty)
         {
-            DateTime date;
-            var now = DateTime.Now;
-            if (DateTime.Now.Month != 1)
-            {
-                date = new DateTime(now.Year, now.Month - 1, now.Day);
-            }
-            else
-            {
-                date = new DateTime(now.Year, 12, now.Day - 1);
-            }
+            var date = DateTime.Today.AddMonths(-1);
             return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
         }
 
@@ -63,16 +54,7 @@ namespace Storage.Remote.GitHub
 
         public IReadOnlyList<Issue> GetIssues(string owner, string reposiroty)
         {
-            DateTime date;
-            var now = DateTime.Now;
-            if (DateTime.Now.Month != 1)
-            {
-                date = new DateTime(now.Year, now.Month - 1, now.Day - 1);
-            }
-            else
-            {
-                date = new DateTime(now.Year, 12, now.Day - 1);
-            }
+            var date = DateTime.Today.AddMonths(-1);
             return Client.Issue.GetAllForRepository(owner, reposiroty, new RepositoryIssueRequest() { Since = date }).Result;
         }
 
