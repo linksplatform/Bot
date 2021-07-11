@@ -22,7 +22,7 @@ namespace Bot
         {
             var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body))));
             var issueService = Storage.Client.Issue;
-            var owner = issue.Repository.Owner.Login ;
+            var owner = issue.Repository.Owner.Login;
             issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
             issueService.Update(owner, issue.Repository.Name, issue.Number, new IssueUpdate { State = ItemState.Closed });
         }
