@@ -12,47 +12,15 @@ namespace Bot
     {
         private readonly GitHubStorage Storage;
 
-        public OrganizationLastMonthActivityTrigger(GitHubStorage storage) => Storage = storage;
-
         private readonly Parser Parser = new();
+
+        public OrganizationLastMonthActivityTrigger(GitHubStorage storage) => Storage = storage;
 
         public bool Condition(Issue issue) => issue.Title.ToLower() == "organization last month activity";
 
         public void Action(Issue issue)
         {
-            var links = Parser.Parse(issue.Body);
-            HashSet<Link> ignoredRepositories = new() { };
-            foreach (var link in links)
-            {
-                if (link.Values.Count == 3 && string.Equals(link.Values.First().Id, "ignore", StringComparison.OrdinalIgnoreCase) && string.Equals(link.Values.Last().Id.Trim('.'), "repositoryitory", StringComparison.OrdinalIgnoreCase))
-                {
-                    ignoredRepositories.Add(link.Values[1].Id);
-                }
-            }
-            HashSet<string> activeUsers = new();
-            foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
-            {
-                if (ignoredRepositories.Contains(repository.Name))
-                {
-                    continue;
-                }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
-                {
-                    activeUsers.Add(commit.Author.Login);
-                }
-                foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
-                {
-                    foreach (var reviewer in pullRequest.RequestedReviewers)
-                    {
-                        activeUsers.Add(reviewer.Login);
-                    }
-                }
-                foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name))
-                {
-                    activeUsers.Add(createdIssue.User.Login);
-                }
-            }
-            var activeUsersString = string.Join("\n", activeUsers);
+            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body))));
             var newIssue = Storage.Client.Issue;
             var owner = issue.Repository.Owner.Login ;
             newIssue.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
