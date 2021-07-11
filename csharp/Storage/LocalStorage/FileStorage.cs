@@ -19,7 +19,7 @@ using TLinkAddress = System.UInt64;
 
 namespace Storage.Local
 {
-    public class FileStorage : ILocalCodeStorage
+    public class FileStorage
     {
         private readonly TLinkAddress _unicodeSequenceMarker;
 
