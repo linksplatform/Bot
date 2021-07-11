@@ -1,7 +1,7 @@
 ﻿
 namespace Interfaces
 {
-    interface ITrigger<TContext>
+    public interface ITrigger<TContext>
     {
         public bool Condition(TContext obj);
 
