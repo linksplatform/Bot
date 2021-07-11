@@ -21,10 +21,10 @@ namespace Bot
         public void Action(Issue issue)
         {
             var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body))));
-            var newIssue = Storage.Client.Issue;
+            var issueService = Storage.Client.Issue;
             var owner = issue.Repository.Owner.Login ;
-            newIssue.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
-            newIssue.Update(owner, issue.Repository.Name, issue.Number, new IssueUpdate { State = ItemState.Closed });
+            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
+            issueService.Update(owner, issue.Repository.Name, issue.Number, new IssueUpdate { State = ItemState.Closed });
         }
 
         public HashSet<Link> GetIgnoredRepositories(IList<Link> links)
