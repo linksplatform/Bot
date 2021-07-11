@@ -24,7 +24,7 @@ namespace Bot
             var owner = issue.Repository.Owner.Login;
             var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner));
             issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
-            issueService.Update(owner, issue.Repository.Name, issue.Number, new IssueUpdate { State = ItemState.Closed });
+            Storage.CloseIssue(issue);
         }
 
         public HashSet<Link> GetIgnoredRepositories(IList<Link> links)
