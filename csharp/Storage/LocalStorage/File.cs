@@ -1,8 +1,7 @@
-﻿using Interfaces;
-
+﻿
 namespace Storage.Local
 {
-    public class File : IFile
+    public class File
     {
         public string Path { get; set; }
 

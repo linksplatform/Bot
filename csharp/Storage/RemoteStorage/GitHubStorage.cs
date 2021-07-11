@@ -1,6 +1,7 @@
 ﻿using Interfaces;
 using Octokit;
 using Platform.Exceptions;
+using Storage.Local;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -74,7 +75,7 @@ namespace Storage.Remote.GitHub
             return Client.Issue.GetAllForRepository(owner, reposiroty, new RepositoryIssueRequest() { Since = date }).Result;
         }
 
-        public void CreateOrUpdateFile(string repository, string branch, IFile file)
+        public void CreateOrUpdateFile(string repository, string branch, File file)
         {
             var repositoryContent = Client.Repository.Content;
             try

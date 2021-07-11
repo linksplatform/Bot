@@ -11,7 +11,7 @@ namespace FileManager
 
         public void Action(Context arguments)
         {
-            List<IFile> files = new();
+            List<File> files = new();
             for (var i = 2; i < arguments.Args.Length - 1; i += 2)
             {
                 files.Add(new File()

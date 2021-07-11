@@ -89,9 +89,9 @@ namespace Storage.Local
 
         public void Delete(TLinkAddress link) => Links.Delete(link);
 
-        public List<IFile> GetAllFiles()
+        public List<File> GetAllFiles()
         {
-            List<IFile> files = new() { };
+            List<File> files = new() { };
             foreach (var file in Links.All(new Link<UInt64>(index: Any, source: _fileMarker, target: Any)))
             {
                 files.Add(new File { Path = file.ToString(), Content = Convert(Links.GetTarget(file)) });
@@ -126,9 +126,9 @@ namespace Storage.Local
             return list;
         }
 
-        public List<IFile> GetFilesFromSet(string set)
+        public List<File> GetFilesFromSet(string set)
         {
-            List<IFile> files = new();
+            List<File> files = new();
             foreach (var file in GetFilesLinksFromSet(set))
             {
                 var pathAndFile = Links.GetTarget(file);
