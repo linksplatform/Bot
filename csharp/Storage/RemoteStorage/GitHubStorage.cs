@@ -92,7 +92,7 @@ namespace Storage.Remote.GitHub
             {
                 State = ItemState.Closed
             };
-            Client.Issue.Update(Owner, issue.Repository.Name, issue.Number, issueUpdate);
+            Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, issueUpdate);
         }
     }
 }

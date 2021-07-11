@@ -27,20 +27,21 @@ namespace Bot
             Storage.CloseIssue(issue);
         }
 
-        public HashSet<Link> GetIgnoredRepositories(IList<Link> links)
+        public HashSet<string> GetIgnoredRepositories(IList<Link> links)
         {
-            HashSet<Link> ignoredRepos = new() { };
+            HashSet<string> ignoredRepos = new() { };
             foreach (var link in links)
             {
-                if (link.Values.Count == 3 && string.Equals(link.Values.First().Id, "ignore", StringComparison.OrdinalIgnoreCase) && string.Equals(link.Values.Last().Id.Trim('.'), "repository", StringComparison.OrdinalIgnoreCase))
+                var values = link.Values;
+                if (values != null && values.Count == 3 && string.Equals(values.First().Id, "ignore", StringComparison.OrdinalIgnoreCase) && string.Equals(values.Last().Id.Trim('.'), "repository", StringComparison.OrdinalIgnoreCase))
                 {
-                    ignoredRepos.Add(link.Values[1].Id);
+                    ignoredRepos.Add(values[1].Id);
                 }
             }
             return ignoredRepos;
         }
 
-        public HashSet<string> GetActiveUsers(HashSet<Link> ignoredRepositories, string owner)
+        public HashSet<string> GetActiveUsers(HashSet<string> ignoredRepositories, string owner)
         {
             HashSet<string> activeUsers = new();
             foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
