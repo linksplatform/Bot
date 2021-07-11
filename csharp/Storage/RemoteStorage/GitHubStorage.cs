@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Storage.Remote.GitHub
 {
-    public class GitHubStorage : IRemoteCodeStorage<Issue>
+    public class GitHubStorage
     {
         public readonly GitHubClient Client;
 

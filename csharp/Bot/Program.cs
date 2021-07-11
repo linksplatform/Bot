@@ -15,11 +15,12 @@ namespace Bot
         private static void Main(string[] args)
         {
             using var cancellation = new ConsoleCancellation();
-            var username = ConsoleHelpers.GetOrReadArgument(0, "Username", args);
-            var token = ConsoleHelpers.GetOrReadArgument(1, "Token", args);
-            var appName = ConsoleHelpers.GetOrReadArgument(2, "App Name", args);
-            var databaseFileName = ConsoleHelpers.GetOrReadArgument(3, "Database file name", args);
-            var fileSetName = ConsoleHelpers.GetOrReadArgument(4, "File set name ", args);//For defoult Hello World: HelloWorldSet
+            var argumentIndex = 0;
+            var username = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Username", args);
+            var token = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Token", args);
+            var appName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "App Name", args);
+            var databaseFileName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Database file name", args);
+            var fileSetName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "File set name ", args);
             var dbContext = new FileStorage(databaseFileName);
             Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
             try

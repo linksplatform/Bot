@@ -14,9 +14,53 @@ namespace Bot
 
         public OrganizationLastMonthActivityTrigger(GitHubStorage storage) => Storage = storage;
 
-        public void Action(Issue obj)
+        private readonly Parser Parser = new();
+
+        public bool Condition(Issue issue) => issue.Title.ToLower() == "organization last month activity";
+
+        public void Action(Issue issue)
         {
-            var links = (new Parser()).Parse(obj.Body);
+            var links = Parser.Parse(issue.Body);
+            HashSet<Link> ignoredRepositories = new() { };
+            foreach (var link in links)
+            {
+                if (link.Values.Count == 3 && string.Equals(link.Values.First().Id, "ignore", StringComparison.OrdinalIgnoreCase) && string.Equals(link.Values.Last().Id.Trim('.'), "repositoryitory", StringComparison.OrdinalIgnoreCase))
+                {
+                    ignoredRepositories.Add(link.Values[1].Id);
+                }
+            }
+            HashSet<string> activeUsers = new();
+            foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
+            {
+                if (ignoredRepositories.Contains(repository.Name))
+                {
+                    continue;
+                }
+                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
+                {
+                    activeUsers.Add(commit.Author.Login);
+                }
+                foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
+                {
+                    foreach (var reviewer in pullRequest.RequestedReviewers)
+                    {
+                        activeUsers.Add(reviewer.Login);
+                    }
+                }
+                foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name))
+                {
+                    activeUsers.Add(createdIssue.User.Login);
+                }
+            }
+            var activeUsersString = string.Join("\n", activeUsers);
+            var newIssue = Storage.Client.Issue;
+            var owner = issue.Repository.Owner.Login ;
+            newIssue.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
+            newIssue.Update(owner, issue.Repository.Name, issue.Number, new IssueUpdate { State = ItemState.Closed });
+        }
+
+        public HashSet<Link> GetIgnoredRepositories(IList<Link> links)
+        {
             HashSet<Link> ignoredRepos = new() { };
             foreach (var link in links)
             {
@@ -25,34 +69,35 @@ namespace Bot
                     ignoredRepos.Add(link.Values[1].Id);
                 }
             }
+            return ignoredRepos;
+        }
+
+        public HashSet<string> GetActiveUsers(HashSet<Link> ignoredRepositories)
+        {
             HashSet<string> activeUsers = new();
-            foreach (var repos in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
+            foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
             {
-                if (ignoredRepos.Contains(repos.Name))
+                if (ignoredRepositories.Contains(repository.Name))
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repos.Owner.Login, repos.Name))
+                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
                 {
                     activeUsers.Add(commit.Author.Login);
                 }
-                foreach (var pullRequest in Storage.GetPullRequests(repos.Owner.Login, repos.Name))
+                foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
                 {
-                    foreach (var a in pullRequest.RequestedReviewers)
+                    foreach (var reviewer in pullRequest.RequestedReviewers)
                     {
-                        activeUsers.Add(a.Login);
+                        activeUsers.Add(reviewer.Login);
                     }
                 }
-                foreach (var isuue in Storage.GetIssues(repos.Owner.Login, repos.Name))
+                foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name))
                 {
-                    activeUsers.Add(isuue.User.Login);
+                    activeUsers.Add(createdIssue.User.Login);
                 }
             }
-            var activeUsersString = string.Join("\n", activeUsers);
-            Storage.Client.Issue.Comment.Create(obj.Repository.Owner.Login, obj.Repository.Name, obj.Number, activeUsersString);
-            Storage.Client.Issue.Update(obj.Repository.Owner.Login, obj.Repository.Name, obj.Number, new IssueUpdate { State = ItemState.Closed });
+            return activeUsers;
         }
-
-        public bool Condition(Issue obj) => obj.Title.ToLower() == "organization last month activity";
     }
 }

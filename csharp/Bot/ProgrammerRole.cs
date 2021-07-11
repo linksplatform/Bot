@@ -15,9 +15,9 @@ namespace Bot
 
         public readonly List<ITrigger<Issue>> Triggers;
 
-        public ProgrammerRole(List<ITrigger<Issue>> triggers, IRemoteCodeStorage<Issue> gitHubAPI)
+        public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI)
         {
-            GitHubAPI = (GitHubStorage)gitHubAPI;
+            GitHubAPI = gitHubAPI;
             Triggers = triggers;
             MinimumInteractionInterval = gitHubAPI.MinimumInteractionInterval;
         }
