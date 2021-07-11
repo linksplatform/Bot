@@ -5,7 +5,7 @@ namespace FileManager
 {
     public class ShowTrigger : ITrigger<Context>
     {
-        public bool Condition(Context arguments) => (arguments.Args[0].ToLower() == "show");
+        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "show";
 
         public void Action(Context arguments)
         {
