@@ -20,9 +20,9 @@ namespace Bot
 
         public void Action(Issue issue)
         {
-            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body))));
+            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body)),issue.Repository.Owner.Login));
             var issueService = Storage.Client.Issue;
-            var owner = issue.Repository.Owner.Login;
+            var owner = issue.Repository.Owner.Login ;
             issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
             issueService.Update(owner, issue.Repository.Name, issue.Number, new IssueUpdate { State = ItemState.Closed });
         }
@@ -40,10 +40,10 @@ namespace Bot
             return ignoredRepos;
         }
 
-        public HashSet<string> GetActiveUsers(HashSet<Link> ignoredRepositories)
+        public HashSet<string> GetActiveUsers(HashSet<Link> ignoredRepositories,string Owner)
         {
             HashSet<string> activeUsers = new();
-            foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").Result)
+            foreach (var repository in Storage.Client.Repository.GetAllForOrg(Owner).Result)
             {
                 if (ignoredRepositories.Contains(repository.Name))
                 {
