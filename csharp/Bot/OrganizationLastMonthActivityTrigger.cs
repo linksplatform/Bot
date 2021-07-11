@@ -40,10 +40,10 @@ namespace Bot
             return ignoredRepos;
         }
 
-        public HashSet<string> GetActiveUsers(HashSet<Link> ignoredRepositories, string Owner)
+        public HashSet<string> GetActiveUsers(HashSet<Link> ignoredRepositories, string owner)
         {
             HashSet<string> activeUsers = new();
-            foreach (var repository in Storage.Client.Repository.GetAllForOrg(Owner).Result)
+            foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
             {
                 if (ignoredRepositories.Contains(repository.Name))
                 {
