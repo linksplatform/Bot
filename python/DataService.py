@@ -82,77 +82,8 @@ class BetterBotBaseDataService(BetterBotBase):
         users.reverse()
         return users
 
-    def calculate_real_karma(self, user):
-        base_karma = user["karma"]
-        up_votes = len(user["supporters"])/config.positive_votes_per_karma
-        down_votes = len(user["opponents"])/config.negative_votes_per_karma
-        return base_karma + up_votes - down_votes
-
     def get_members(self, vk, peer_id):
         return vk.messages.getConversationMembers(peer_id=peer_id)
-
-    def get_karma_string(self, user):
-        plus_string = ""
-        minus_string = ""
-        if isinstance(user, dict):
-            karma = user["karma"]
-            plus_votes = len(user["supporters"])
-            minus_votes = len(user["opponents"])
-        else:
-            karma = user.karma
-            plus_votes = len(user.supporters)
-            minus_votes = len(user.opponents)
-        if plus_votes > 0:
-            plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
-        if minus_votes > 0:
-            minus_string = "-%.1f" % (minus_votes / config.negative_votes_per_karma)
-        if plus_votes > 0 or minus_votes > 0:
-            return f"[{karma}][{plus_string}{minus_string}]"
-        else:
-            return f"[{karma}]"
-
-    def get_karma_hours_limit(self, karma):
-        for limit_item in config.karma_limit_hours:
-            if (not limit_item["min_karma"]) or (karma >= limit_item["min_karma"]):
-                if (not limit_item["max_karma"]) or (karma < limit_item["max_karma"]):
-                    return limit_item["limit"]
-        return 168  # hours (a week)
-
-    def apply_karma_change(self, event, user, selected_user, operator, amount):
-        selected_user_karma_change = None
-        user_karma_change = None
-        collective_vote_applied = None
-        voters = None
-
-        # Personal karma transfer
-        if amount > 0:
-            if user.karma < amount:
-                self.send_not_enough_karma_error(event, user)
-                return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
-            else:
-                user_karma_change = self.apply_user_karma(user, -amount)
-                amount = -amount if operator == "-" else amount
-                selected_user_karma_change = self.apply_user_karma(selected_user, amount)
-
-        # Collective vote
-        elif amount == 0:
-            if operator == "+":
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "supporters", config.positive_votes_per_karma, +1)
-            else:
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "opponents", config.negative_votes_per_karma, -1)
-
-        return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
-
-    def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
-        vote_applied = None
-        if user.uid not in selected_user[current_voters]:
-            selected_user[current_voters].append(user.uid)
-            vote_applied = True
-        if len(selected_user[current_voters]) >= number_of_voters:
-            voters = selected_user[current_voters]
-            selected_user[current_voters] = []
-            return self.apply_user_karma(selected_user, amount), voters, vote_applied
-        return None, None, vote_applied
 
     def apply_user_karma(self, user, amount):
         user.karma += amount
