@@ -21,7 +21,7 @@ class V(Vk):
         self.userbot = UserBot()
         self.debug = True
 
-        self.base = BetterBotBaseDataService()
+        self.data = BetterBotBaseDataService()
 
     def message_new(self, event):
         """
@@ -48,12 +48,12 @@ class V(Vk):
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = self.base.user_auto_install(event["from_id"], self)
+        user = self.data.user_auto_install(event["from_id"], self)
 
         message = event["text"].lstrip("/")
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
-        selected_user = self.base.user_auto_install(selected_message["from_id"], self) if selected_message else None
+        selected_user = self.data.user_auto_install(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
         karma_enabled = event["peer_id"] in config.chats_karma_whitelist
@@ -83,7 +83,7 @@ class V(Vk):
                     if not selected_user:
                         selected_user_id = match.group("selectedUserId")
                         if selected_user_id:
-                            selected_user = self.base.user_auto_install(int(selected_user_id), self)
+                            selected_user = self.data.user_auto_install(int(selected_user_id), self)
 
                     if selected_user and (user.uid != selected_user.uid):
                         operator = match.group("operator")[0]
@@ -103,22 +103,22 @@ class V(Vk):
                             utclast = datetime.fromtimestamp(float(user.last_collective_vote));
                             difference = utcnow - utclast
                             hours_difference = difference.total_seconds() / 3600;
-                            hours_limit = self.base.get_karma_hours_limit(user.karma);
+                            hours_limit = self.data.get_karma_hours_limit(user.karma);
                             if hours_difference < hours_limit:
                                 self.delete_message(event)
                                 self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
                                 return
 
-                        user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.base.apply_karma_change(event, user, selected_user, operator, amount)
+                        user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.data.apply_karma_change(event, user, selected_user, operator, amount)
 
                         if collective_vote_applied:
                             user.last_collective_vote = int(utcnow.timestamp())
-                            self.base.save(user)
+                            self.data.save(user)
 
-                        self.base.save(selected_user)
+                        self.data.save(selected_user)
 
                         if user_karma_change:
-                            self.base.save(user)
+                            self.data.save(user)
                         self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
                         self.delete_message(event)
                         return
@@ -145,27 +145,27 @@ class V(Vk):
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.UPDATE, message)
         if match:
-            self.base.update_user_name(vk, user, event["from_id"])
+            self.data.update_user_name(vk, user, event["from_id"])
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
-            language = self.base.get_default_programming_language(language)
+            language = self.data.get_default_programming_language(language)
             if not language:
                 return
             if language not in user.programming_languages:
                 user.programming_languages.append(language)
-                self.base.save(user)
+                self.data.save(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
-            language = self.base.get_default_programming_language(language)
+            language = self.data.get_default_programming_language(language)
             if not language:
                 return
             if language in user.programming_languages:
                 user.programming_languages.remove(language)
-                self.base.save(user)
+                self.data.save(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
         if match:
@@ -175,7 +175,7 @@ class V(Vk):
             if profile != user.github_profile:
                 if requests.get(f'https://github.com/{profile}').status_code == 200:
                     user.github_profile = profile
-                    self.base.save(user)
+                    self.data.save(user)
             return self.send_github_profile(event, user)
         match = regex.match(patterns.REMOVE_GITHUB_PROFILE, message)
         if match:
@@ -184,7 +184,7 @@ class V(Vk):
                 return
             if profile == user.github_profile:
                 user.github_profile = ""
-                self.base.save(user)
+                self.data.save(user)
             return self.send_github_profile(event, user)
 
     def delete_message(self, event, delay=2):
@@ -221,6 +221,13 @@ class V(Vk):
                     return True
         return False
 
+    def get_github_profile_string(self, user):
+        if isinstance(user, dict):
+            profile = user["github_profile"] if "github_profile" in user else ""
+        else:
+            profile = user.github_profile
+        return f"github.com/{profile}" if profile else "отсутствует"
+
     def send_karma_change(self, event, user_karma_change, selected_user_karma_change, voters):
         if selected_user_karma_change and user_karma_change:
             self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_karma_change + selected_user_karma_change))
@@ -232,17 +239,17 @@ class V(Vk):
             response = "[id%s|%s], Ваша карма — %s."
         else:
             response = "Карма [id%s|%s] — %s."
-        self.send_message(event, response % (user.uid, user.name, self.base.get_karma_string(user)))
+        self.send_message(event, response % (user.uid, user.name, self.data.get_karma_string(user)))
 
     def send_info(self, event, karma_enabled, user, is_self=True):
-        programming_languages_string = self.base.get_programming_languages_string(user)
-        profile = self.base.get_github_profile_info(user)
+        programming_languages_string = self.data.get_programming_languages_string(user)
+        profile = self.get_github_profile_string(user)
         if karma_enabled:
             if is_self:
                 response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
             else:
                 response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nCтраничка на GitHub — %s"
-            return self.send_message(event, response % (user.uid, user.name, self.base.get_karma_string(user), programming_languages_string, profile))
+            return self.send_message(event, response % (user.uid, user.name, self.data.get_karma_string(user), programming_languages_string, profile))
         else:
             if is_self:
                 response = "[id%s|%s], \nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
@@ -253,7 +260,7 @@ class V(Vk):
     def send_top_users(self, event, users):
         if not users:
             return
-        user_strings = ["%s [id%s|%s]%s %s" % (self.base.get_karma_string(user), user["uid"], user["name"], self.base.get_github_profile_top_string(user), self.base.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
+        user_strings = ["%s [id%s|%s]%s %s" % (self.data.get_karma_string(user), user["uid"], user["name"], self.data.get_github_profile_top_string(user), self.data.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
         for user_string in user_strings:
@@ -268,7 +275,7 @@ class V(Vk):
 
     def send_bottom(self, event, maximum_users):
         peer_id = event["peer_id"]
-        users = self.base.get_users_sorted_by_karma(vk, peer_id)
+        users = self.data.get_users_sorted_by_karma(vk, peer_id)
         users = [i for i in users if (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             users.reverse()
@@ -279,7 +286,7 @@ class V(Vk):
     def send_people_users(self, event, users):
         if not users:
             return
-        user_strings = ["[id%s|%s]%s %s" % (user["uid"], user["name"], self.base.get_github_profile_top_string(user), self.base.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
+        user_strings = ["[id%s|%s]%s %s" % (user["uid"], user["name"], self.data.get_github_profile_top_string(user), self.data.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
         for user_string in user_strings:
@@ -294,7 +301,7 @@ class V(Vk):
 
     def send_people(self, event, maximum_users):
         peer_id = event["peer_id"]
-        users = self.base.get_users_sorted_by_name(self, peer_id)
+        users = self.data.get_users_sorted_by_name(self, peer_id)
         users = [i for i in users if i["github_profile"] or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             self.send_people_users(event, users[:maximum_users])
@@ -303,7 +310,7 @@ class V(Vk):
 
     def send_top(self, event, maximum_users):
         peer_id = event["peer_id"]
-        users = self.base.get_users_sorted_by_karma(vk, peer_id)
+        users = self.data.get_users_sorted_by_karma(vk, peer_id)
         users = [i for i in users if (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             self.send_top_users(event, users[:maximum_users])
@@ -320,19 +327,19 @@ class V(Vk):
     def send_top_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
         peer_id = event["peer_id"]
-        users = self.base.get_users_sorted_by_karma(vk, peer_id)
+        users = self.data.get_users_sorted_by_karma(vk, peer_id)
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
     def send_github_profile(self, event, user):
-        profile = self.base.get_github_profile_info(user)
+        profile = self.get_github_profile_string(user)
         if not profile:
             self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указана страничка на GitHub.")
         else:
             self.send_message(event, f"[id{user.uid}|{user.name}], Ваша страничка на GitHub — {profile}.")
 
     def send_programming_languages_list(self, event, user):
-        programming_languages_string = self.base.get_programming_languages_string(user)
+        programming_languages_string = self.data.get_programming_languages_string(user)
         if not programming_languages_string:
             self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указано языков программирования.")
         else:
