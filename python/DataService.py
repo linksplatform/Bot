@@ -16,79 +16,38 @@ class BetterBotBaseDataService(BetterBotBase):
     def user_auto_install(self, from_id, vk):
         return self.base.autoInstall(from_id, vk) if from_id > 0 else None
 
-    def get_programming_languages_string(self, user):
+    def get_programming_languages(self, user):
+        languages = self.get_user_property(user, "programming_languages")
+        languages.sort()
+        return languages
+
+    def get_user_sorted_programming_languages(self, user):
         if isinstance(user, dict):
             languages = user["programming_languages"] if "programming_languages" in user else []
         else:
             languages = user.programming_languages
         languages.sort()
-        return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
-
-    def get_default_programming_language(self, language):
-        for default_programming_language in config.default_programming_languages:
-            default_programming_language = default_programming_language.replace('\\', '')
-            if default_programming_language.lower() == language.lower():
-                return default_programming_language
-        return None
+        return languages
 
     def get_github_profile(self, user):
-        if isinstance(user, dict):
-            profile = user["github_profile"] if "github_profile" in user else ""
-        else:
-            profile = user.github_profile
-        return f"github.com/{profile}" if profile else ""
-
-    def get_github_profile_top_string(self, user):
-        profile = self.get_github_profile(user)
-        if profile:
-            profile = f" — {profile}"
+        profile = self.get_user_property(user, "github_profile")
         return profile
 
-    def get_programming_languages_string_with_parentheses_or_empty(self, user):
-        programming_languages_string = self.get_programming_languages_string(user)
-        if programming_languages_string == "":
-            return programming_languages_string
-        else:
-            return "(" + programming_languages_string + ")"
-
-    def get_sorted_by_karma(self, other_keys):
+    def get_sorted_by_karma(self, other_keys, sort_key):
         users = self.getByKeys("karma", "name", *other_keys)
         sorted_users = sorted(
             users,
-            key=self.calculate_real_karma,
+            key=sort_key,
             reverse=True
         )
         return sorted_users
 
-    def get_users_sorted_by_karma(self, vk, peer_id):
-        members = self.get_members_ids(vk, peer_id)
-        users = self.get_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"])
-        if members:
-            users = [u for u in users if u["uid"] in members]
+    def get_by_name(self, other_keys):
+        users = self.getByKeys("name", *other_keys)
         return users
 
-    def get_members_ids(self, vk, peer_id):
-        members = self.get_members(vk, peer_id)
-        if "error" in members:
-            return None
-        else:
-            return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
+    def get_user_property(self, user, property_name):
+        return user[property_name] if isinstance(user, dict) else eval(f"user.{property_name}")
 
-    def get_users_sorted_by_name(self, vk, peer_id):
-        members = self.get_members_ids(vk, peer_id)
-        users = self.getSortedByKeys("name", otherKeys=["programming_languages", "github_profile", "uid"])
-        if members:
-            users = [u for u in users if u["uid"] in members]
-        users.reverse()
-        return users
-
-    def get_members(self, vk, peer_id):
-        return vk.messages.getConversationMembers(peer_id=peer_id)
-
-    def apply_user_karma(self, user, amount):
-        user.karma += amount
-        return (user.uid, user.name, user.karma - amount, user.karma)
-
-    def update_user_name(self, vk, user, from_id):
-        user.name = vk.users.get(user_ids=from_id)['response'][0]["first_name"]
-        self.base.save(user)
+    def set_user_property(self, user, property_name, value):
+        user[property_name] = value if isinstance(user, dict) else exec(f"user.{property_name} = value")

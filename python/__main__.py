@@ -85,7 +85,7 @@ class V(Vk):
                         if selected_user_id:
                             selected_user = self.data.user_auto_install(int(selected_user_id), self)
 
-                    if selected_user and (user.uid != selected_user.uid):
+                    if selected_user and (self.data.get_user_property(user, "uid") != selected_user.uid):
                         operator = match.group("operator")[0]
                         amount = match.group("amount")
                         amount = int(amount) if amount else 0
@@ -93,17 +93,17 @@ class V(Vk):
                         utcnow = datetime.utcnow()
 
                         # Downvotes disabled for users with negative karma
-                        if (operator == "-") and (user.karma < 0):
+                        if (operator == "-") and (self.data.get_user_property(user, "karma") < 0):
                             self.delete_message(event)
                             self.send_not_enough_karma_error(event, user)
                             return
 
                         # Collective votes limit
                         if amount == 0:
-                            utclast = datetime.fromtimestamp(float(user.last_collective_vote));
+                            utclast = datetime.fromtimestamp(float(self.data.get_user_property(user, "last_collective_vote")));
                             difference = utcnow - utclast
                             hours_difference = difference.total_seconds() / 3600;
-                            hours_limit = self.get_karma_hours_limit(user.karma);
+                            hours_limit = self.get_karma_hours_limit(self.data.get_user_property(user, "karma"));
                             if hours_difference < hours_limit:
                                 self.delete_message(event)
                                 self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
@@ -112,7 +112,7 @@ class V(Vk):
                         user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
 
                         if collective_vote_applied:
-                            user.last_collective_vote = int(utcnow.timestamp())
+                            self.data.set_user_property(user, "last_collective_vote", int(utcnow.timestamp()))
                             self.data.save(user)
 
                         self.data.save(selected_user)
@@ -145,27 +145,28 @@ class V(Vk):
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.UPDATE, message)
         if match:
-            name = vk.users.get(user_ids=event["from_id"])['response'][0]["first_name"]
-            self.data.update_user_name(user, name)
+            name = self.get_user_name(event["from_id"])
+            self.data.set_user_property(user, "name", name)
+            self.data.save(user)
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
-            language = self.data.get_default_programming_language(language)
+            language = self.get_default_programming_language(language)
             if not language:
                 return
-            if language not in user.programming_languages:
-                user.programming_languages.append(language)
+            if language not in self.data.get_user_property(user, "programming_languages"):
+                self.data.get_user_property(user, "programming_languages").append(language)
                 self.data.save(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
-            language = self.data.get_default_programming_language(language)
+            language = self.get_default_programming_language(language)
             if not language:
                 return
-            if language in user.programming_languages:
-                user.programming_languages.remove(language)
+            if language in self.data.get_user_property(user, "programming_languages"):
+                self.data.get_user_property(user, "programming_languages").remove(language)
                 self.data.save(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
@@ -173,9 +174,9 @@ class V(Vk):
             profile = match.group('profile')
             if not profile:
                 return
-            if profile != user.github_profile:
+            if profile != self.data.get_user_property(user, "get_user_property"):
                 if requests.get(f'https://github.com/{profile}').status_code == 200:
-                    user.github_profile = profile
+                    self.data.set_user_property(user, "github_profile", profile)
                     self.data.save(user)
             return self.send_github_profile(event, user)
         match = regex.match(patterns.REMOVE_GITHUB_PROFILE, message)
@@ -183,8 +184,8 @@ class V(Vk):
             profile = match.group('profile')
             if not profile:
                 return
-            if profile == user.github_profile:
-                user.github_profile = ""
+            if profile == self.data.get_user_property(user, "github_profile"):
+                self.data.set_user_property(user, "github_profile", "")
                 self.data.save(user)
             return self.send_github_profile(event, user)
 
@@ -242,14 +243,14 @@ class V(Vk):
             return "(" + programming_languages_string + ")"
 
     def calculate_real_karma(self, user):
-        base_karma = user["karma"]
-        up_votes = len(user["supporters"])/config.positive_votes_per_karma
-        down_votes = len(user["opponents"])/config.negative_votes_per_karma
+        base_karma = self.data.get_user_property(user, "karma")
+        up_votes = len(self.data.get_user_property(user, "supporters"))/config.positive_votes_per_karma
+        down_votes = len(self.data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
         return base_karma + up_votes - down_votes
 
     def get_users_sorted_by_karma(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"],  real_karma=self.calculate_real_karma)
+        users = self.data.get_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
@@ -265,12 +266,22 @@ class V(Vk):
     def get_members(self, peer_id):
         return self.messages.getConversationMembers(peer_id=peer_id)
 
+    def get_user_name(self, from_id):
+        return self.users.get(user_ids=from_id)['response'][0]["first_name"]
+
     def get_members_ids(self, peer_id):
         members = self.get_members(peer_id)
         if "error" in members:
             return None
         else:
             return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
+
+    def get_default_programming_language(self, language):
+        for default_programming_language in config.default_programming_languages:
+            default_programming_language = default_programming_language.replace('\\', '')
+            if default_programming_language.lower() == language.lower():
+                return default_programming_language
+        return None
 
     def apply_karma_change(self, event, user, selected_user, operator, amount):
         selected_user_karma_change = None
@@ -280,7 +291,7 @@ class V(Vk):
 
         # Personal karma transfer
         if amount > 0:
-            if user.karma < amount:
+            if self.data.get_user_property(user, "karma") < amount:
                 self.send_not_enough_karma_error(event, user)
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
@@ -296,6 +307,13 @@ class V(Vk):
                 selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "opponents", config.negative_votes_per_karma, -1)
 
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
+
+    def apply_user_karma(self, user, amount):
+        self.data.set_user_property(user, "karma", self.data.get_user_property(user, "karma") + amount)
+        return (user.uid,
+                self.data.get_user_property(user, "name"),
+                self.data.get_user_property(user, "karma") - amount,
+                self.data.get_user_property(user, "karma"))
 
     def get_karma_hours_limit(self, karma):
         for limit_item in config.karma_limit_hours:
@@ -318,14 +336,9 @@ class V(Vk):
     def get_karma_string(self, user):
         plus_string = ""
         minus_string = ""
-        if isinstance(user, dict):
-            karma = user["karma"]
-            plus_votes = len(user["supporters"])
-            minus_votes = len(user["opponents"])
-        else:
-            karma = user.karma
-            plus_votes = len(user.supporters)
-            minus_votes = len(user.opponents)
+        karma = self.data.get_user_property(user, "karma")
+        plus_votes = len(self.data.get_user_property(user, "supporters"))
+        minus_votes = len(self.data.get_user_property(user, "opponents"))
         if plus_votes > 0:
             plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
         if minus_votes > 0:
@@ -346,7 +359,9 @@ class V(Vk):
             response = "[id%s|%s], Ваша карма — %s."
         else:
             response = "Карма [id%s|%s] — %s."
-        self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user)))
+        self.send_message(event, response % (self.data.get_user_property(user, "uid"),
+                                             self.data.get_user_property(user, "name"),
+                                             self.get_karma_string(user)))
 
     def send_info(self, event, karma_enabled, user, is_self=True):
         programming_languages_string = self.get_programming_languages_string(user)
@@ -356,18 +371,26 @@ class V(Vk):
                 response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
             else:
                 response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nCтраничка на GitHub — %s"
-            return self.send_message(event, response % (user.uid, user.name, self.get_karma_string(user), programming_languages_string, profile))
+            return self.send_message(event, response % (self.data.get_user_property(user, "uid"),
+                                                        self.data.get_user_property(user, "name"),
+                                                        self.get_karma_string(user), programming_languages_string, profile))
         else:
             if is_self:
                 response = "[id%s|%s], \nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
             else:
                 response = "[id%s|%s]. \nЯзыки программирования: %s\nCтраничка на GitHub — %s"
-            return self.send_message(event, response % (user.uid, user.name, programming_languages_string, profile))
+            return self.send_message(event, response % (self.data.get_user_property(user, "uid"),
+                                                        self.data.get_user_property(user, "name"),
+                                                        programming_languages_string, profile))
 
     def send_top_users(self, event, users):
         if not users:
             return
-        user_strings = ["%s [id%s|%s]%s %s" % (self.get_karma_string(user), user["uid"], user["name"], self.get_github_profile_top_string(user), self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
+        user_strings = ["%s [id%s|%s]%s %s" % (self.get_karma_string(user),
+                                               self.data.get_user_property(user, "uid"),
+                                               self.data.get_user_property(user, "name"),
+                                               self.get_github_profile_top_string(user),
+                                               self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
         for user_string in user_strings:
@@ -393,7 +416,10 @@ class V(Vk):
     def send_people_users(self, event, users):
         if not users:
             return
-        user_strings = ["[id%s|%s]%s %s" % (user["uid"], user["name"], self.get_github_profile_top_string(user), self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
+        user_strings = ["[id%s|%s]%s %s" % (self.data.get_user_property(user, "uid"),
+                                            self.data.get_user_property(user, "name"),
+                                            self.get_github_profile_top_string(user),
+                                            self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
         for user_string in user_strings:
@@ -441,16 +467,16 @@ class V(Vk):
     def send_github_profile(self, event, user):
         profile = self.get_github_profile_string(user)
         if not profile:
-            self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указана страничка на GitHub.")
+            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], у Вас не указана страничка на GitHub.")
         else:
-            self.send_message(event, f"[id{user.uid}|{user.name}], Ваша страничка на GitHub — {profile}.")
+            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], Ваша страничка на GitHub — {profile}.")
 
     def send_programming_languages_list(self, event, user):
         programming_languages_string = self.get_programming_languages_string(user)
         if not programming_languages_string:
-            self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указано языков программирования.")
+            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], у Вас не указано языков программирования.")
         else:
-            self.send_message(event, f"[id{user.uid}|{user.name}], Ваши языки программирования: {programming_languages_string}.")
+            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], Ваши языки программирования: {programming_languages_string}.")
 
     def send_help(self, event, group_chat, karma_enabled):
         if group_chat:
@@ -463,15 +489,15 @@ class V(Vk):
 
     def send_not_in_whitelist(self, event, user):
         peer_id = event["peer_id"]
-        message = f"Извините, [id{user.uid}|{user.name}], но Ваша беседа [{peer_id}] отсутствует в белом списке для начисления кармы."
+        message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но Ваша беседа [{peer_id}] отсутствует в белом списке для начисления кармы."
         self.send_message(event, message)
 
     def send_not_enough_karma_error(self, event, user):
-        message = f"Извините, [id{user.uid}|{user.name}], но Вашей кармы [{user.karma}] недостаточно :("
+        message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но Вашей кармы [{self.data.get_user_property(user, 'karma')}] недостаточно :("
         self.send_message(event, message)
 
     def send_not_enough_hours_error(self, event, user, hours_limit, difference_minutes):
-        message = f"Извините, [id{user.uid}|{user.name}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
+        message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
         self.send_message(event, message)
 
     def send_message(self, event, message):
