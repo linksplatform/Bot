@@ -237,7 +237,7 @@ class V(Vk):
 
     def send_info(self, event, karma_enabled, user, is_self=True):
         programming_languages_string = self.base.get_programming_languages_string(user)
-        profile = self.base.get_github_profile(user)
+        profile = self.base.get_github_profile_info(user)
         if karma_enabled:
             if is_self:
                 response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
@@ -295,7 +295,7 @@ class V(Vk):
 
     def send_people(self, event, maximum_users):
         peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_name(self, peer_id)
+        users = self.base.get_users_sorted_by_name(self, peer_id)
         users = [i for i in users if i["github_profile"] or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             self.send_people_users(event, users[:maximum_users])
@@ -326,7 +326,7 @@ class V(Vk):
         self.send_top_users(event, users)
 
     def send_github_profile(self, event, user):
-        profile = self.base.get_github_profile(user)
+        profile = self.base.get_github_profile_info(user)
         if not profile:
             self.send_message(event, f"[id{user.uid}|{user.name}], у Вас не указана страничка на GitHub.")
         else:

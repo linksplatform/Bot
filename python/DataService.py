@@ -36,6 +36,13 @@ class BetterBotBaseDataService(BetterBotBase):
             profile = user["github_profile"] if "github_profile" in user else ""
         else:
             profile = user.github_profile
+        return f"github.com/{profile}" if profile else ""
+
+    def get_github_profile_info(self, user):
+        if isinstance(user, dict):
+            profile = user["github_profile"] if "github_profile" in user else ""
+        else:
+            profile = user.github_profile
         return f"github.com/{profile}" if profile else "отсутствует"
 
     def get_github_profile_top_string(self, user):
