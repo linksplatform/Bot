@@ -145,8 +145,7 @@ class V(Vk):
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.UPDATE, message)
         if match:
-            user.name = self.users.get(user_ids=event["from_id"])['response'][0]["first_name"]
-            self.base.save(user)
+            self.base.update_user_name(vk, user, event["from_id"])
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
