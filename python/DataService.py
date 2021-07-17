@@ -164,3 +164,7 @@ class BetterBotBaseDataService(BetterBotBase):
     def apply_user_karma(self, user, amount):
         user.karma += amount
         return (user.uid, user.name, user.karma - amount, user.karma)
+
+    def update_user_name(self, vk, user, from_id):
+        user.name = vk.users.get(user_ids=from_id)['response'][0]["first_name"]
+        self.base.save(user)
