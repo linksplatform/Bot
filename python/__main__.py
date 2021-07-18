@@ -266,8 +266,8 @@ class V(Vk):
     def get_members(self, peer_id):
         return self.messages.getConversationMembers(peer_id=peer_id)
 
-    def get_user_name(self, from_id):
-        return self.users.get(user_ids=from_id)['response'][0]["first_name"]
+    def get_user_name(self, user_id):
+        return self.users.get(user_ids=user_id)['response'][0]["first_name"]
 
     def get_members_ids(self, peer_id):
         members = self.get_members(peer_id)

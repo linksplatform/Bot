@@ -13,8 +13,8 @@ class BetterBotBaseDataService(BetterBotBase):
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
 
-    def get_or_create_user(self, from_id, vk):
-        return self.base.autoInstall(from_id, vk) if from_id > 0 else None
+    def get_or_create_user(self, user_id, vk):
+        return self.base.autoInstall(user_id, vk) if user_id > 0 else None
 
     def get_user_sorted_programming_languages(self, user):
         languages = self.get_user_property(user, "programming_languages")
