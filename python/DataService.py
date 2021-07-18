@@ -13,27 +13,16 @@ class BetterBotBaseDataService(BetterBotBase):
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
 
-    def user_auto_install(self, from_id, vk):
+    def get_or_create_user(self, from_id, vk):
         return self.base.autoInstall(from_id, vk) if from_id > 0 else None
 
-    def get_programming_languages(self, user):
-        languages = self.get_user_property(user, "programming_languages")
-        languages.sort()
-        return languages
-
     def get_user_sorted_programming_languages(self, user):
-        if isinstance(user, dict):
-            languages = user["programming_languages"] if "programming_languages" in user else []
-        else:
-            languages = user.programming_languages
+        languages = self.get_user_property(user, "programming_languages")
+        languages = languages if type(languages) == list else []
         languages.sort()
         return languages
 
-    def get_github_profile(self, user):
-        profile = self.get_user_property(user, "github_profile")
-        return profile
-
-    def get_sorted_by_karma(self, other_keys, sort_key):
+    def get_users_sorted_by_karma(self, other_keys, sort_key):
         users = self.getByKeys("karma", "name", *other_keys)
         sorted_users = sorted(
             users,
@@ -42,7 +31,7 @@ class BetterBotBaseDataService(BetterBotBase):
         )
         return sorted_users
 
-    def get_by_name(self, other_keys):
+    def get_users_with_keys(self, other_keys):
         users = self.getByKeys("name", *other_keys)
         return users
 

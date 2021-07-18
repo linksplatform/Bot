@@ -48,12 +48,12 @@ class V(Vk):
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = self.data.user_auto_install(event["from_id"], self)
+        user = self.data.get_or_create_user(event["from_id"], self)
 
         message = event["text"].lstrip("/")
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
-        selected_user = self.data.user_auto_install(selected_message["from_id"], self) if selected_message else None
+        selected_user = self.data.get_or_create_user(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
         karma_enabled = event["peer_id"] in config.chats_karma_whitelist
@@ -83,7 +83,7 @@ class V(Vk):
                     if not selected_user:
                         selected_user_id = match.group("selectedUserId")
                         if selected_user_id:
-                            selected_user = self.data.user_auto_install(int(selected_user_id), self)
+                            selected_user = self.data.get_or_create_user(int(selected_user_id), self)
 
                     if selected_user and (self.data.get_user_property(user, "uid") != selected_user.uid):
                         operator = match.group("operator")[0]
@@ -224,19 +224,19 @@ class V(Vk):
         return False
 
     def get_github_profile_string(self, user):
-        profile = self.data.get_github_profile(user)
+        profile = self.data.get_user_property(user, "github_profile")
         return f"github.com/{profile}" if profile else "отсутствует"
 
     def get_github_profile_top_string(self, user):
-        profile = self.data.get_github_profile(user)
+        profile = self.data.get_user_property(user, "github_profile")
         return f" — github.com/{profile}" if profile else ""
 
     def get_programming_languages_string(self, user):
-        languages = self.data.get_programming_languages(user)
+        languages = self.data.get_user_sorted_programming_languages(user)
         return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
-        programming_languages_string = self.get_programming_languages_string(user)
+        programming_languages_string = self.get_user_sorted_programming_languages(user)
         if programming_languages_string == "":
             return programming_languages_string
         else:
