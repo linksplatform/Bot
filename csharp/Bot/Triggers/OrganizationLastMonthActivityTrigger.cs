@@ -43,6 +43,7 @@ namespace Bot
 
         public HashSet<string> GetActiveUsers(HashSet<string> ignoredRepositories, string owner)
         {
+            var date = DateTime.Today.AddMonths(-1);
             HashSet<string> activeUsers = new();
             foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
             {
@@ -50,15 +51,20 @@ namespace Bot
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
+                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-1)))
                 {
+
                     activeUsers.Add(commit.Author.Login);
+
                 }
                 foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
                 {
                     foreach (var reviewer in pullRequest.RequestedReviewers)
                     {
-                        activeUsers.Add(reviewer.Login);
+                        if (pullRequest.CreatedAt < date || pullRequest.UpdatedAt < date || pullRequest.ClosedAt < date || pullRequest.MergedAt < date)
+                        {
+                            activeUsers.Add(reviewer.Login);
+                        }
                     }
                 }
                 foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name))

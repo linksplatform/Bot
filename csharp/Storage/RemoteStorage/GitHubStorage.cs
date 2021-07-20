@@ -44,13 +44,12 @@ namespace Storage.Remote.GitHub
             return new List<Issue>();
         }
 
-        public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty)
+        public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty,DateTime since)
         {
-            var date = DateTime.Today.AddMonths(-1);
-            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
+            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = since }).Result;
         }
 
-        public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) => Client.PullRequest.GetAllForRepository(owner, reposiroty).Result;
+        public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) => Client.PullRequest.GetAllForRepository(owner, reposiroty,new PullRequestRequest() { SortProperty = PullRequestSort.Created }).Result;
 
         public IReadOnlyList<Issue> GetIssues(string owner, string reposiroty)
         {
