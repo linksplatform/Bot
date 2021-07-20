@@ -51,7 +51,7 @@ namespace Bot
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-1)))
+                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, date))
                 {
 
                     activeUsers.Add(commit.Author.Login);

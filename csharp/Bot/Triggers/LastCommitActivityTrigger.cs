@@ -8,15 +8,33 @@ using System.Linq;
 
 namespace Bot
 {
-    class LastCommitActivityTrigger : ITrigger<Issue>
+    internal class LastCommitActivityTrigger : ITrigger<Issue>
     {
-        public bool Condition(Issue issue) => issue.Title.ToLower() == "last 3 months commit activity";
-
         private readonly GitHubStorage Storage;
 
         private readonly Parser Parser = new();
 
         public LastCommitActivityTrigger(GitHubStorage storage) => Storage = storage;
+
+        public bool Condition(Issue issue) => issue.Title.ToLower() == "last 3 months commit activity";
+
+        public void Action(Issue issue)
+        {
+            var issueService = Storage.Client.Issue;
+            var owner = issue.Repository.Owner.Login;
+            var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
+            var answ = "```";
+            foreach (var user in users)
+            {
+                answ += "\n\n" + user.Url.Replace("api.", "").Replace("users/", "");
+                foreach (var repo in user.Repositories)
+                {
+                    answ += "\n    " + repo.Replace("api.", "").Replace("repos/", "");
+                }
+            }
+            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, answ);
+            Storage.CloseIssue(issue);
+        }
 
         public HashSet<string> GetIgnoredRepositories(IList<Link> links)
         {
@@ -43,7 +61,7 @@ namespace Bot
                 }
                 foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-3)))
                 {
-                    if(!activeUsers.Any(x => x.Url == commit.Author.Url))
+                    if (!activeUsers.Any(x => x.Url == commit.Author.Url))
                     {
                         activeUsers.Add(new Activity() { Url = commit.Author.Url, Repositories = new List<string> { repository.Url } });
                     }
@@ -57,24 +75,6 @@ namespace Bot
                 }
             }
             return activeUsers;
-        }
-
-        public void Action(Issue issue)
-        {
-            var issueService = Storage.Client.Issue;
-            var owner = issue.Repository.Owner.Login;
-            var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
-            var answ = "```";
-            foreach(var user in users)
-            {
-                answ +="\n\n" + user.Url.Replace("api.","").Replace("users/","");
-                foreach (var repo in user.Repositories)
-                {
-                    answ += "\n    " + repo.Replace("api.","").Replace("repos/","");
-                }
-            }
-            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, answ);
-            Storage.CloseIssue(issue);
         }
     }
 }

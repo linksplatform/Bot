@@ -26,9 +26,14 @@ namespace Bot
             try
             {
                 var api = new GitHubStorage(username, token, appName);
-                new ProgrammerRole(new List<ITrigger<Issue>> { new HelloWorldTrigger(api, dbContext, fileSetName), 
-                    new OrganizationLastMonthActivityTrigger(api),
-                    new LastCommitActivityTrigger(api)}, api).Start(cancellation.Token);
+                new ProgrammerRole(
+                    new List<ITrigger<Issue>> {
+                        new HelloWorldTrigger(api, dbContext, fileSetName),
+                        new OrganizationLastMonthActivityTrigger(api),
+                        new LastCommitActivityTrigger(api)
+                    },
+                    api
+                ).Start(cancellation.Token);
             }
             catch (Exception ex)
             {
