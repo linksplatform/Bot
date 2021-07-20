@@ -5,6 +5,7 @@ using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Bot
 {
@@ -23,17 +24,19 @@ namespace Bot
             var issueService = Storage.Client.Issue;
             var owner = issue.Repository.Owner.Login;
             var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
-            var answ = "```";
+            StringBuilder sb = new();
+            sb.Append("```");
             foreach (var user in users)
             {
-                answ += "\n\n" + user.Url.Replace("api.", "").Replace("users/", "");
+                sb.AppendLine($"{Environment.NewLine}" + user.Url.Replace("api.", "").Replace("users/", ""));
                 foreach (var repo in user.Repositories)
                 {
-                    answ += "\n    " + repo.Replace("api.", "").Replace("repos/", "");
+                    sb.AppendLine(repo.Replace("api.", "").Replace("repos/", ""));
                 }
             }
-            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, answ);
-            Storage.CloseIssue(issue);
+            Console.WriteLine(sb.Append("```").ToString());
+            //issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, sb.Append("```").ToString());
+            //Storage.CloseIssue(issue);
         }
 
         public HashSet<string> GetIgnoredRepositories(IList<Link> links)
