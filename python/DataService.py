@@ -1,5 +1,4 @@
 from social_ethosa import BetterBotBase
-import config
 
 
 class BetterBotBaseDataService(BetterBotBase):

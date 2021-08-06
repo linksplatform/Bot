@@ -199,89 +199,12 @@ class V(Vk):
             data = {'date': datetime.now() + timedelta(seconds=delay), 'id': message_id}
             self.messages_to_delete[peer_id].append(data)
 
-    def get_messages(self, event):
-        reply_message = event.get("reply_message", {})
-        return [reply_message] if reply_message else event.get("fwd_messages", [])
-
-    def contains_string(self, strings, matchedString, ignoreCase):
-        if ignoreCase:
-            for string in strings:
-                if string.lower() == matchedString.lower():
-                    return True
-        else:
-            for string in strings:
-                if string == matchedString:
-                    return True
-        return False
-
-    def contains_all_strings(self, strings, matchedStrings, ignoreCase):
-        matched_strings_count = len(matchedStrings)
-        for string in strings:
-            if self.contains_string(matchedStrings, string, ignoreCase):
-                matched_strings_count -= 1
-                if matched_strings_count == 0:
-                    return True
-        return False
-
-    def get_github_profile_string(self, user):
-        profile = self.data.get_user_property(user, "github_profile")
-        return f"github.com/{profile}" if profile else "отсутствует"
-
-    def get_github_profile_top_string(self, user):
-        profile = self.data.get_user_property(user, "github_profile")
-        return f" — github.com/{profile}" if profile else ""
-
-    def get_programming_languages_string(self, user):
-        languages = self.data.get_user_sorted_programming_languages(user)
-        return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
-
-    def get_programming_languages_string_with_parentheses_or_empty(self, user):
-        programming_languages_string = self.get_user_sorted_programming_languages(user)
-        if programming_languages_string == "":
-            return programming_languages_string
-        else:
-            return "(" + programming_languages_string + ")"
-
-    def calculate_real_karma(self, user):
-        base_karma = self.data.get_user_property(user, "karma")
-        up_votes = len(self.data.get_user_property(user, "supporters"))/config.positive_votes_per_karma
-        down_votes = len(self.data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
-        return base_karma + up_votes - down_votes
-
-    def get_users_sorted_by_karma(self, peer_id):
-        members = self.get_members_ids(peer_id)
-        users = self.data.get_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
-        if members:
-            users = [u for u in users if u["uid"] in members]
-        return users
-
-    def get_users_sorted_by_name(self, peer_id):
-        members = self.get_members_ids(peer_id)
-        users = self.data.get_by_name(other_keys=["programming_languages", "github_profile", "uid"])
-        if members:
-            users = [u for u in users if u["uid"] in members]
-        users.reverse()
-        return users
-
-    def get_members(self, peer_id):
-        return self.messages.getConversationMembers(peer_id=peer_id)
-
-    def get_user_name(self, user_id):
-        return self.users.get(user_ids=user_id)['response'][0]["first_name"]
-
-    def get_members_ids(self, peer_id):
-        members = self.get_members(peer_id)
-        if "error" in members:
-            return None
-        else:
-            return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
-
-    def get_default_programming_language(self, language):
-        for default_programming_language in config.default_programming_languages:
-            default_programming_language = default_programming_language.replace('\\', '')
-            if default_programming_language.lower() == language.lower():
-                return default_programming_language
-        return None
+    def get_karma_hours_limit(self, karma):
+        for limit_item in config.karma_limit_hours:
+            if (not limit_item["min_karma"]) or (karma >= limit_item["min_karma"]):
+                if (not limit_item["max_karma"]) or (karma < limit_item["max_karma"]):
+                    return limit_item["limit"]
+        return 168  # hours (a week)
 
     def apply_karma_change(self, event, user, selected_user, operator, amount):
         selected_user_karma_change = None
@@ -308,20 +231,6 @@ class V(Vk):
 
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
-    def apply_user_karma(self, user, amount):
-        self.data.set_user_property(user, "karma", self.data.get_user_property(user, "karma") + amount)
-        return (user.uid,
-                self.data.get_user_property(user, "name"),
-                self.data.get_user_property(user, "karma") - amount,
-                self.data.get_user_property(user, "karma"))
-
-    def get_karma_hours_limit(self, karma):
-        for limit_item in config.karma_limit_hours:
-            if (not limit_item["min_karma"]) or (karma >= limit_item["min_karma"]):
-                if (not limit_item["max_karma"]) or (karma < limit_item["max_karma"]):
-                    return limit_item["limit"]
-        return 168  # hours (a week)
-
     def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
         vote_applied = None
         if user.uid not in selected_user[current_voters]:
@@ -333,20 +242,62 @@ class V(Vk):
             return self.data.apply_user_karma(selected_user, amount), voters, vote_applied
         return None, None, vote_applied
 
-    def get_karma_string(self, user):
-        plus_string = ""
-        minus_string = ""
-        karma = self.data.get_user_property(user, "karma")
-        plus_votes = len(self.data.get_user_property(user, "supporters"))
-        minus_votes = len(self.data.get_user_property(user, "opponents"))
-        if plus_votes > 0:
-            plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
-        if minus_votes > 0:
-            minus_string = "-%.1f" % (minus_votes / config.negative_votes_per_karma)
-        if plus_votes > 0 or minus_votes > 0:
-            return f"[{karma}][{plus_string}{minus_string}]"
+    def apply_user_karma(self, user, amount):
+        self.data.set_user_property(user, "karma", self.data.get_user_property(user, "karma") + amount)
+        return (user.uid,
+                self.data.get_user_property(user, "name"),
+                self.data.get_user_property(user, "karma") - amount,
+                self.data.get_user_property(user, "karma"))
+
+    def get_messages(self, event):
+        reply_message = event.get("reply_message", {})
+        return [reply_message] if reply_message else event.get("fwd_messages", [])
+
+    def get_programming_languages_string_with_parentheses_or_empty(self, user):
+        programming_languages_string = self.get_user_sorted_programming_languages(user)
+        if programming_languages_string == "":
+            return programming_languages_string
         else:
-            return f"[{karma}]"
+            return "(" + programming_languages_string + ")"
+
+    def get_github_profile_string(self, user):
+        profile = self.data.get_user_property(user, "github_profile")
+        return f"github.com/{profile}" if profile else "отсутствует"
+
+    def get_github_profile_top_string(self, user):
+        profile = self.data.get_user_property(user, "github_profile")
+        return f" — github.com/{profile}" if profile else ""
+
+    def get_programming_languages_string(self, user):
+        languages = self.data.get_user_sorted_programming_languages(user)
+        return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
+
+    def get_default_programming_language(self, language):
+        for default_programming_language in config.default_programming_languages:
+            default_programming_language = default_programming_language.replace('\\', '')
+            if default_programming_language.lower() == language.lower():
+                return default_programming_language
+        return None
+
+    def contains_string(self, strings, matchedString, ignoreCase):
+        if ignoreCase:
+            for string in strings:
+                if string.lower() == matchedString.lower():
+                    return True
+        else:
+            for string in strings:
+                if string == matchedString:
+                    return True
+        return False
+
+    def contains_all_strings(self, strings, matchedStrings, ignoreCase):
+        matched_strings_count = len(matchedStrings)
+        for string in strings:
+            if self.contains_string(matchedStrings, string, ignoreCase):
+                matched_strings_count -= 1
+                if matched_strings_count == 0:
+                    return True
+        return False
 
     def send_karma_change(self, event, user_karma_change, selected_user_karma_change, voters):
         if selected_user_karma_change and user_karma_change:
@@ -383,6 +334,21 @@ class V(Vk):
                                                         self.data.get_user_property(user, "name"),
                                                         programming_languages_string, profile))
 
+    def get_karma_string(self, user):
+        plus_string = ""
+        minus_string = ""
+        karma = self.data.get_user_property(user, "karma")
+        plus_votes = len(self.data.get_user_property(user, "supporters"))
+        minus_votes = len(self.data.get_user_property(user, "opponents"))
+        if plus_votes > 0:
+            plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
+        if minus_votes > 0:
+            minus_string = "-%.1f" % (minus_votes / config.negative_votes_per_karma)
+        if plus_votes > 0 or minus_votes > 0:
+            return f"[{karma}][{plus_string}{minus_string}]"
+        else:
+            return f"[{karma}]"
+
     def send_top_users(self, event, users):
         if not users:
             return
@@ -403,16 +369,38 @@ class V(Vk):
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
+    def calculate_real_karma(self, user):
+        base_karma = self.data.get_user_property(user, "karma")
+        up_votes = len(self.data.get_user_property(user, "supporters"))/config.positive_votes_per_karma
+        down_votes = len(self.data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
+        return base_karma + up_votes - down_votes
+
+    def get_users_sorted_by_karma(self, peer_id):
+        members = self.get_members_ids(peer_id)
+        users = self.data.get_users_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
+        if members:
+            users = [u for u in users if u["uid"] in members]
+        return users
+
+    def get_users_sorted_by_name(self, peer_id):
+        members = self.get_members_ids(peer_id)
+        users = self.data.get_by_name(other_keys=["programming_languages", "github_profile", "uid"])
+        if members:
+            users = [u for u in users if u["uid"] in members]
+        users.reverse()
+        return users
+
     def send_bottom(self, event, maximum_users):
         peer_id = event["peer_id"]
         users = self.get_users_sorted_by_karma(peer_id)
-        users = [i for i in users if (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        users = [i for i in users if
+                 (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             users.reverse()
             self.send_top_users(event, users[:maximum_users])
         else:
             self.send_top_users(event, reversed(users))
-    
+
     def send_people_users(self, event, users):
         if not users:
             return
@@ -500,8 +488,21 @@ class V(Vk):
         message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
         self.send_message(event, message)
 
+    def get_members(self, peer_id):
+        return self.messages.getConversationMembers(peer_id=peer_id)
+
+    def get_members_ids(self, peer_id):
+        members = self.get_members(peer_id)
+        if "error" in members:
+            return None
+        else:
+            return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
+
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=0)
+
+    def get_user_name(self, user_id):
+        return self.users.get(user_ids=user_id)['response'][0]["first_name"]
 
 
 if __name__ == '__main__':
