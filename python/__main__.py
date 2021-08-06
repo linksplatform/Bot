@@ -28,7 +28,6 @@ class V(Vk):
         Handling all new messages.
         """
         event = event["object"]["message"]
-        print(event)
         if event['peer_id'] in self.messages_to_delete:
             peer = CHAT_ID_OFFSET + config.userbot_chats[event['peer_id']]
             new_messages_to_delete = []
@@ -113,12 +112,12 @@ class V(Vk):
 
                         if collective_vote_applied:
                             self.data.set_user_property(user, "last_collective_vote", int(utcnow.timestamp()))
-                            self.data.save(user)
+                            self.data.save_user(user)
 
-                        self.data.save(selected_user)
+                        self.data.save_user(selected_user)
 
                         if user_karma_change:
-                            self.data.save(user)
+                            self.data.save_user(user)
                         self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
                         self.delete_message(event)
                         return
@@ -147,7 +146,7 @@ class V(Vk):
         if match:
             name = self.get_user_name(event["from_id"])
             self.data.set_user_property(user, "name", name)
-            self.data.save(user)
+            self.data.save_user(user)
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
@@ -157,7 +156,7 @@ class V(Vk):
                 return
             if language not in self.data.get_user_property(user, "programming_languages"):
                 self.data.get_user_property(user, "programming_languages").append(language)
-                self.data.save(user)
+                self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
         if match:
@@ -167,17 +166,17 @@ class V(Vk):
                 return
             if language in self.data.get_user_property(user, "programming_languages"):
                 self.data.get_user_property(user, "programming_languages").remove(language)
-                self.data.save(user)
+                self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
         if match:
             profile = match.group('profile')
             if not profile:
                 return
-            if profile != self.data.get_user_property(user, "get_user_property"):
+            if profile != self.data.get_user_property(user, "github_profile"):
                 if requests.get(f'https://github.com/{profile}').status_code == 200:
                     self.data.set_user_property(user, "github_profile", profile)
-                    self.data.save(user)
+                    self.data.save_user(user)
             return self.send_github_profile(event, user)
         match = regex.match(patterns.REMOVE_GITHUB_PROFILE, message)
         if match:
@@ -186,7 +185,7 @@ class V(Vk):
                 return
             if profile == self.data.get_user_property(user, "github_profile"):
                 self.data.set_user_property(user, "github_profile", "")
-                self.data.save(user)
+                self.data.save_user(user)
             return self.send_github_profile(event, user)
 
     def delete_message(self, event, delay=2):
