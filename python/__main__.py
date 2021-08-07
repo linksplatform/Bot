@@ -217,9 +217,9 @@ class V(Vk):
                 self.send_not_enough_karma_error(event, user)
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
-                user_karma_change = self.data.apply_user_karma(user, -amount)
+                user_karma_change = self.apply_user_karma(user, -amount)
                 amount = -amount if operator == "-" else amount
-                selected_user_karma_change = self.data.apply_user_karma(selected_user, amount)
+                selected_user_karma_change = self.apply_user_karma(selected_user, amount)
 
         # Collective vote
         elif amount == 0:
@@ -238,7 +238,7 @@ class V(Vk):
         if len(selected_user[current_voters]) >= number_of_voters:
             voters = selected_user[current_voters]
             selected_user[current_voters] = []
-            return self.data.apply_user_karma(selected_user, amount), voters, vote_applied
+            return self.apply_user_karma(selected_user, amount), voters, vote_applied
         return None, None, vote_applied
 
     def apply_user_karma(self, user, amount):
