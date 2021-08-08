@@ -19,11 +19,11 @@ For the bot to work, you need to get a token. You can do this here: https://gith
 
 CLI Arguments:
 
-0. Your username
-1. Your token
-2. App Name. can be anything, it is not necessary to register
+0. Your username.
+1. Your token.
+2.  The name of your GitHub App (required by GitHub to login).
 3. Path to a database file.
-4. File set name (the defoult is ``HelloWorldSet``) 
+4. File set name (the defoult is ``HelloWorldSet``).
 ```Shell
 dotnet run
 ```
