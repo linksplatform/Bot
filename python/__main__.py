@@ -155,7 +155,9 @@ class V(Vk):
             if not language:
                 return
             if language not in self.data.get_user_property(user, "programming_languages"):
-                self.data.get_user_property(user, "programming_languages").append(language)
+                new_language = self.data.get_user_property(user, "programming_languages")
+                new_language.append(language)
+                self.data.set_user_property(user, "programming_languages", language)
                 self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
@@ -165,7 +167,9 @@ class V(Vk):
             if not language:
                 return
             if language in self.data.get_user_property(user, "programming_languages"):
-                self.data.get_user_property(user, "programming_languages").remove(language)
+                new_language = self.data.get_user_property(user, "programming_languages")
+                new_language.remove(language)
+                self.data.set_user_property(user, "programming_languages", language)
                 self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
