@@ -21,7 +21,7 @@ CLI Arguments:
 
 0. Your username.
 1. Your token.
-2.  The name of your GitHub App (required by GitHub to login).
+2. The name of your GitHub App (required by GitHub to login).
 3. Path to a database file.
 4. File set name (the defoult is ``HelloWorldSet``).
 ```Shell
@@ -31,6 +31,6 @@ dotnet run
 ## Example
 
 ```Shell
-example: dotnet run nickname token BestAppEver db.links HelloWorldSet
+dotnet run nickname token BestAppEver db.links HelloWorldSet
 ```
 
