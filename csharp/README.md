@@ -23,7 +23,7 @@ CLI Arguments:
 1. Your token.
 2. The name of your GitHub App (required by GitHub to login).
 3. Path to a database file.
-4. File set name (the defoult is ``HelloWorldSet``).
+4. File set name (the default is ``HelloWorldSet``).
 ```Shell
 dotnet run
 ```
