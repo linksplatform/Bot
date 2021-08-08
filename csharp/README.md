@@ -20,7 +20,7 @@ Arguments:
 1. Your token
 2. App Name. can be anything, it is not necessary to register
 3. Path to database file.
-4. File set name for defoult Hello World Action
+4. The default file set name is `Hello World Action`
 
 ## Run
 
