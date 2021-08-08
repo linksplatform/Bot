@@ -47,7 +47,7 @@ class V(Vk):
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = self.data.get_or_create_user(event["from_id"], self)
+        user = self.data.get_or_create_user(event["from_id"], self) if event["from_id"] > 0 else None
 
         message = event["text"].lstrip("/")
         messages = self.get_messages(event)
@@ -203,7 +203,7 @@ class V(Vk):
             if (not limit_item["min_karma"]) or (karma >= limit_item["min_karma"]):
                 if (not limit_item["max_karma"]) or (karma < limit_item["max_karma"]):
                     return limit_item["limit"]
-        return 168  # hours (a week)
+        return 168 # hours (a week)
 
     def apply_karma_change(self, event, user, selected_user, operator, amount):
         selected_user_karma_change = None
@@ -253,7 +253,7 @@ class V(Vk):
         return [reply_message] if reply_message else event.get("fwd_messages", [])
 
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
-        programming_languages_string = self.get_user_sorted_programming_languages(user)
+        programming_languages_string = ", ".join(self.data.get_user_sorted_programming_languages(user))
         if programming_languages_string == "":
             return programming_languages_string
         else:
@@ -383,7 +383,7 @@ class V(Vk):
 
     def get_users_sorted_by_name(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_by_name(other_keys=["programming_languages", "github_profile", "uid"])
+        users = self.data.get_users_with_keys(other_keys=["programming_languages", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         users.reverse()
@@ -440,7 +440,7 @@ class V(Vk):
     def send_people_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
         peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_name(self, peer_id)
+        users = self.get_users_sorted_by_name(peer_id)
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_people_users(event, users)
 
