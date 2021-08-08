@@ -23,8 +23,7 @@ CLI Arguments:
 1. Your token
 2. App Name. can be anything, it is not necessary to register
 3. Path to a database file.
-4. The default file set name is `HelloWorldSet`
-
+4. File set name (the defoult is ``HelloWorldSet``) 
 ```Shell
 dotnet run
 ```
