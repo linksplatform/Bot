@@ -151,24 +151,24 @@ class V(Vk):
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
+            languages = self.data.get_user_property(user, "programming_languages")
             language = match.group('language')
             language = self.get_default_programming_language(language)
             if not language:
                 return
-            if language not in self.data.get_user_property(user, "programming_languages"):
-                languages = self.data.get_user_property(user, "programming_languages")
+            if language not in languages:
                 languages.append(language)
                 self.data.set_user_property(user, "programming_languages", languages)
                 self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
         if match:
+            languages = self.data.get_user_property(user, "programming_languages")
             language = match.group('language')
             language = self.get_default_programming_language(language)
             if not language:
                 return
-            if language in self.data.get_user_property(user, "programming_languages"):
-                languages = self.data.get_user_property(user, "programming_languages")
+            if language in languages:
                 languages.remove(language)
                 self.data.set_user_property(user, "programming_languages", languages)
                 self.data.save_user(user)
