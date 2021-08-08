@@ -28,7 +28,8 @@ CLI Arguments:
 ```Shell
 dotnet run
 ```
-##Example
+
+## Example
 
 ```Shell
 example: dotnet run nickname token BestAppEver db.links HelloWorldSet
