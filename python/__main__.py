@@ -28,6 +28,7 @@ class V(Vk):
         Handling all new messages.
         """
         event = event["object"]["message"]
+
         if event['peer_id'] in self.messages_to_delete:
             peer = CHAT_ID_OFFSET + config.userbot_chats[event['peer_id']]
             new_messages_to_delete = []
@@ -155,9 +156,9 @@ class V(Vk):
             if not language:
                 return
             if language not in self.data.get_user_property(user, "programming_languages"):
-                new_language = self.data.get_user_property(user, "programming_languages")
-                new_language.append(language)
-                self.data.set_user_property(user, "programming_languages", language)
+                languages = self.data.get_user_property(user, "programming_languages")
+                languages.append(language)
+                self.data.set_user_property(user, "programming_languages", languages)
                 self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
@@ -167,9 +168,9 @@ class V(Vk):
             if not language:
                 return
             if language in self.data.get_user_property(user, "programming_languages"):
-                new_language = self.data.get_user_property(user, "programming_languages")
-                new_language.remove(language)
-                self.data.set_user_property(user, "programming_languages", language)
+                languages = self.data.get_user_property(user, "programming_languages")
+                languages.remove(language)
+                self.data.set_user_property(user, "programming_languages", languages)
                 self.data.save_user(user)
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
@@ -247,9 +248,10 @@ class V(Vk):
 
     def apply_user_karma(self, user, amount):
         self.data.set_user_property(user, "karma", self.data.get_user_property(user, "karma") + amount)
+        initial_karma = self.data.get_user_property(user, "karma") - amount,
         return (user.uid,
                 self.data.get_user_property(user, "name"),
-                self.data.get_user_property(user, "karma") - amount,
+                initial_karma,
                 self.data.get_user_property(user, "karma"))
 
     def get_messages(self, event):
