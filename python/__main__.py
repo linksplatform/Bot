@@ -151,11 +151,11 @@ class V(Vk):
             return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
-            languages = self.data.get_user_property(user, "programming_languages")
             language = match.group('language')
             language = self.get_default_programming_language(language)
             if not language:
                 return
+            languages = self.data.get_user_property(user, "programming_languages")
             if language not in languages:
                 languages.append(language)
                 self.data.set_user_property(user, "programming_languages", languages)
@@ -163,11 +163,11 @@ class V(Vk):
             return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
         if match:
-            languages = self.data.get_user_property(user, "programming_languages")
             language = match.group('language')
             language = self.get_default_programming_language(language)
             if not language:
                 return
+            languages = self.data.get_user_property(user, "programming_languages")
             if language in languages:
                 languages.remove(language)
                 self.data.set_user_property(user, "programming_languages", languages)
@@ -248,7 +248,8 @@ class V(Vk):
 
     def apply_user_karma(self, user, amount):
         self.data.set_user_property(user, "karma", self.data.get_user_property(user, "karma") + amount)
-        initial_karma = self.data.get_user_property(user, "karma") - amount,
+        initial_karma = self.data.get_user_property(user, "karma"),
+        self.data.set_user_property(user, "karma", initial_karma + amount)
         return (user.uid,
                 self.data.get_user_property(user, "name"),
                 initial_karma,
@@ -382,14 +383,14 @@ class V(Vk):
 
     def get_users_sorted_by_karma(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_users_sorted_by_karma(other_keys=["programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
+        users = self.data.get_users_sorted_by_karma(other_keys=["karma", "programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
 
     def get_users_sorted_by_name(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_users_with_keys(other_keys=["programming_languages", "github_profile", "uid"])
+        users = self.data.get_users_sorted_by_karma(other_keys=["programming_languages", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         users.reverse()

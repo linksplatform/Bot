@@ -20,18 +20,14 @@ class BetterBotBaseDataService:
         languages.sort()
         return languages
 
-    def get_users_sorted_by_karma(self, other_keys, sort_key):
-        users = self.base.getByKeys("karma", "name", *other_keys)
+    def get_users_sorted_by_karma(self, other_keys, sort_key=None):
+        users = self.base.getByKeys("name", *other_keys)
         sorted_users = sorted(
             users,
             key=sort_key,
             reverse=True
         )
         return sorted_users
-
-    def get_users_with_keys(self, other_keys):
-        users = self.base.getByKeys("name", *other_keys)
-        return users
 
     @staticmethod
     def get_user_property(user, property_name):
