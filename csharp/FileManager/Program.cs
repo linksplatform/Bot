@@ -1,4 +1,4 @@
-﻿using Interfaces;
+using Interfaces;
 using Platform.Exceptions;
 using Platform.IO;
 using Storage.Local;
@@ -7,8 +7,20 @@ using System.Collections.Generic;
 
 namespace FileManager
 {
+    /// <summary>
+    /// <para>
+    /// Represents the program.
+    /// </para>
+    /// <para></para>
+    /// </summary>
     internal class Program
     {
+        /// <summary>
+        /// <para>
+        /// The get files by file set name trigger.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         public static List<ITrigger<Context>> Handlers = new()
         {
             new CreateTrigger(),
@@ -21,6 +33,16 @@ namespace FileManager
             new GetFilesByFileSetNameTrigger()
         };
 
+        /// <summary>
+        /// <para>
+        /// Main the args.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="args">
+        /// <para>The args.</para>
+        /// <para></para>
+        /// </param>
         private static void Main(string[] args)
         {
             using ConsoleCancellation cancellation = new();

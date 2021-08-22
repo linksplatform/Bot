@@ -1,4 +1,4 @@
-﻿using Interfaces;
+using Interfaces;
 using Octokit;
 using Platform.Communication.Protocol.Lino;
 using Storage.Remote.GitHub;
@@ -8,16 +8,69 @@ using System.Linq;
 
 namespace Bot
 {
+    /// <summary>
+    /// <para>
+    /// Represents the organization last month activity trigger.
+    /// </para>
+    /// <para></para>
+    /// </summary>
+    /// <seealso cref="ITrigger{Issue}"/>
     internal class OrganizationLastMonthActivityTrigger : ITrigger<Issue>
     {
+        /// <summary>
+        /// <para>
+        /// The storage.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly GitHubStorage Storage;
 
+        /// <summary>
+        /// <para>
+        /// The parser.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly Parser Parser = new();
 
+        /// <summary>
+        /// <para>
+        /// Initializes a new <see cref="OrganizationLastMonthActivityTrigger"/> instance.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="storage">
+        /// <para>A storage.</para>
+        /// <para></para>
+        /// </param>
         public OrganizationLastMonthActivityTrigger(GitHubStorage storage) => Storage = storage;
 
+        /// <summary>
+        /// <para>
+        /// Determines whether this instance condition.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="issue">
+        /// <para>The issue.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The bool</para>
+        /// <para></para>
+        /// </returns>
         public bool Condition(Issue issue) => issue.Title.ToLower() == "organization last month activity";
 
+        /// <summary>
+        /// <para>
+        /// Actions the issue.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="issue">
+        /// <para>The issue.</para>
+        /// <para></para>
+        /// </param>
         public void Action(Issue issue)
         {
             var issueService = Storage.Client.Issue;
@@ -27,6 +80,20 @@ namespace Bot
             Storage.CloseIssue(issue);
         }
 
+        /// <summary>
+        /// <para>
+        /// Gets the ignored repositories using the specified links.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="links">
+        /// <para>The links.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The ignored repos.</para>
+        /// <para></para>
+        /// </returns>
         public HashSet<string> GetIgnoredRepositories(IList<Link> links)
         {
             HashSet<string> ignoredRepos = new() { };
@@ -41,6 +108,24 @@ namespace Bot
             return ignoredRepos;
         }
 
+        /// <summary>
+        /// <para>
+        /// Gets the active users using the specified ignored repositories.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="ignoredRepositories">
+        /// <para>The ignored repositories.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="owner">
+        /// <para>The owner.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The active users.</para>
+        /// <para></para>
+        /// </returns>
         public HashSet<string> GetActiveUsers(HashSet<string> ignoredRepositories, string owner)
         {
             HashSet<string> activeUsers = new();
