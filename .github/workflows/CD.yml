@@ -1,0 +1,72 @@
+name: CD
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+env:
+  NUGETTOKEN: ${{ secrets.NUGET_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SCRIPTS_BASE_URL: https://raw.githubusercontent.com/linksplatform/Scripts/master/MultiProjectRepository
+
+jobs:
+  testAndDeploy:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Test
+      run: dotnet test -c Release -f netcoreapp3.1
+    - name: Generate PDF with CSharp code
+      if: github.event_name == 'push'
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/format-csharp-files.py"
+        wget "$SCRIPTS_BASE_URL/format-csharp-document.sh"
+        wget "$SCRIPTS_BASE_URL/generate-csharp-pdf.sh"
+        bash ./generate-csharp-pdf.sh
+    - name: Publish CSharp documentation to gh-pages branch 
+      if: github.event_name == 'push'
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/docfx.json"
+        wget "$SCRIPTS_BASE_URL/filter.yml"
+        wget "$SCRIPTS_BASE_URL/toc.yml"
+        wget "$SCRIPTS_BASE_URL/publish-csharp-docs.sh"
+        bash ./publish-csharp-docs.sh
+    - name: Read CSharp project information
+      if: github.event_name == 'push'
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/read_csharp_package_info.sh"
+        bash ./read_csharp_package_info.sh
+    - name: Publish CSharp NuGet package
+      if: github.event_name == 'push'
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/push-csharp-nuget.sh"
+        bash ./push-csharp-nuget.sh
+    - name: Publish release
+      if: github.event_name == 'push'
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/publish-release.sh"
+        bash ./publish-release.sh
+  pushCSharpNuGetToGitHubPackageRegistry:
+    needs: testAndDeploy
+    if: github.event_name == 'push'
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: nuget/setup-nuget@v1
+      - name: Publish CSharp NuGet to GitHub Package Registry
+        run: |
+          dotnet build -c Release
+          dotnet pack -c Release
+          nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/linksplatform/index.json" -UserName linksplatform -Password ${{ secrets.GITHUB_TOKEN }}
+          nuget push **/*.nupkg -Source "GitHub" -SkipDuplicate
