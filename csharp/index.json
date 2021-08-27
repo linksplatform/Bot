@@ -1,4 +1,94 @@
 {
+  "api/Bot.html": {
+    "href": "api/Bot.html",
+    "title": "Namespace Bot | LinksPlatform's Platform.Bot Library",
+    "keywords": "Namespace Bot Classes ProgrammerRole Represents the programmer role."
+  },
+  "api/Bot.ProgrammerRole.html": {
+    "href": "api/Bot.ProgrammerRole.html",
+    "title": "Class ProgrammerRole | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class ProgrammerRole Represents the programmer role. Inheritance Object ProgrammerRole Namespace : Bot Assembly : Bot.dll Syntax public class ProgrammerRole : object Constructors | Improve this Doc View Source ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage) Initializes a new ProgrammerRole instance. Declaration public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI) Parameters Type Name Description List < ITrigger < Issue >> triggers A triggers. GitHubStorage gitHubAPI A git hub api. Fields | Improve this Doc View Source GitHubAPI The git hub api. Declaration public readonly GitHubStorage GitHubAPI Field Value Type Description GitHubStorage | Improve this Doc View Source MinimumInteractionInterval The minimum interaction interval. Declaration public readonly TimeSpan MinimumInteractionInterval Field Value Type Description TimeSpan | Improve this Doc View Source Triggers The triggers. Declaration public readonly List<ITrigger<Issue>> Triggers Field Value Type Description List < ITrigger < Issue >> Methods | Improve this Doc View Source Start(CancellationToken) Starts the cancellation token. Declaration public void Start(CancellationToken cancellationToken) Parameters Type Name Description CancellationToken cancellationToken The cancellation token."
+  },
+  "api/FileManager.Context.html": {
+    "href": "api/FileManager.Context.html",
+    "title": "Class Context | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class Context Represents the context. Inheritance Object Context Namespace : FileManager Assembly : FileManager.dll Syntax public class Context : object Properties | Improve this Doc View Source Args Gets or sets the args value. Declaration public string[] Args { get; set; } Property Value Type Description String [] | Improve this Doc View Source FileStorage Gets or sets the file storage value. Declaration public FileStorage FileStorage { get; set; } Property Value Type Description FileStorage"
+  },
+  "api/FileManager.CreateFileSetTrigger.html": {
+    "href": "api/FileManager.CreateFileSetTrigger.html",
+    "title": "Class CreateFileSetTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class CreateFileSetTrigger Represents the create file set trigger. Inheritance Object CreateFileSetTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class CreateFileSetTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/FileManager.CreateTrigger.html": {
+    "href": "api/FileManager.CreateTrigger.html",
+    "title": "Class CreateTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class CreateTrigger Represents the create trigger. Inheritance Object CreateTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class CreateTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/FileManager.DeleteTrigger.html": {
+    "href": "api/FileManager.DeleteTrigger.html",
+    "title": "Class DeleteTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class DeleteTrigger Represents the delete trigger. Inheritance Object DeleteTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class DeleteTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/FileManager.GetFilesByFileSetNameTrigger.html": {
+    "href": "api/FileManager.GetFilesByFileSetNameTrigger.html",
+    "title": "Class GetFilesByFileSetNameTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class GetFilesByFileSetNameTrigger Represents the get files by file set name trigger. Inheritance Object GetFilesByFileSetNameTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class GetFilesByFileSetNameTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/FileManager.HelpTrigger.html": {
+    "href": "api/FileManager.HelpTrigger.html",
+    "title": "Class HelpTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class HelpTrigger Represents the help trigger. Inheritance Object HelpTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class HelpTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/FileManager.html": {
+    "href": "api/FileManager.html",
+    "title": "Namespace FileManager | LinksPlatform's Platform.Bot Library",
+    "keywords": "Namespace FileManager Classes Context Represents the context. CreateFileSetTrigger Represents the create file set trigger. CreateTrigger Represents the create trigger. DeleteTrigger Represents the delete trigger. GetFilesByFileSetNameTrigger Represents the get files by file set name trigger. HelpTrigger Represents the help trigger. LinksPrinterTrigger Represents the links printer trigger. ShowTrigger Represents the show trigger."
+  },
+  "api/FileManager.LinksPrinterTrigger.html": {
+    "href": "api/FileManager.LinksPrinterTrigger.html",
+    "title": "Class LinksPrinterTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class LinksPrinterTrigger Represents the links printer trigger. Inheritance Object LinksPrinterTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class LinksPrinterTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/FileManager.ShowTrigger.html": {
+    "href": "api/FileManager.ShowTrigger.html",
+    "title": "Class ShowTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class ShowTrigger Represents the show trigger. Inheritance Object ShowTrigger Implements ITrigger < Context > Namespace : FileManager Assembly : FileManager.dll Syntax public class ShowTrigger : object, ITrigger<Context> Methods | Improve this Doc View Source Action(Context) Actions the arguments. Declaration public void Action(Context arguments) Parameters Type Name Description Context arguments The arguments. | Improve this Doc View Source Condition(Context) Determines whether this instance condition. Declaration public bool Condition(Context arguments) Parameters Type Name Description Context arguments The arguments. Returns Type Description Boolean The bool Implements ITrigger<TContext> See Also ITrigger <TContext>"
+  },
+  "api/Interfaces.html": {
+    "href": "api/Interfaces.html",
+    "title": "Namespace Interfaces | LinksPlatform's Platform.Bot Library",
+    "keywords": "Namespace Interfaces Interfaces ITrigger<TContext> Defines the trigger."
+  },
+  "api/Interfaces.ITrigger-1.html": {
+    "href": "api/Interfaces.ITrigger-1.html",
+    "title": "Interface ITrigger<TContext> | LinksPlatform's Platform.Bot Library",
+    "keywords": "Interface ITrigger<TContext> Defines the trigger. Namespace : Interfaces Assembly : Interfaces.dll Syntax public interface ITrigger<TContext> Type Parameters Name Description TContext Methods | Improve this Doc View Source Action(TContext) Actions the obj. Declaration void Action(TContext obj) Parameters Type Name Description TContext obj The obj. | Improve this Doc View Source Condition(TContext) Determines whether this instance condition. Declaration bool Condition(TContext obj) Parameters Type Name Description TContext obj The obj. Returns Type Description Boolean The bool"
+  },
+  "api/Storage.Local.File.html": {
+    "href": "api/Storage.Local.File.html",
+    "title": "Class File | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class File Represents the file. Inheritance Object File Namespace : Storage.Local Assembly : Storage.dll Syntax public class File : object Properties | Improve this Doc View Source Content Gets or sets the content value. Declaration public string Content { get; set; } Property Value Type Description String | Improve this Doc View Source Path Gets or sets the path value. Declaration public string Path { get; set; } Property Value Type Description String"
+  },
+  "api/Storage.Local.FileStorage.html": {
+    "href": "api/Storage.Local.FileStorage.html",
+    "title": "Class FileStorage | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class FileStorage Represents the file storage. Inheritance Object FileStorage Namespace : Storage.Local Assembly : Storage.dll Syntax public class FileStorage : object Constructors | Improve this Doc View Source FileStorage(String) Initializes a new FileStorage instance. Declaration public FileStorage(string DBFilename) Parameters Type Name Description String DBFilename A db filename. Methods | Improve this Doc View Source AddFile(String) Adds the file using the specified content. Declaration public System.UInt64 AddFile(string content) Parameters Type Name Description String content The content. Returns Type Description System.UInt64 The link address | Improve this Doc View Source AddFileToSet(System.UInt64, System.UInt64, String) Adds the file to set using the specified set. Declaration public System.UInt64 AddFileToSet(System.UInt64 set, System.UInt64 file, string path) Parameters Type Name Description System.UInt64 set The set. System.UInt64 file The file. String path The path. Returns Type Description System.UInt64 The link address | Improve this Doc View Source AllLinksToString() Alls the links to string. Declaration public string AllLinksToString() Returns Type Description String The string | Improve this Doc View Source Convert(String) Converts the str. Declaration public System.UInt64 Convert(string str) Parameters Type Name Description String str The str. Returns Type Description System.UInt64 The link address | Improve this Doc View Source Convert(System.UInt64) Converts the address. Declaration public string Convert(System.UInt64 address) Parameters Type Name Description System.UInt64 address The address. Returns Type Description String The string | Improve this Doc View Source CreateFileSet(String) Creates the file set using the specified file set name. Declaration public System.UInt64 CreateFileSet(string fileSetName) Parameters Type Name Description String fileSetName The file set name. Returns Type Description System.UInt64 The link address | Improve this Doc View Source Delete(System.UInt64) Deletes the link. Declaration public void Delete(System.UInt64 link) Parameters Type Name Description System.UInt64 link The link. | Improve this Doc View Source GetAllFiles() Gets the all files. Declaration public List<File> GetAllFiles() Returns Type Description List < File > The files. | Improve this Doc View Source GetFileContent(System.UInt64) Gets the file content using the specified address. Declaration public string GetFileContent(System.UInt64 address) Parameters Type Name Description System.UInt64 address The address. Returns Type Description String The string | Improve this Doc View Source GetFileSet(String) Gets the file set using the specified file set name. Declaration public System.UInt64 GetFileSet(string fileSetName) Parameters Type Name Description String fileSetName The file set name. Returns Type Description System.UInt64 The link address | Improve this Doc View Source GetFilesFromSet(String) Gets the files from set using the specified set. Declaration public List<File> GetFilesFromSet(string set) Parameters Type Name Description String set The set. Returns Type Description List < File > The files."
+  },
+  "api/Storage.Local.html": {
+    "href": "api/Storage.Local.html",
+    "title": "Namespace Storage.Local | LinksPlatform's Platform.Bot Library",
+    "keywords": "Namespace Storage.Local Classes File Represents the file. FileStorage Represents the file storage."
+  },
+  "api/Storage.Remote.GitHub.GitHubStorage.html": {
+    "href": "api/Storage.Remote.GitHub.GitHubStorage.html",
+    "title": "Class GitHubStorage | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class GitHubStorage Represents the git hub storage. Inheritance Object GitHubStorage Namespace : Storage.Remote.GitHub Assembly : Storage.dll Syntax public class GitHubStorage : object Constructors | Improve this Doc View Source GitHubStorage(String, String, String) Initializes a new GitHubStorage instance. Declaration public GitHubStorage(string owner, string token, string name) Parameters Type Name Description String owner A owner. String token A token. String name A name. Fields | Improve this Doc View Source Client The client. Declaration public readonly GitHubClient Client Field Value Type Description GitHubClient | Improve this Doc View Source Owner The owner. Declaration public readonly string Owner Field Value Type Description String Properties | Improve this Doc View Source MinimumInteractionInterval Gets the minimum interaction interval value. Declaration public TimeSpan MinimumInteractionInterval { get; } Property Value Type Description TimeSpan Methods | Improve this Doc View Source CloseIssue(Issue) Closes the issue using the specified issue. Declaration public void CloseIssue(Issue issue) Parameters Type Name Description Issue issue The issue. | Improve this Doc View Source CreateOrUpdateFile(String, String, File) Creates the or update file using the specified repository. Declaration public void CreateOrUpdateFile(string repository, string branch, File file) Parameters Type Name Description String repository The repository. String branch The branch. File file The file. | Improve this Doc View Source GetCommits(String, String) Gets the commits using the specified owner. Declaration public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty) Parameters Type Name Description String owner The owner. String reposiroty The reposiroty. Returns Type Description IReadOnlyList < GitHubCommit > A read only list of git hub commit | Improve this Doc View Source GetIssues() Gets the issues. Declaration public IReadOnlyList<Issue> GetIssues() Returns Type Description IReadOnlyList < Issue > A read only list of issue | Improve this Doc View Source GetIssues(String, String) Gets the issues using the specified owner. Declaration public IReadOnlyList<Issue> GetIssues(string owner, string reposiroty) Parameters Type Name Description String owner The owner. String reposiroty The reposiroty. Returns Type Description IReadOnlyList < Issue > A read only list of issue | Improve this Doc View Source GetPullRequests(String, String) Gets the pull requests using the specified owner. Declaration public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) Parameters Type Name Description String owner The owner. String reposiroty The reposiroty. Returns Type Description IReadOnlyList < PullRequest > A read only list of pull request"
+  },
+  "api/Storage.Remote.GitHub.html": {
+    "href": "api/Storage.Remote.GitHub.html",
+    "title": "Namespace Storage.Remote.GitHub | LinksPlatform's Platform.Bot Library",
+    "keywords": "Namespace Storage.Remote.GitHub Classes GitHubStorage Represents the git hub storage."
+  },
   "README.html": {
     "href": "README.html",
     "title": "Bot | LinksPlatform's Platform.Bot Library",

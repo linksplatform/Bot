@@ -25,6 +25,234 @@
       "version": ""
     },
     {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Bot.ProgrammerRole.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Bot.ProgrammerRole.html",
+          "hash": "0vbuywR49rDGoTUNXyhGcg=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Bot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Bot.html",
+          "hash": "sZFAqmVgGa4jOk1+vKK3EQ=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.Context.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.Context.html",
+          "hash": "h4Yg2Uqx7ERQqZjACohQNA=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.CreateFileSetTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.CreateFileSetTrigger.html",
+          "hash": "dOH6whCIJbxH/6WCyuqcqQ=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.CreateTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.CreateTrigger.html",
+          "hash": "Idf/mEy5I82+h4sunP2EjA=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.DeleteTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.DeleteTrigger.html",
+          "hash": "y+dWWfllDgsn+1R3tM9Kbw=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.GetFilesByFileSetNameTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.GetFilesByFileSetNameTrigger.html",
+          "hash": "HXnCZzzlHKccfbnYzl+uxQ=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.HelpTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.HelpTrigger.html",
+          "hash": "oVyklxnFw31dMby+N+mpag=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.LinksPrinterTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.LinksPrinterTrigger.html",
+          "hash": "+TO1EFyHKQ6TG37XHzE0WQ=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.ShowTrigger.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.ShowTrigger.html",
+          "hash": "VRO/q0nW6NLL0t1sVlXdSg=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/FileManager.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/FileManager.html",
+          "hash": "UcE/JYUypjXChsO7peZEAw=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Interfaces.ITrigger-1.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Interfaces.ITrigger-1.html",
+          "hash": "0cMwsNrFGZOU90HwUTWymQ=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Interfaces.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Interfaces.html",
+          "hash": "K3W/3DdwgS7/jT67dktshw=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Storage.Local.File.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Storage.Local.File.html",
+          "hash": "gV7kY6cB8R9gBeLdI3pnpw=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Storage.Local.FileStorage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Storage.Local.FileStorage.html",
+          "hash": "hMHre4h/hpDW6bSM9HwMcA=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Storage.Local.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Storage.Local.html",
+          "hash": "KzScfr36wPn0EsKeOITo2A=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Storage.Remote.GitHub.GitHubStorage.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Storage.Remote.GitHub.GitHubStorage.html",
+          "hash": "cNABw45UDRiayd9IEVu/8Q=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Storage.Remote.GitHub.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Storage.Remote.GitHub.html",
+          "hash": "3jVxMnQDGJr9dAh+j+l9qQ=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "Toc",
+      "source_relative_path": "obj/api/toc.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/toc.html",
+          "hash": "ukGlkNu1wMDqkpdvkdA7hA=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
       "log_codes": [
         "InvalidFileLink"
       ],
@@ -33,7 +261,7 @@
       "output": {
         ".html": {
           "relative_path": "toc.html",
-          "hash": "gigmBHQnGV/Z9mQAijBCyQ=="
+          "hash": "rIiR9cMYDoBuRi5QQdaXxg=="
         }
       },
       "is_incremental": false,
@@ -55,6 +283,12 @@
           "can_incremental": false,
           "incrementalPhase": "build",
           "total_file_count": 1,
+          "skipped_file_count": 0
+        },
+        "ManagedReferenceDocumentProcessor": {
+          "can_incremental": false,
+          "incrementalPhase": "build",
+          "total_file_count": 18,
           "skipped_file_count": 0
         },
         "TocDocumentProcessor": {
