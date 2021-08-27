@@ -1,0 +1,7 @@
+{
+  "README.html": {
+    "href": "README.html",
+    "title": "Bot | LinksPlatform's Platform.Bot Library",
+    "keywords": "Bot Prerequisites Git Python 3 Install git clone https://github.com/linksplatform/Bot.git cd Bot pip3 install -r requirements.txt Configure Enable VK Long Poll API with 5.103 version for your bot's group. Set bot group id in config.py . Add tokens into python/tokens.py file BotToken (an access token of your VK group). This token should have two access settings community management and community messages . This token is required . UserToken (an access token to your VK user via KateMobile). This token is used to delete messages in the chats where your user is administrator. This token is optional . Run cd python python3 __main__.py Do not upload tokens.py with your real tokens please To tell git to ignore this file: git update-index --assume-unchanged python/tokens.py See the bot in action To see the bot in action you can join the chat with this bot."
+  }
+}
