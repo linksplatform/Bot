@@ -26,35 +26,11 @@
     },
     {
       "type": "ManagedReference",
-      "source_relative_path": "obj/api/Bot.ProgrammerRole.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Bot.ProgrammerRole.html",
-          "hash": "0vbuywR49rDGoTUNXyhGcg=="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
-      "source_relative_path": "obj/api/Bot.yml",
-      "output": {
-        ".html": {
-          "relative_path": "api/Bot.html",
-          "hash": "sZFAqmVgGa4jOk1+vKK3EQ=="
-        }
-      },
-      "is_incremental": false,
-      "version": ""
-    },
-    {
-      "type": "ManagedReference",
       "source_relative_path": "obj/api/FileManager.Context.yml",
       "output": {
         ".html": {
           "relative_path": "api/FileManager.Context.html",
-          "hash": "h4Yg2Uqx7ERQqZjACohQNA=="
+          "hash": "x9quFfXxFOhDSz4r/s4KrA=="
         }
       },
       "is_incremental": false,
@@ -66,7 +42,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.CreateFileSetTrigger.html",
-          "hash": "dOH6whCIJbxH/6WCyuqcqQ=="
+          "hash": "RMorgz5mNEWtDkX4mbXYrA=="
         }
       },
       "is_incremental": false,
@@ -78,7 +54,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.CreateTrigger.html",
-          "hash": "Idf/mEy5I82+h4sunP2EjA=="
+          "hash": "m5e3eupmbic+bjyh9Qrg0Q=="
         }
       },
       "is_incremental": false,
@@ -90,7 +66,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.DeleteTrigger.html",
-          "hash": "y+dWWfllDgsn+1R3tM9Kbw=="
+          "hash": "QB/K/E/a72CnyjPylD2waQ=="
         }
       },
       "is_incremental": false,
@@ -102,7 +78,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.GetFilesByFileSetNameTrigger.html",
-          "hash": "HXnCZzzlHKccfbnYzl+uxQ=="
+          "hash": "nHE88a3c08u8SJS3niqoQw=="
         }
       },
       "is_incremental": false,
@@ -114,7 +90,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.HelpTrigger.html",
-          "hash": "oVyklxnFw31dMby+N+mpag=="
+          "hash": "symiYDRco78ck+M3lnBpbA=="
         }
       },
       "is_incremental": false,
@@ -126,7 +102,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.LinksPrinterTrigger.html",
-          "hash": "+TO1EFyHKQ6TG37XHzE0WQ=="
+          "hash": "Wq3hbtpKrGetvOWRz3ZJ0A=="
         }
       },
       "is_incremental": false,
@@ -138,7 +114,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.ShowTrigger.html",
-          "hash": "VRO/q0nW6NLL0t1sVlXdSg=="
+          "hash": "FhtsvjF051ge28WKFk1+lQ=="
         }
       },
       "is_incremental": false,
@@ -162,7 +138,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Interfaces.ITrigger-1.html",
-          "hash": "0cMwsNrFGZOU90HwUTWymQ=="
+          "hash": "WD/EbWBd5XPIFzcId6JEIw=="
         }
       },
       "is_incremental": false,
@@ -182,11 +158,35 @@
     },
     {
       "type": "ManagedReference",
+      "source_relative_path": "obj/api/Platform.Bot.ProgrammerRole.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Platform.Bot.ProgrammerRole.html",
+          "hash": "LJ4iVV2OzbLUV3JZSdpJ6A=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
+      "source_relative_path": "obj/api/Platform.Bot.yml",
+      "output": {
+        ".html": {
+          "relative_path": "api/Platform.Bot.html",
+          "hash": "bummkSprvFhC07GEy98l0Q=="
+        }
+      },
+      "is_incremental": false,
+      "version": ""
+    },
+    {
+      "type": "ManagedReference",
       "source_relative_path": "obj/api/Storage.Local.File.yml",
       "output": {
         ".html": {
           "relative_path": "api/Storage.Local.File.html",
-          "hash": "gV7kY6cB8R9gBeLdI3pnpw=="
+          "hash": "oDtKdqE/lZwJ0oetvOSOdQ=="
         }
       },
       "is_incremental": false,
@@ -198,7 +198,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Storage.Local.FileStorage.html",
-          "hash": "hMHre4h/hpDW6bSM9HwMcA=="
+          "hash": "rVBrWdoINrBzBesmjKJX1A=="
         }
       },
       "is_incremental": false,
@@ -222,7 +222,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Storage.Remote.GitHub.GitHubStorage.html",
-          "hash": "cNABw45UDRiayd9IEVu/8Q=="
+          "hash": "k1yN8pkeD/G6NylNz9l3GQ=="
         }
       },
       "is_incremental": false,
@@ -246,7 +246,7 @@
       "output": {
         ".html": {
           "relative_path": "api/toc.html",
-          "hash": "ukGlkNu1wMDqkpdvkdA7hA=="
+          "hash": "4+kMCjLM5RbBExM+j+c++g=="
         }
       },
       "is_incremental": false,

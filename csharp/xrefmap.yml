@@ -1,65 +1,6 @@
 ### YamlMime:XRefMap
 sorted: true
 references:
-- uid: Bot
-  name: Bot
-  href: api/Bot.html
-  commentId: N:Bot
-  fullName: Bot
-  nameWithType: Bot
-- uid: Bot.ProgrammerRole
-  name: ProgrammerRole
-  href: api/Bot.ProgrammerRole.html
-  commentId: T:Bot.ProgrammerRole
-  fullName: Bot.ProgrammerRole
-  nameWithType: ProgrammerRole
-- uid: Bot.ProgrammerRole.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
-  name: ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage)
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_
-  commentId: M:Bot.ProgrammerRole.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
-  name.vb: ProgrammerRole(List(Of ITrigger(Of Issue)), GitHubStorage)
-  fullName: Bot.ProgrammerRole.ProgrammerRole(List<Interfaces.ITrigger<Issue>>, Storage.Remote.GitHub.GitHubStorage)
-  fullName.vb: Bot.ProgrammerRole.ProgrammerRole(List(Of Interfaces.ITrigger(Of Issue)), Storage.Remote.GitHub.GitHubStorage)
-  nameWithType: ProgrammerRole.ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage)
-  nameWithType.vb: ProgrammerRole.ProgrammerRole(List(Of ITrigger(Of Issue)), GitHubStorage)
-- uid: Bot.ProgrammerRole.#ctor*
-  name: ProgrammerRole
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole__ctor_
-  commentId: Overload:Bot.ProgrammerRole.#ctor
-  isSpec: "True"
-  fullName: Bot.ProgrammerRole.ProgrammerRole
-  nameWithType: ProgrammerRole.ProgrammerRole
-- uid: Bot.ProgrammerRole.GitHubAPI
-  name: GitHubAPI
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole_GitHubAPI
-  commentId: F:Bot.ProgrammerRole.GitHubAPI
-  fullName: Bot.ProgrammerRole.GitHubAPI
-  nameWithType: ProgrammerRole.GitHubAPI
-- uid: Bot.ProgrammerRole.MinimumInteractionInterval
-  name: MinimumInteractionInterval
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole_MinimumInteractionInterval
-  commentId: F:Bot.ProgrammerRole.MinimumInteractionInterval
-  fullName: Bot.ProgrammerRole.MinimumInteractionInterval
-  nameWithType: ProgrammerRole.MinimumInteractionInterval
-- uid: Bot.ProgrammerRole.Start(CancellationToken)
-  name: Start(CancellationToken)
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole_Start_CancellationToken_
-  commentId: M:Bot.ProgrammerRole.Start(CancellationToken)
-  fullName: Bot.ProgrammerRole.Start(CancellationToken)
-  nameWithType: ProgrammerRole.Start(CancellationToken)
-- uid: Bot.ProgrammerRole.Start*
-  name: Start
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole_Start_
-  commentId: Overload:Bot.ProgrammerRole.Start
-  isSpec: "True"
-  fullName: Bot.ProgrammerRole.Start
-  nameWithType: ProgrammerRole.Start
-- uid: Bot.ProgrammerRole.Triggers
-  name: Triggers
-  href: api/Bot.ProgrammerRole.html#Bot_ProgrammerRole_Triggers
-  commentId: F:Bot.ProgrammerRole.Triggers
-  fullName: Bot.ProgrammerRole.Triggers
-  nameWithType: ProgrammerRole.Triggers
 - uid: FileManager
   name: FileManager
   href: api/FileManager.html
@@ -371,6 +312,65 @@ references:
   fullName.vb: Interfaces.ITrigger(Of TContext).Condition
   nameWithType: ITrigger<TContext>.Condition
   nameWithType.vb: ITrigger(Of TContext).Condition
+- uid: Platform.Bot
+  name: Platform.Bot
+  href: api/Platform.Bot.html
+  commentId: N:Platform.Bot
+  fullName: Platform.Bot
+  nameWithType: Platform.Bot
+- uid: Platform.Bot.ProgrammerRole
+  name: ProgrammerRole
+  href: api/Platform.Bot.ProgrammerRole.html
+  commentId: T:Platform.Bot.ProgrammerRole
+  fullName: Platform.Bot.ProgrammerRole
+  nameWithType: ProgrammerRole
+- uid: Platform.Bot.ProgrammerRole.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
+  name: ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage)
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_
+  commentId: M:Platform.Bot.ProgrammerRole.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
+  name.vb: ProgrammerRole(List(Of ITrigger(Of Issue)), GitHubStorage)
+  fullName: Platform.Bot.ProgrammerRole.ProgrammerRole(List<Interfaces.ITrigger<Issue>>, Storage.Remote.GitHub.GitHubStorage)
+  fullName.vb: Platform.Bot.ProgrammerRole.ProgrammerRole(List(Of Interfaces.ITrigger(Of Issue)), Storage.Remote.GitHub.GitHubStorage)
+  nameWithType: ProgrammerRole.ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage)
+  nameWithType.vb: ProgrammerRole.ProgrammerRole(List(Of ITrigger(Of Issue)), GitHubStorage)
+- uid: Platform.Bot.ProgrammerRole.#ctor*
+  name: ProgrammerRole
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole__ctor_
+  commentId: Overload:Platform.Bot.ProgrammerRole.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.ProgrammerRole.ProgrammerRole
+  nameWithType: ProgrammerRole.ProgrammerRole
+- uid: Platform.Bot.ProgrammerRole.GitHubAPI
+  name: GitHubAPI
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_GitHubAPI
+  commentId: F:Platform.Bot.ProgrammerRole.GitHubAPI
+  fullName: Platform.Bot.ProgrammerRole.GitHubAPI
+  nameWithType: ProgrammerRole.GitHubAPI
+- uid: Platform.Bot.ProgrammerRole.MinimumInteractionInterval
+  name: MinimumInteractionInterval
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_MinimumInteractionInterval
+  commentId: F:Platform.Bot.ProgrammerRole.MinimumInteractionInterval
+  fullName: Platform.Bot.ProgrammerRole.MinimumInteractionInterval
+  nameWithType: ProgrammerRole.MinimumInteractionInterval
+- uid: Platform.Bot.ProgrammerRole.Start(CancellationToken)
+  name: Start(CancellationToken)
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_Start_CancellationToken_
+  commentId: M:Platform.Bot.ProgrammerRole.Start(CancellationToken)
+  fullName: Platform.Bot.ProgrammerRole.Start(CancellationToken)
+  nameWithType: ProgrammerRole.Start(CancellationToken)
+- uid: Platform.Bot.ProgrammerRole.Start*
+  name: Start
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_Start_
+  commentId: Overload:Platform.Bot.ProgrammerRole.Start
+  isSpec: "True"
+  fullName: Platform.Bot.ProgrammerRole.Start
+  nameWithType: ProgrammerRole.Start
+- uid: Platform.Bot.ProgrammerRole.Triggers
+  name: Triggers
+  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_Triggers
+  commentId: F:Platform.Bot.ProgrammerRole.Triggers
+  fullName: Platform.Bot.ProgrammerRole.Triggers
+  nameWithType: ProgrammerRole.Triggers
 - uid: Storage.Local
   name: Storage.Local
   href: api/Storage.Local.html

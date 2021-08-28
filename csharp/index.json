@@ -1,14 +1,4 @@
 {
-  "api/Bot.html": {
-    "href": "api/Bot.html",
-    "title": "Namespace Bot | LinksPlatform's Platform.Bot Library",
-    "keywords": "Namespace Bot Classes ProgrammerRole Represents the programmer role."
-  },
-  "api/Bot.ProgrammerRole.html": {
-    "href": "api/Bot.ProgrammerRole.html",
-    "title": "Class ProgrammerRole | LinksPlatform's Platform.Bot Library",
-    "keywords": "Class ProgrammerRole Represents the programmer role. Inheritance Object ProgrammerRole Namespace : Bot Assembly : Bot.dll Syntax public class ProgrammerRole : object Constructors | Improve this Doc View Source ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage) Initializes a new ProgrammerRole instance. Declaration public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI) Parameters Type Name Description List < ITrigger < Issue >> triggers A triggers. GitHubStorage gitHubAPI A git hub api. Fields | Improve this Doc View Source GitHubAPI The git hub api. Declaration public readonly GitHubStorage GitHubAPI Field Value Type Description GitHubStorage | Improve this Doc View Source MinimumInteractionInterval The minimum interaction interval. Declaration public readonly TimeSpan MinimumInteractionInterval Field Value Type Description TimeSpan | Improve this Doc View Source Triggers The triggers. Declaration public readonly List<ITrigger<Issue>> Triggers Field Value Type Description List < ITrigger < Issue >> Methods | Improve this Doc View Source Start(CancellationToken) Starts the cancellation token. Declaration public void Start(CancellationToken cancellationToken) Parameters Type Name Description CancellationToken cancellationToken The cancellation token."
-  },
   "api/FileManager.Context.html": {
     "href": "api/FileManager.Context.html",
     "title": "Class Context | LinksPlatform's Platform.Bot Library",
@@ -63,6 +53,16 @@
     "href": "api/Interfaces.ITrigger-1.html",
     "title": "Interface ITrigger<TContext> | LinksPlatform's Platform.Bot Library",
     "keywords": "Interface ITrigger<TContext> Defines the trigger. Namespace : Interfaces Assembly : Interfaces.dll Syntax public interface ITrigger<TContext> Type Parameters Name Description TContext Methods | Improve this Doc View Source Action(TContext) Actions the obj. Declaration void Action(TContext obj) Parameters Type Name Description TContext obj The obj. | Improve this Doc View Source Condition(TContext) Determines whether this instance condition. Declaration bool Condition(TContext obj) Parameters Type Name Description TContext obj The obj. Returns Type Description Boolean The bool"
+  },
+  "api/Platform.Bot.html": {
+    "href": "api/Platform.Bot.html",
+    "title": "Namespace Platform.Bot | LinksPlatform's Platform.Bot Library",
+    "keywords": "Namespace Platform.Bot Classes ProgrammerRole Represents the programmer role."
+  },
+  "api/Platform.Bot.ProgrammerRole.html": {
+    "href": "api/Platform.Bot.ProgrammerRole.html",
+    "title": "Class ProgrammerRole | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class ProgrammerRole Represents the programmer role. Inheritance Object ProgrammerRole Namespace : Platform.Bot Assembly : Platform.Bot.dll Syntax public class ProgrammerRole : object Constructors | Improve this Doc View Source ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage) Initializes a new ProgrammerRole instance. Declaration public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI) Parameters Type Name Description List < ITrigger < Issue >> triggers A triggers. GitHubStorage gitHubAPI A git hub api. Fields | Improve this Doc View Source GitHubAPI The git hub api. Declaration public readonly GitHubStorage GitHubAPI Field Value Type Description GitHubStorage | Improve this Doc View Source MinimumInteractionInterval The minimum interaction interval. Declaration public readonly TimeSpan MinimumInteractionInterval Field Value Type Description TimeSpan | Improve this Doc View Source Triggers The triggers. Declaration public readonly List<ITrigger<Issue>> Triggers Field Value Type Description List < ITrigger < Issue >> Methods | Improve this Doc View Source Start(CancellationToken) Starts the cancellation token. Declaration public void Start(CancellationToken cancellationToken) Parameters Type Name Description CancellationToken cancellationToken The cancellation token."
   },
   "api/Storage.Local.File.html": {
     "href": "api/Storage.Local.File.html",
