@@ -126,6 +126,11 @@ namespace Storage.Remote.GitHub
             return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
         }
 
+
+        public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty,DateTime date)
+        {
+            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
+        }
         /// <summary>
         /// <para>
         /// Gets the pull requests using the specified owner.

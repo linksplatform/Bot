@@ -4,6 +4,7 @@ using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Platform.Bot
 {
@@ -80,7 +81,7 @@ namespace Platform.Bot
                     {
                         if (trigger.Condition(issue))
                         {
-                            trigger.Action(issue);
+                            Task.Run(() => trigger.Action(issue));
                         }
                     }
                 }
