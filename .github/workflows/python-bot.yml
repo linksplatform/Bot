@@ -1,0 +1,23 @@
+name: Python Bot CI pipeline
+
+# on:
+#   push:
+#     branches: [ master ]
+#   pull_request:
+#     branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - run: apt update && apt -y install pylint
+    - uses: actions/checkout@v1
+    - name: Update repo.
+      run: |
+        git submodule update --init --recursive
+        
+    - name: Lint python bot
+      run: |
+        pylint ./python
