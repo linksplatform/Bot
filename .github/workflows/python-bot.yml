@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   build:
     runs-on: ubuntu-latest
+    container: debian:bullseye-slim
     steps:
     - run: apt update && apt -y install pylint
     - uses: actions/checkout@v1
