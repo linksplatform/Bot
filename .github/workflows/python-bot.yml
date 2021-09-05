@@ -4,9 +4,7 @@ on: [push, pull_request]
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
-
     steps:
     - run: apt update && apt -y install pylint
     - uses: actions/checkout@v1
