@@ -8,11 +8,7 @@ jobs:
     container: debian:bullseye-slim
     steps:
     - run: apt update && apt -y install pylint
-    - uses: actions/checkout@v1
-    - name: Update repo.
-      run: |
-        git submodule update --init --recursive
-        
+    - uses: actions/checkout@v1      
     - name: Lint python bot
       run: |
         pylint ./python
