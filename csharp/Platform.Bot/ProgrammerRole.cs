@@ -88,6 +88,7 @@ namespace Platform.Bot
             }
         }
 
+
         /// <summary>
         /// <para>
         /// Starts the cancellation token.

@@ -1,4 +1,4 @@
-using Interfaces;
+﻿using Interfaces;
 using Octokit;
 using Storage.Local;
 using Storage.Remote.GitHub;
@@ -63,6 +63,7 @@ namespace csharp
             this.fileSetName = fileSetName;
         }
 
+
         /// <summary>
         /// <para>
         /// Actions the obj.
@@ -73,6 +74,7 @@ namespace csharp
         /// <para>The obj.</para>
         /// <para></para>
         /// </param>
+
         public void Action(Issue obj)
         {
             foreach (var file in fileStorage.GetFilesFromSet(fileSetName))
@@ -81,6 +83,7 @@ namespace csharp
             }
             gitHubAPI.CloseIssue(obj);
         }
+
 
         /// <summary>
         /// <para>
