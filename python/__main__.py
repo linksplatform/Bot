@@ -383,14 +383,14 @@ class V(Vk):
 
     def get_users_sorted_by_karma(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_users_sorted_by_karma(other_keys=["karma", "programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
+        users = self.data.get_users_sorted_by_keys(other_keys=["karma", "programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
 
     def get_users_sorted_by_name(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_users_sorted_by_karma(other_keys=["programming_languages", "github_profile", "uid"])
+        users = self.data.get_users_sorted_by_keys(other_keys=["programming_languages", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         users.reverse()
