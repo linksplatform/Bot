@@ -627,6 +627,12 @@ references:
   commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String)
   fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String)
   nameWithType: GitHubStorage.GetCommits(String, String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime)
+  name: GetCommits(String, String, DateTime)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_String_System_String_DateTime_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String, DateTime)
+  nameWithType: GitHubStorage.GetCommits(String, String, DateTime)
 - uid: Storage.Remote.GitHub.GitHubStorage.GetCommits*
   name: GetCommits
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_
