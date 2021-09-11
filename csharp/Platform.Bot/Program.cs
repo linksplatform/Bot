@@ -8,10 +8,26 @@ using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
 
-namespace Bot
+namespace Platform.Bot
 {
+    /// <summary>
+    /// <para>
+    /// Represents the program.
+    /// </para>
+    /// <para></para>
+    /// </summary>
     internal class Program
     {
+        /// <summary>
+        /// <para>
+        /// Main the args.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="args">
+        /// <para>The args.</para>
+        /// <para></para>
+        /// </param>
         private static void Main(string[] args)
         {
             using var cancellation = new ConsoleCancellation();

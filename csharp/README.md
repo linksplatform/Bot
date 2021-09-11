@@ -11,19 +11,26 @@ cd Bot/csharp/Bot
 dotnet restore
 ```
 
-## Configure
+## Prepare 
 
 For the bot to work, you need to get a token. You can do this here: https://github.com/settings/tokens/new.  
-Arguments:
-
-0. Your username
-1. Your token
-2. App Name. can be anything, it is not necessary to register
-3. Path to database file.
-4. File set name for defoult Hello World Action
 
 ## Run
 
+CLI Arguments:
+
+0. Your username.
+1. Your token.
+2. The name of your GitHub App (required by GitHub to login).
+3. Path to a database file.
+4. File set name (the default is ``HelloWorldSet``).
 ```Shell
 dotnet run
 ```
+
+## Example
+
+```Shell
+dotnet run nickname token BestAppEver db.links HelloWorldSet
+```
+
