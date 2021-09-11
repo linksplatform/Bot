@@ -21,7 +21,7 @@ class BetterBotBaseDataService:
         return languages
 
     def get_users_sorted_by_keys(self, other_keys, sort_key=None):
-        users = self.base.getByKeys("name", *other_keys)
+        users = self.base.getByKeys(*other_keys)
         sorted_users = sorted(
             users,
             key=sort_key,
