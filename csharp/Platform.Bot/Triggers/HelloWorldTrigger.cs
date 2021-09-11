@@ -3,7 +3,7 @@ using Octokit;
 using Storage.Local;
 using Storage.Remote.GitHub;
 
-namespace csharp
+namespace Platform.Bot
 {
     /// <summary>
     /// <para>

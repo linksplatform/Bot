@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Bot
+namespace Platform.Bot
 {
     internal class Activity
     {

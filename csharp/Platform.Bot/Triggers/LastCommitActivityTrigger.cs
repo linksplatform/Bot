@@ -7,7 +7,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Bot
+namespace Platform.Bot
 {
     internal class LastCommitActivityTrigger : ITrigger<Issue>
     {

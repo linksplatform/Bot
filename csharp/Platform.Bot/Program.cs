@@ -1,5 +1,4 @@
-﻿using csharp;
-using Interfaces;
+﻿using Interfaces;
 using Octokit;
 using Platform.Exceptions;
 using Platform.IO;

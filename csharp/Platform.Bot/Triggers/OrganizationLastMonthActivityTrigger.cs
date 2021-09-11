@@ -129,13 +129,14 @@ namespace Platform.Bot
         public HashSet<string> GetActiveUsers(HashSet<string> ignoredRepositories, string owner)
         {
             HashSet<string> activeUsers = new();
+            var date = DateTime.Now.AddMonths(-1);
             foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
             {
                 if (ignoredRepositories.Contains(repository.Name))
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, date))
+                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
                 {
 
                     activeUsers.Add(commit.Author.Login);
