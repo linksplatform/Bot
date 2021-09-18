@@ -24,18 +24,21 @@ namespace Platform.Bot
             var issueService = Storage.Client.Issue;
             var owner = issue.Repository.Owner.Login;
             var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
-            StringBuilder sb = new();
-            sb.Append("```");
+            StringBuilder resultStringBuilder = new();
             foreach (var user in users)
             {
-                sb.AppendLine($"{Environment.NewLine}" + user.Url.Replace("api.", "").Replace("users/", ""));
+                resultStringBuilder.AppendLine($"- **{user.Url.Replace("api.", "").Replace("users/", "")}**");
                 foreach (var repo in user.Repositories)
                 {
-                    sb.AppendLine(repo.Replace("api.", "").Replace("repos/", ""));
+                    resultStringBuilder.AppendLine($"  - {repo.Replace("api.", "").Replace("repos/", "")}");
                 }
+                // Break line
+                resultStringBuilder.AppendLine("------------------");
             }
-            Console.WriteLine(sb.Append("```").ToString());
-            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, sb.Append("```").ToString());
+            var result = resultStringBuilder.ToString();
+            var comment = issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, result);
+            comment.Wait();
+            Console.WriteLine($"Last commit activity comment is added: {comment.Result.HtmlUrl}");
             Storage.CloseIssue(issue);
         }
 
