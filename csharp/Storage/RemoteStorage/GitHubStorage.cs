@@ -174,6 +174,10 @@ namespace Storage.Remote.GitHub
             var date = DateTime.Today.AddMonths(-1);
             return Client.Issue.GetAllForRepository(owner, reposiroty, new RepositoryIssueRequest() { Since = date }).Result;
         }
+        public IReadOnlyList<Issue> GetIssues(string owner, string reposiroty,DateTime date)
+        {
+            return Client.Issue.GetAllForRepository(owner, reposiroty, new RepositoryIssueRequest() { Since = date }).Result;
+        }
 
         /// <summary>
         /// <para>

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace Platform.Bot
 {
@@ -7,5 +8,7 @@ namespace Platform.Bot
         public string Url { get; set; }
 
         public List<string> Repositories { get; set; }
+
+        public List<DateTime> Dates = new List<DateTime>();
     }
 }

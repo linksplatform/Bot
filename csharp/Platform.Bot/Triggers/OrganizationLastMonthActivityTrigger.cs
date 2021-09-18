@@ -59,7 +59,7 @@ namespace Platform.Bot
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Issue issue) => issue.Title.ToLower() == "organization last month activity";
+        public bool Condition(Issue issue) => issue.Title.Contains("organization last");
 
         /// <summary>
         /// <para>
@@ -75,9 +75,24 @@ namespace Platform.Bot
         {
             var issueService = Storage.Client.Issue;
             var owner = issue.Repository.Owner.Login;
-            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner));
-            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
-            Storage.CloseIssue(issue);
+            var activeUsersString = GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner, new LastCommitActivityTrigger(this.Storage).GetSince(issue.Title));
+            foreach (var mon in activeUsersString)
+            {
+                Console.WriteLine("\n\n\n" + mon.Last().Dates.First().ToString() + " - " + mon.Last().Dates.Last().ToString());
+                foreach (var user in mon)
+                {
+                    if (user?.Url == null)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        Console.WriteLine(user.Url);
+                    }
+                }
+                //issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, "organization last " + new LastCommitActivityTrigger(this.Storage).GetSince(issue.Title) + " month activity" + activeUsersString);
+                //Storage.CloseIssue(issue);
+            }
         }
 
         /// <summary>
@@ -107,6 +122,57 @@ namespace Platform.Bot
             }
             return ignoredRepos;
         }
+        public HashSet<Activity> GetActivitiesInRepos(HashSet<string> ignoredRepositories, string owner, DateTime date)
+        {
+            HashSet<Activity> activeUsers = new();
+            foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
+            {
+                if (ignoredRepositories.Contains(repository.Name))
+                {
+                    continue;
+                }
+                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
+                {
+                    if (!activeUsers.Any(x => x.Url == commit.Author.Login))
+                    {
+                        activeUsers.Add(new Activity() { Url = commit.Author.Login});
+                        activeUsers.Last().Dates.Add(commit.Commit.Committer.Date.DateTime);
+                    }
+                }
+                foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
+                {
+                    if (pullRequest.Merged)
+                    {
+                        if (pullRequest.MergedAt.Value.DateTime > date)
+                        {
+                            activeUsers.Add(new Activity() { Url = pullRequest.MergedBy.Login });
+                            activeUsers.Last().Dates.Add(pullRequest.MergedAt.Value.DateTime);
+                        }
+                    }
+                    foreach (var reviewer in pullRequest.RequestedReviewers)
+                    {
+                        if (pullRequest.CreatedAt < date || pullRequest.UpdatedAt < date || pullRequest.ClosedAt < date || pullRequest.MergedAt < date)
+                        {
+                            if (!activeUsers.Any(x => x.Url == reviewer.Login))
+                            {
+                                activeUsers.Add(new Activity() { Url = reviewer.Login });
+                                activeUsers.Last().Dates.Add(pullRequest.CreatedAt.DateTime);
+                            }
+                        }
+                    }
+                }
+                foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name,date))
+                {
+                    if(createdIssue.CreatedAt > date)
+                    {
+                        activeUsers.Add(new Activity() { Url = createdIssue.User.Login });
+                        activeUsers.Last().Dates.Add(createdIssue.CreatedAt.DateTime);
+                    }
+                }
+            }
+            return activeUsers;
+        }
+
 
         /// <summary>
         /// <para>
@@ -126,36 +192,35 @@ namespace Platform.Bot
         /// <para>The active users.</para>
         /// <para></para>
         /// </returns>
-        public HashSet<string> GetActiveUsers(HashSet<string> ignoredRepositories, string owner)
+        /// 
+        public List<HashSet<Activity>> GetActiveUsers(HashSet<string> ignoredRepositories, string owner, List<Since> months)
         {
-            HashSet<string> activeUsers = new();
-            var date = DateTime.Now.AddMonths(-1);
-            foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
+            List<HashSet<Activity>> activeUsers = new() { };
+            var allActiveUsers = GetActivitiesInRepos(ignoredRepositories, owner, DateTime.Now.AddMonths(-1 * months.Count));
+            foreach (var month in months)
             {
-                if (ignoredRepositories.Contains(repository.Name))
+                activeUsers.Add(new HashSet<Activity>());
+                var activeUsersInMonth = activeUsers.Last();
+                foreach (var activeUser in allActiveUsers)
                 {
-                    continue;
-                }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
-                {
-
-                    activeUsers.Add(commit.Author.Login);
-
-                }
-                foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
-                {
-                    foreach (var reviewer in pullRequest.RequestedReviewers)
+                    foreach (var date in activeUser.Dates)
                     {
-                        if (pullRequest.CreatedAt < date || pullRequest.UpdatedAt < date || pullRequest.ClosedAt < date || pullRequest.MergedAt < date)
+                        if (month.StartDate < date && month.EndDate > date)
                         {
-                            activeUsers.Add(reviewer.Login);
+                            if (!activeUsersInMonth.Any(x => x.Url == activeUser.Url))
+                            {
+                                activeUsersInMonth.Add(new Activity()
+                                {
+                                    Url = activeUser.Url,
+                                    Dates = activeUser.Dates
+                                });
+                            }
                         }
                     }
                 }
-                foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name))
-                {
-                    activeUsers.Add(createdIssue.User.Login);
-                }
+                activeUsersInMonth.Add(new Activity());
+                activeUsersInMonth.Last().Dates.Add(month.StartDate);
+                activeUsersInMonth.Last().Dates.Add(month.EndDate);
             }
             return activeUsers;
         }
