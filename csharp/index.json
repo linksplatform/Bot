@@ -57,12 +57,17 @@
   "api/Platform.Bot.html": {
     "href": "api/Platform.Bot.html",
     "title": "Namespace Platform.Bot | LinksPlatform's Platform.Bot Library",
-    "keywords": "Namespace Platform.Bot Classes ProgrammerRole Represents the programmer role."
+    "keywords": "Namespace Platform.Bot Classes ProgrammerRole Represents the programmer role. ProtectMainBranchTrigger"
   },
   "api/Platform.Bot.ProgrammerRole.html": {
     "href": "api/Platform.Bot.ProgrammerRole.html",
     "title": "Class ProgrammerRole | LinksPlatform's Platform.Bot Library",
     "keywords": "Class ProgrammerRole Represents the programmer role. Inheritance Object ProgrammerRole Namespace : Platform.Bot Assembly : Platform.Bot.dll Syntax public class ProgrammerRole : object Constructors | Improve this Doc View Source ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage) Initializes a new ProgrammerRole instance. Declaration public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI) Parameters Type Name Description List < ITrigger < Issue >> triggers A triggers. GitHubStorage gitHubAPI A git hub api. Fields | Improve this Doc View Source GitHubAPI The git hub api. Declaration public readonly GitHubStorage GitHubAPI Field Value Type Description GitHubStorage | Improve this Doc View Source MinimumInteractionInterval The minimum interaction interval. Declaration public readonly TimeSpan MinimumInteractionInterval Field Value Type Description TimeSpan | Improve this Doc View Source Triggers The triggers. Declaration public readonly List<ITrigger<Issue>> Triggers Field Value Type Description List < ITrigger < Issue >> Methods | Improve this Doc View Source Start(CancellationToken) Starts the cancellation token. Declaration public void Start(CancellationToken cancellationToken) Parameters Type Name Description CancellationToken cancellationToken The cancellation token."
+  },
+  "api/Platform.Bot.ProtectMainBranchTrigger.html": {
+    "href": "api/Platform.Bot.ProtectMainBranchTrigger.html",
+    "title": "Class ProtectMainBranchTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class ProtectMainBranchTrigger Inheritance Object ProtectMainBranchTrigger Implements ITrigger < Issue > Namespace : Platform.Bot Assembly : Platform.Bot.dll Syntax public class ProtectMainBranchTrigger : object, ITrigger<Issue> Constructors | Improve this Doc View Source ProtectMainBranchTrigger(GitHubStorage) Declaration public ProtectMainBranchTrigger(GitHubStorage storage) Parameters Type Name Description GitHubStorage storage Methods | Improve this Doc View Source Action(Issue) Declaration public void Action(Issue issue) Parameters Type Name Description Issue issue | Improve this Doc View Source Condition(Issue) Declaration public bool Condition(Issue issue) Parameters Type Name Description Issue issue Returns Type Description Boolean | Improve this Doc View Source UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>) Declaration public Dictionary<string, bool> UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository> repositories) Parameters Type Name Description IReadOnlyList < Repository > repositories Returns Type Description Dictionary < String , Boolean > Implements ITrigger<TContext>"
   },
   "api/Storage.Local.File.html": {
     "href": "api/Storage.Local.File.html",

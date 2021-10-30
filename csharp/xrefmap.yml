@@ -371,6 +371,67 @@ references:
   commentId: F:Platform.Bot.ProgrammerRole.Triggers
   fullName: Platform.Bot.ProgrammerRole.Triggers
   nameWithType: ProgrammerRole.Triggers
+- uid: Platform.Bot.ProtectMainBranchTrigger
+  name: ProtectMainBranchTrigger
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html
+  commentId: T:Platform.Bot.ProtectMainBranchTrigger
+  fullName: Platform.Bot.ProtectMainBranchTrigger
+  nameWithType: ProtectMainBranchTrigger
+- uid: Platform.Bot.ProtectMainBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
+  name: ProtectMainBranchTrigger(GitHubStorage)
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger__ctor_Storage_Remote_GitHub_GitHubStorage_
+  commentId: M:Platform.Bot.ProtectMainBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
+  fullName: Platform.Bot.ProtectMainBranchTrigger.ProtectMainBranchTrigger(Storage.Remote.GitHub.GitHubStorage)
+  nameWithType: ProtectMainBranchTrigger.ProtectMainBranchTrigger(GitHubStorage)
+- uid: Platform.Bot.ProtectMainBranchTrigger.#ctor*
+  name: ProtectMainBranchTrigger
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger__ctor_
+  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.ProtectMainBranchTrigger.ProtectMainBranchTrigger
+  nameWithType: ProtectMainBranchTrigger.ProtectMainBranchTrigger
+- uid: Platform.Bot.ProtectMainBranchTrigger.Action(Issue)
+  name: Action(Issue)
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Action_Issue_
+  commentId: M:Platform.Bot.ProtectMainBranchTrigger.Action(Issue)
+  fullName: Platform.Bot.ProtectMainBranchTrigger.Action(Issue)
+  nameWithType: ProtectMainBranchTrigger.Action(Issue)
+- uid: Platform.Bot.ProtectMainBranchTrigger.Action*
+  name: Action
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Action_
+  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.Action
+  isSpec: "True"
+  fullName: Platform.Bot.ProtectMainBranchTrigger.Action
+  nameWithType: ProtectMainBranchTrigger.Action
+- uid: Platform.Bot.ProtectMainBranchTrigger.Condition(Issue)
+  name: Condition(Issue)
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Condition_Issue_
+  commentId: M:Platform.Bot.ProtectMainBranchTrigger.Condition(Issue)
+  fullName: Platform.Bot.ProtectMainBranchTrigger.Condition(Issue)
+  nameWithType: ProtectMainBranchTrigger.Condition(Issue)
+- uid: Platform.Bot.ProtectMainBranchTrigger.Condition*
+  name: Condition
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Condition_
+  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.Condition
+  isSpec: "True"
+  fullName: Platform.Bot.ProtectMainBranchTrigger.Condition
+  nameWithType: ProtectMainBranchTrigger.Condition
+- uid: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList{Repository})
+  name: UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_UpdateRepositoriesDefaultBranchProtection_IReadOnlyList_Repository__
+  commentId: M:Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList{Repository})
+  name.vb: UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
+  fullName: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
+  fullName.vb: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
+  nameWithType: ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
+  nameWithType.vb: ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
+- uid: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection*
+  name: UpdateRepositoriesDefaultBranchProtection
+  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_UpdateRepositoriesDefaultBranchProtection_
+  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
+  isSpec: "True"
+  fullName: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
+  nameWithType: ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
 - uid: Storage.Local
   name: Storage.Local
   href: api/Storage.Local.html
