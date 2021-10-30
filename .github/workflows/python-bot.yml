@@ -1,0 +1,14 @@
+name: Python Bot CI pipeline
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    container: debian:bullseye-slim
+    steps:
+    - run: apt update && apt -y install pylint
+    - uses: actions/checkout@v1      
+    - name: Lint python bot
+      run: |
+        pylint ./python
