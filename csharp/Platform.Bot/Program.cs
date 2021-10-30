@@ -45,7 +45,8 @@ namespace Platform.Bot
                     new List<ITrigger<Issue>> {
                         new HelloWorldTrigger(api, dbContext, fileSetName),
                         new OrganizationLastMonthActivityTrigger(api),
-                        new LastCommitActivityTrigger(api)
+                        new LastCommitActivityTrigger(api),
+                        new ProtectMainBranchTrigger(api)
                     },
                     api
                 ).Start(cancellation.Token);
