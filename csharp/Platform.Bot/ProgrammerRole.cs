@@ -59,17 +59,6 @@ namespace Platform.Bot
             Triggers = triggers;
             MinimumInteractionInterval = gitHubAPI.MinimumInteractionInterval;
         }
-
-        /// <summary>
-        /// <para>
-        /// Processes the issues using the specified token.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        /// <param name="token">
-        /// <para>The token.</para>
-        /// <para></para>
-        /// </param>
         private void ProcessIssues(CancellationToken token)
         {
             while (!token.IsCancellationRequested)
