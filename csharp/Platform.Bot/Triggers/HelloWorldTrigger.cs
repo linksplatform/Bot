@@ -14,28 +14,8 @@ namespace Platform.Bot
     /// <seealso cref="ITrigger{Issue}"/>
     internal class HelloWorldTrigger : ITrigger<Issue>
     {
-        /// <summary>
-        /// <para>
-        /// The git hub api.
-        /// </para>
-        /// <para></para>
-        /// </summary>
         private readonly GitHubStorage gitHubAPI;
-
-        /// <summary>
-        /// <para>
-        /// The file storage.
-        /// </para>
-        /// <para></para>
-        /// </summary>
         private readonly FileStorage fileStorage;
-
-        /// <summary>
-        /// <para>
-        /// The file set name.
-        /// </para>
-        /// <para></para>
-        /// </summary>
         private readonly string fileSetName;
 
         /// <summary>
