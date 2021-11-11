@@ -26,18 +26,124 @@ namespace Storage.Local
     /// </summary>
     public class FileStorage
     {
+        /// <summary>
+        /// <para>
+        /// The unicode sequence marker.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly TLinkAddress _unicodeSequenceMarker;
+
+        /// <summary>
+        /// <para>
+        /// The meaning root.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly TLinkAddress _meaningRoot;
+
+        /// <summary>
+        /// <para>
+        /// The address to number converter.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly AddressToRawNumberConverter<TLinkAddress> _addressToNumberConverter;
+
+        /// <summary>
+        /// <para>
+        /// The number to address converter.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly RawNumberToAddressConverter<TLinkAddress> _numberToAddressConverter;
+
+        /// <summary>
+        /// <para>
+        /// The string to unicode sequence converter.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly IConverter<string, TLinkAddress> _stringToUnicodeSequenceConverter;
+
+        /// <summary>
+        /// <para>
+        /// The unicode sequence to string converter.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly IConverter<TLinkAddress, string> _unicodeSequenceToStringConverter;
+
+        /// <summary>
+        /// <para>
+        /// The links.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly UnitedMemoryLinks<UInt64> Links;
+
+        /// <summary>
+        /// <para>
+        /// The unicode symbol marker.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly TLinkAddress _unicodeSymbolMarker;
+
+        /// <summary>
+        /// <para>
+        /// The set marker.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly TLinkAddress _setMarker;
+
+        /// <summary>
+        /// <para>
+        /// The file marker.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly TLinkAddress _fileMarker;
+
+        /// <summary>
+        /// <para>
+        /// The any.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly TLinkAddress Any;
+
+        /// <summary>
+        /// <para>
+        /// Gets the or create next mapping using the specified current mapping index.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="currentMappingIndex">
+        /// <para>The current mapping index.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The link address</para>
+        /// <para></para>
+        /// </returns>
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => Links.Exists(currentMappingIndex) ? currentMappingIndex : Links.CreateAndUpdate(_meaningRoot, Links.Constants.Itself);
+
+        /// <summary>
+        /// <para>
+        /// Gets the or create meaning root using the specified meaning root index.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="meaningRootIndex">
+        /// <para>The meaning root index.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The link address</para>
+        /// <para></para>
+        /// </returns>
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => Links.Exists(meaningRootIndex) ? meaningRootIndex : Links.CreatePoint();
 
         /// <summary>
@@ -261,6 +367,21 @@ namespace Storage.Local
         /// <para></para>
         /// </returns>
         public TLinkAddress GetFileSet(string fileSetName) => Links.SearchOrDefault(_setMarker, Convert(fileSetName));
+
+        /// <summary>
+        /// <para>
+        /// Gets the files links from set using the specified set.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="set">
+        /// <para>The set.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The list.</para>
+        /// <para></para>
+        /// </returns>
         private IList<IList<TLinkAddress>> GetFilesLinksFromSet(string set)
         {
             var fileSet = GetFileSet(set);

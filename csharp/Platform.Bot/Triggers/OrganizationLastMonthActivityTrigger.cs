@@ -17,7 +17,20 @@ namespace Platform.Bot
     /// <seealso cref="ITrigger{Issue}"/>
     internal class OrganizationLastMonthActivityTrigger : ITrigger<Issue>
     {
+        /// <summary>
+        /// <para>
+        /// The storage.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly GitHubStorage Storage;
+
+        /// <summary>
+        /// <para>
+        /// The parser.
+        /// </para>
+        /// <para></para>
+        /// </summary>
         private readonly Parser Parser = new();
 
         /// <summary>

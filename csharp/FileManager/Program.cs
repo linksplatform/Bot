@@ -32,6 +32,17 @@ namespace FileManager
             new CreateFileSetTrigger(),
             new GetFilesByFileSetNameTrigger()
         };
+
+        /// <summary>
+        /// <para>
+        /// Main the args.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="args">
+        /// <para>The args.</para>
+        /// <para></para>
+        /// </param>
         private static void Main(string[] args)
         {
             using ConsoleCancellation cancellation = new();

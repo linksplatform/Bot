@@ -17,6 +17,16 @@ namespace Platform.Bot
     /// </summary>
     internal class Program
     {
+        /// <summary>
+        /// <para>
+        /// Main the args.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="args">
+        /// <para>The args.</para>
+        /// <para></para>
+        /// </param>
         private static void Main(string[] args)
         {
             using var cancellation = new ConsoleCancellation();
