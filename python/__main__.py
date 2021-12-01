@@ -247,13 +247,13 @@ class V(Vk):
         return None, None, vote_applied
 
     def apply_user_karma(self, user, amount):
-        self.data.set_user_property(user, "karma", self.data.get_user_property(user, "karma") + amount)
         initial_karma = self.data.get_user_property(user, "karma"),
-        self.data.set_user_property(user, "karma", initial_karma + amount)
+        new_karma = initial_karma + amount;
+        self.data.set_user_property(user, "karma", new_karma)
         return (user.uid,
                 self.data.get_user_property(user, "name"),
                 initial_karma,
-                self.data.get_user_property(user, "karma"))
+                new_karma)
 
     def get_messages(self, event):
         reply_message = event.get("reply_message", {})
@@ -266,13 +266,9 @@ class V(Vk):
         else:
             return "(" + programming_languages_string + ")"
 
-    def get_github_profile_string(self, user):
+    def get_github_profile_or_default(self, user, default="", prefix=""):
         profile = self.data.get_user_property(user, "github_profile")
-        return f"github.com/{profile}" if profile else "отсутствует"
-
-    def get_github_profile_top_string(self, user):
-        profile = self.data.get_user_property(user, "github_profile")
-        return f" — github.com/{profile}" if profile else ""
+        return f"{prefix}github.com/{profile}" if profile else default
 
     def get_programming_languages_string(self, user):
         languages = self.data.get_user_sorted_programming_languages(user)
@@ -322,7 +318,7 @@ class V(Vk):
 
     def send_info(self, event, karma_enabled, user, is_self=True):
         programming_languages_string = self.get_programming_languages_string(user)
-        profile = self.get_github_profile_string(user)
+        profile = self.get_github_profile_or_default(user, default="отсутствует")
         if karma_enabled:
             if is_self:
                 response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
@@ -361,7 +357,7 @@ class V(Vk):
         user_strings = ["%s [id%s|%s]%s %s" % (self.get_karma_string(user),
                                                self.data.get_user_property(user, "uid"),
                                                self.data.get_user_property(user, "name"),
-                                               self.get_github_profile_top_string(user),
+                                               self.get_github_profile_or_default(user, prefix=" - "),
                                                self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
@@ -412,7 +408,7 @@ class V(Vk):
             return
         user_strings = ["[id%s|%s]%s %s" % (self.data.get_user_property(user, "uid"),
                                             self.data.get_user_property(user, "name"),
-                                            self.get_github_profile_top_string(user),
+                                            self.get_github_profile_or_default(user, prefix=" - "),
                                             self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
         total_symbols = 0
         i = 0
@@ -459,7 +455,7 @@ class V(Vk):
         self.send_top_users(event, users)
 
     def send_github_profile(self, event, user):
-        profile = self.get_github_profile_string(user)
+        profile = self.get_github_profile_or_default(user, default="отсутствует")
         if not profile:
             self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], у Вас не указана страничка на GitHub.")
         else:

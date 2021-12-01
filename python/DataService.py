@@ -35,7 +35,7 @@ class BetterBotBaseDataService:
             return sorted(languages, reverse_sort)
         return languages
 
-    def get_users(self, other_keys, sort_key=None, reverse_sort=False):
+    def get_users(self, other_keys, sort_key=None, reverse_sort=True):
         """
         Returns users and their key values.
 
