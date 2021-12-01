@@ -24,7 +24,8 @@ class V(Vk):
         self.data = BetterBotBaseDataService()
         self.commands = Commands(self, self.data)
         self.commands.register_cmds(
-            (patterns.HELP, self.commands.help_message)
+            (patterns.HELP, self.commands.help_message),
+            (patterns.INFO, self.commands.info_message),
         )
 
     def message_new(self, event):
@@ -66,7 +67,7 @@ class V(Vk):
         karma_enabled = event["peer_id"] in config.chats_karma_whitelist
         group_chat = event["peer_id"] >= CHAT_ID_OFFSET
 
-        self.commands.process(msg, peer_id, from_id)
+        self.commands.process(msg, peer_id, from_id, messages, user, selected_user)
 
         if group_chat:
             if karma_enabled:
@@ -150,12 +151,6 @@ class V(Vk):
                     languages = match.group("languages")
                     return self.send_people_languages(event, languages)
 
-        match = regex.match(patterns.HELP, message)
-        if match:
-            return self.send_help(event, group_chat, karma_enabled)
-        match = regex.match(patterns.INFO, message)
-        if match:
-            return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.UPDATE, message)
         if match:
             name = self.get_user_name(event["from_id"])
@@ -329,26 +324,6 @@ class V(Vk):
                                              self.data.get_user_property(user, "name"),
                                              self.get_karma_string(user)))
 
-    def send_info(self, event, karma_enabled, user, is_self=True):
-        programming_languages_string = self.get_programming_languages_string(user)
-        profile = self.get_github_profile_or_default(user, default="отсутствует")
-        if karma_enabled:
-            if is_self:
-                response = "[id%s|%s], Ваша карма — %s.\nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
-            else:
-                response = "Карма [id%s|%s] — %s.\nЯзыки программирования: %s\nCтраничка на GitHub — %s"
-            return self.send_message(event, response % (self.data.get_user_property(user, "uid"),
-                                                        self.data.get_user_property(user, "name"),
-                                                        self.get_karma_string(user), programming_languages_string, profile))
-        else:
-            if is_self:
-                response = "[id%s|%s], \nВаши языки программирования: %s\nВаша страничка на GitHub — %s"
-            else:
-                response = "[id%s|%s]. \nЯзыки программирования: %s\nCтраничка на GitHub — %s"
-            return self.send_message(event, response % (self.data.get_user_property(user, "uid"),
-                                                        self.data.get_user_property(user, "name"),
-                                                        programming_languages_string, profile))
-
     def get_karma_string(self, user):
         plus_string = ""
         minus_string = ""
@@ -482,15 +457,6 @@ class V(Vk):
             self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], у Вас не указано языков программирования.")
         else:
             self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], Ваши языки программирования: {programming_languages_string}.")
-
-    def send_help(self, event, group_chat, karma_enabled):
-        if group_chat:
-            if karma_enabled:
-                self.send_message(event, config.help_string_with_karma)
-            else:
-                self.send_message(event, config.help_string % event["peer_id"])
-        else:
-            self.send_message(event, config.help_string_private_chat)
 
     def send_not_in_whitelist(self, event, user):
         peer_id = event["peer_id"]
