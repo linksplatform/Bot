@@ -2,6 +2,9 @@ from social_ethosa import BetterBotBase
 
 
 class BetterBotBaseDataService:
+    """
+    Class for interacting with the database.
+    """
     def __init__(self):
         self.base = BetterBotBase("users", "dat")
         self.base.addPattern("programming_languages", [])
@@ -12,22 +15,38 @@ class BetterBotBaseDataService:
         self.base.addPattern("karma", 0)
 
     def get_or_create_user(self, user_id, vk):
+        """
+        Returns a user object. Automatically creates it, if need.
+        """
         return self.base.autoInstall(user_id, vk)
 
-    def get_user_sorted_programming_languages(self, user):
-        languages = self.get_user_property(user, "programming_languages")
+    def get_user_sorted_programming_languages(self, user, sort=True, reverse_sort=False):
+        """
+        Returns user's programming languages.
+
+        Arguments:
+        - {user} -- user object;
+        - {sort} -- return sorted list, if True;
+        - {reverse_sort} -- uses for {sort} arg.
+        """
+        languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
         languages = languages if type(languages) == list else []
-        languages.sort()
+        if sort:
+            return sorted(languages, reverse_sort)
         return languages
 
-    def get_users_sorted_by_keys(self, other_keys, sort_key=None):
+    def get_users(self, other_keys, sort_key=None, reverse_sort=False):
+        """
+        Returns users and their key values.
+
+        Arguments:
+        - {other_keys} -- list of user keys;
+        - {sort_key} -- base key;
+        """
         users = self.base.getByKeys(*other_keys)
-        sorted_users = sorted(
-            users,
-            key=sort_key,
-            reverse=True
-        )
-        return sorted_users
+        if sort_key:
+            users = sorted(users, key=sort_key, reverse=reverse_sort)
+        return users
 
     @staticmethod
     def get_user_property(user, property_name):
