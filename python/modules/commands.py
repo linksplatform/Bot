@@ -40,6 +40,15 @@ class Commands:
                                                self.from_id, self.karma_enabled),
             self.peer_id)
 
+    def update_command(self) -> NoReturn:
+        """
+        Updates user's profile.
+        """
+        name = self.vk_instance._get_user_name(self.from_id)
+        self.data_service.set_user_property(self.user, "name", name)
+        self.data_service.save_user(self.user)
+        self.info_message()
+
     def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:
         """
         Registers a new command.

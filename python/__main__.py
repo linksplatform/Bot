@@ -26,6 +26,7 @@ class V(Vk):
         self.commands.register_cmds(
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
+            (patterns.UPDATE, self.commands.update_command),
         )
 
     def message_new(self, event):
@@ -151,12 +152,6 @@ class V(Vk):
                     languages = match.group("languages")
                     return self.send_people_languages(event, languages)
 
-        match = regex.match(patterns.UPDATE, message)
-        if match:
-            name = self.get_user_name(event["from_id"])
-            self.data.set_user_property(user, "name", name)
-            self.data.save_user(user)
-            return self.send_info(event, karma_enabled, selected_user if selected_user else user, not selected_user)
         match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
         if match:
             language = match.group('language')
@@ -487,7 +482,7 @@ class V(Vk):
     def send_msg(self, msg: str, peer_id: int) -> NoReturn:
         self.messages.send(message=msg, peer_id=peer_id, disable_mentions=1, random_id=0)
 
-    def get_user_name(self, user_id):
+    def _get_user_name(self, user_id):
         return self.users.get(user_ids=user_id)['response'][0]["first_name"]
 
 
