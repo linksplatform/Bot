@@ -135,3 +135,5 @@ python/users/*
 
 # Visual Studio
 .vs
+obj/
+bin/
