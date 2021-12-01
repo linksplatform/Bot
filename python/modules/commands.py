@@ -2,6 +2,7 @@
 from modules.commands_builder import CommandsBuilder
 from modules.data_service import BetterBotBaseDataService
 from modules.data_builder import DataBuilder
+from social_ethosa import BetterUser
 from typing import NoReturn, Tuple, List
 from regex import Pattern
 from saya import Vk
@@ -11,17 +12,18 @@ import config
 
 class Commands:
     def __init__(self, vk_instance: Vk, data_service: BetterBotBaseDataService):
-        self.user = None
-        self.msg: str = ""
         self.cmds: dict = {}
+        self.msg: str = ""
         self.peer_id: int = 0
         self.from_id: int = 0
+        self.user: BetterUser = None
         self.karma_enabled: bool = False
         self.is_bot_selected: bool = False
         self.fwd_messages: List[dict] = []
         self.selected_message: dict = {}
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
+        self.matched: list = []
 
     def help_message(self) -> NoReturn:
         """
@@ -42,12 +44,33 @@ class Commands:
 
     def update_command(self) -> NoReturn:
         """
-        Updates user's profile.
+        Updates user profile.
         """
         name = self.vk_instance._get_user_name(self.from_id)
         self.data_service.set_user_property(self.user, "name", name)
         self.data_service.save_user(self.user)
         self.info_message()
+
+    def change_programming_language(self, is_add: bool) -> NoReturn:
+        """
+        Adds a new programming language in user profile.
+        """
+        language = self.matched.group('language')
+        language = self.vk_instance._get_default_programming_language(language)
+        if not language:
+            return
+        languages = self.data_service.get_user_property(self.user, "programming_languages")
+        condition = language not in languages if is_add else language in languages
+        if condition:
+            if is_add:
+                languages.append(language)
+            else:
+                languages.remove(language)
+            self.data_service.set_user_property(self.user, "programming_languages", languages)
+            self.data_service.save_user(self.user)
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_change_programming_languages(self.user, self.data_service),
+            self.peer_id)
 
     def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:
         """
@@ -82,6 +105,7 @@ class Commands:
         self.user = selected_user if selected_user else user
 
         for cmd, action in self.cmds.items():
-            matched: bool = regex.match(cmd, msg)
-            if matched:
+            self.matched: list = regex.match(cmd, msg)
+            if self.matched:
                 action()
+                return

@@ -25,6 +25,7 @@ class CommandsBuilder:
                 return (f"Вы находитесь в беседе (#{peer_id}) с выключенной кармой.\n"
                         "Документация — vk.cc/auqYdx")
 
+    @staticmethod
     def build_info_message(user: BetterUser, data: BetterBotBaseDataService,
                            from_id: int, karma: bool) -> str:
         """
@@ -51,3 +52,17 @@ class CommandsBuilder:
         return (f"{karma_str}"
                 f"Языки программирования: {programming_languages_string}\n"
                 f"Страничка на GitHub: {profile}.")
+
+    @staticmethod
+    def build_change_programming_languages(
+            user: BetterUser, data: BetterBotBaseDataService) -> str:
+        """
+        Builds changing programming languages.
+        """
+        programming_languages_string = DataBuilder.build_programming_languages(user, data)
+        if not programming_languages_string:
+            return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
+                    f", у Вас не указано языков программирования.")
+        else:
+            return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
+                    f", Ваши языки программирования: {programming_languages_string}.")

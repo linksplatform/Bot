@@ -27,6 +27,8 @@ class V(Vk):
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
             (patterns.UPDATE, self.commands.update_command),
+            (patterns.ADD_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(True)),
+            (patterns.REMOVE_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(False)),
         )
 
     def message_new(self, event):
@@ -152,30 +154,6 @@ class V(Vk):
                     languages = match.group("languages")
                     return self.send_people_languages(event, languages)
 
-        match = regex.match(patterns.ADD_PROGRAMMING_LANGUAGE, message)
-        if match:
-            language = match.group('language')
-            language = self.get_default_programming_language(language)
-            if not language:
-                return
-            languages = self.data.get_user_property(user, "programming_languages")
-            if language not in languages:
-                languages.append(language)
-                self.data.set_user_property(user, "programming_languages", languages)
-                self.data.save_user(user)
-            return self.send_programming_languages_list(event, user)
-        match = regex.match(patterns.REMOVE_PROGRAMMING_LANGUAGE, message)
-        if match:
-            language = match.group('language')
-            language = self.get_default_programming_language(language)
-            if not language:
-                return
-            languages = self.data.get_user_property(user, "programming_languages")
-            if language in languages:
-                languages.remove(language)
-                self.data.set_user_property(user, "programming_languages", languages)
-                self.data.save_user(user)
-            return self.send_programming_languages_list(event, user)
         match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
         if match:
             profile = match.group('profile')
@@ -277,7 +255,7 @@ class V(Vk):
         languages = self.data.get_user_sorted_programming_languages(user)
         return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
 
-    def get_default_programming_language(self, language):
+    def _get_default_programming_language(self, language):
         for default_programming_language in config.default_programming_languages:
             default_programming_language = default_programming_language.replace('\\', '')
             if default_programming_language.lower() == language.lower():
