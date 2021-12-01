@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # Bot's VK group id (change it to your group id)
-bot_group_id = 190877945
+bot_group_id = 209230634
 
 # Pluses and minuses will be removed in these chats
 chats_deleting = [

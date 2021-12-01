@@ -9,7 +9,9 @@ import patterns
 
 from tokens import BOT_TOKEN
 from userbot import UserBot
-from DataService import BetterBotBaseDataService
+from modules.data_service import BetterBotBaseDataService
+from modules.commands import Commands
+from typing import NoReturn
 
 CHAT_ID_OFFSET = 2e9
 
@@ -18,46 +20,53 @@ class V(Vk):
     def __init__(self, token, group_id, debug=True):
         Vk.__init__(self, token=token, group_id=group_id, debug=debug)
         self.messages_to_delete = {}
-        self.userbot = UserBot()
-        self.debug = True
-
+        # self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
+        self.commands = Commands(self, self.data)
+        self.commands.register_cmds(
+            (patterns.HELP, self.commands.help_message)
+        )
 
     def message_new(self, event):
         """
         Handling all new messages.
         """
         event = event["object"]["message"]
+        msg = event["text"]
+        peer_id = event["peer_id"]
+        from_id = event["from_id"]
 
-        if event['peer_id'] in self.messages_to_delete:
-            peer = CHAT_ID_OFFSET + config.userbot_chats[event['peer_id']]
+        if peer_id in self.messages_to_delete:
+            peer = CHAT_ID_OFFSET + config.userbot_chats[peer_id]
             new_messages_to_delete = []
             ids = []
 
-            for item in self.messages_to_delete[event['peer_id']]:
+            for item in self.messages_to_delete[peer_id]:
                 if item['date'] > datetime.now():
                     new_messages_to_delete.append(item)
                 else:
                     ids.append(item['id'])
 
             if new_messages_to_delete:
-                self.messages_to_delete[event['peer_id']] = new_messages_to_delete
+                self.messages_to_delete[peer_id] = new_messages_to_delete
             else:
-                self.messages_to_delete.pop(event['peer_id'])
+                self.messages_to_delete.pop(peer_id)
 
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = self.data.get_or_create_user(event["from_id"], self) if event["from_id"] > 0 else None
+        user = self.data.get_or_create_user(from_id, self) if from_id > 0 else None
 
         message = event["text"].lstrip("/")
-        messages = self.get_messages(event)
+        messages = self._get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = self.data.get_or_create_user(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
         karma_enabled = event["peer_id"] in config.chats_karma_whitelist
         group_chat = event["peer_id"] >= CHAT_ID_OFFSET
+
+        self.commands.process(msg, peer_id, from_id)
 
         if group_chat:
             if karma_enabled:
@@ -259,7 +268,7 @@ class V(Vk):
                 initial_karma,
                 new_karma)
 
-    def get_messages(self, event):
+    def _get_messages(self, event):
         reply_message = event.get("reply_message", {})
         return [reply_message] if reply_message else event.get("fwd_messages", [])
 
@@ -509,10 +518,13 @@ class V(Vk):
     def send_message(self, event, message):
         self.messages.send(message=message, peer_id=event["peer_id"], disable_mentions=1, random_id=0)
 
+    def send_msg(self, msg: str, peer_id: int) -> NoReturn:
+        self.messages.send(message=msg, peer_id=peer_id, disable_mentions=1, random_id=0)
+
     def get_user_name(self, user_id):
         return self.users.get(user_ids=user_id)['response'][0]["first_name"]
 
 
 if __name__ == '__main__':
-    vk = V(token=BOT_TOKEN, group_id=config.bot_group_id)
+    vk = V(token=BOT_TOKEN, group_id=config.bot_group_id, debug=True)
     vk.start_listen()

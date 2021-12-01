@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from social_ethosa import BetterBotBase
 
 
