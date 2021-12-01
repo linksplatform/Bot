@@ -7,7 +7,7 @@ from datetime import datetime, timedelta
 import config
 import patterns
 
-from tokens import BotToken
+from tokens import BOT_TOKEN
 from userbot import UserBot
 from DataService import BetterBotBaseDataService
 
@@ -126,6 +126,10 @@ class V(Vk):
                 if match:
                     languages = match.group("languages")
                     return self.send_top_languages(event, languages)
+                match = regex.match(patterns.BOTTOM_LANGUAGES, message)
+                if match:
+                    languages = match.group("languages")
+                    return self.send_top_languages(event, languages, False)
             else:
                 match = regex.match(patterns.PEOPLE, message)
                 if match:
@@ -247,8 +251,8 @@ class V(Vk):
         return None, None, vote_applied
 
     def apply_user_karma(self, user, amount):
-        initial_karma = self.data.get_user_property(user, "karma"),
-        new_karma = initial_karma + amount;
+        initial_karma = self.data.get_user_property(user, "karma")
+        new_karma = initial_karma + amount
         self.data.set_user_property(user, "karma", new_karma)
         return (user.uid,
                 self.data.get_user_property(user, "name"),
@@ -377,16 +381,17 @@ class V(Vk):
         down_votes = len(self.data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
         return base_karma + up_votes - down_votes
 
-    def get_users_sorted_by_karma(self, peer_id):
+    def get_users_sorted_by_karma(self, peer_id, reverse_sort=True):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_users_sorted_by_keys(other_keys=["karma", "name", "programming_languages", "supporters", "opponents", "github_profile", "uid"],  sort_key=self.calculate_real_karma)
+        users = self.data.get_users(other_keys=["karma", "name", "programming_languages", "supporters", "opponents", "github_profile", "uid"],
+                                    sort_key=self.calculate_real_karma, reverse_sort=reverse_sort)
         if members:
             users = [u for u in users if u["uid"] in members]
         return users
 
     def get_users_sorted_by_name(self, peer_id):
         members = self.get_members_ids(peer_id)
-        users = self.data.get_users_sorted_by_keys(other_keys=["name", "programming_languages", "github_profile", "uid"])
+        users = self.data.get_users(other_keys=["name", "programming_languages", "github_profile", "uid"])
         if members:
             users = [u for u in users if u["uid"] in members]
         users.reverse()
@@ -434,7 +439,8 @@ class V(Vk):
     def send_top(self, event, maximum_users):
         peer_id = event["peer_id"]
         users = self.get_users_sorted_by_karma(peer_id)
-        users = [i for i in users if (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        users = [i for i in users if
+                 (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         if (maximum_users > 0) and (len(users) >= maximum_users):
             self.send_top_users(event, users[:maximum_users])
         else:
@@ -447,10 +453,10 @@ class V(Vk):
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_people_users(event, users)
 
-    def send_top_languages(self, event, languages):
+    def send_top_languages(self, event, languages, reverse=True):
         languages = regex.split(r"\s+", languages)
         peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_karma(peer_id)
+        users = self.get_users_sorted_by_karma(peer_id, reverse)
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
@@ -508,5 +514,5 @@ class V(Vk):
 
 
 if __name__ == '__main__':
-    vk = V(token=BotToken, group_id=config.bot_group_id)
+    vk = V(token=BOT_TOKEN, group_id=config.bot_group_id)
     vk.start_listen()

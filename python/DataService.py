@@ -32,7 +32,7 @@ class BetterBotBaseDataService:
         languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
         languages = languages if type(languages) == list else []
         if sort:
-            return sorted(languages, reverse_sort)
+            return sorted(languages, reverse=reverse_sort)
         return languages
 
     def get_users(self, other_keys, sort_key=None, reverse_sort=True):
