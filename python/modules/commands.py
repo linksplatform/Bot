@@ -93,6 +93,17 @@ class Commands:
             CommandsBuilder.build_github_profile(self.user, self.data_service),
             self.peer_id)
 
+    def karma_message(self) -> NoReturn:
+        """
+        Shows user's karma.
+        """
+        if self.peer_id < 2e9 and not self.karma_enabled:
+            return
+        is_self = self.data_service.get_user_property(self.user, 'uid') == self.from_id
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_karma(self.user, self.data_service, is_self),
+            self.peer_id)
+
     def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:
         """
         Registers a new command.

@@ -30,6 +30,7 @@ class V(Vk):
             (patterns.REMOVE_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(False)),
             (patterns.ADD_GITHUB_PROFILE, lambda: self.commands.change_github_profile(True)),
             (patterns.REMOVE_GITHUB_PROFILE, lambda: self.commands.change_github_profile(False)),
+            (patterns.KARMA, self.commands.karma_message),
         )
 
     def message_new(self, event):
@@ -75,9 +76,6 @@ class V(Vk):
 
         if group_chat:
             if karma_enabled:
-                match = regex.match(patterns.KARMA, message)
-                if match:
-                    return self.send_karma(event, selected_user if selected_user else user, not selected_user)
                 match = regex.match(patterns.TOP, message)
                 if match:
                     maximum_users = match.group("maximum_users")
@@ -231,26 +229,6 @@ class V(Vk):
     def get_programming_languages_string(self, user):
         languages = self.data.get_user_sorted_programming_languages(user)
         return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
-
-    def contains_string(self, strings, matchedString, ignoreCase):
-        if ignoreCase:
-            for string in strings:
-                if string.lower() == matchedString.lower():
-                    return True
-        else:
-            for string in strings:
-                if string == matchedString:
-                    return True
-        return False
-
-    def contains_all_strings(self, strings, matchedStrings, ignoreCase):
-        matched_strings_count = len(matchedStrings)
-        for string in strings:
-            if self.contains_string(matchedStrings, string, ignoreCase):
-                matched_strings_count -= 1
-                if matched_strings_count == 0:
-                    return True
-        return False
 
     def send_karma_change(self, event, user_karma_change, selected_user_karma_change, voters):
         if selected_user_karma_change and user_karma_change:
@@ -430,6 +408,9 @@ class V(Vk):
     def send_msg(self, msg: str, peer_id: int) -> NoReturn:
         self.messages.send(message=msg, peer_id=peer_id, disable_mentions=1, random_id=0)
 
+    def get_user_name(self, user_id):
+        return self.users.get(user_ids=user_id)['response'][0]["first_name"]
+
 
     @staticmethod
     def get_messages(event):
@@ -444,8 +425,26 @@ class V(Vk):
                 return default_programming_language
 
     @staticmethod
-    def get_user_name(user_id):
-        return self.users.get(user_ids=user_id)['response'][0]["first_name"]
+    def contains_string(strings, matchedString, ignoreCase):
+        if ignoreCase:
+            for string in strings:
+                if string.lower() == matchedString.lower():
+                    return True
+        else:
+            for string in strings:
+                if string == matchedString:
+                    return True
+        return False
+
+    @staticmethod
+    def contains_all_strings(self, strings, matchedStrings, ignoreCase):
+        matched_strings_count = len(matchedStrings)
+        for string in strings:
+            if V.contains_string(matchedStrings, string, ignoreCase):
+                matched_strings_count -= 1
+                if matched_strings_count == 0:
+                    return True
+        return False
 
 
 if __name__ == '__main__':
