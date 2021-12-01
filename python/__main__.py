@@ -1,7 +1,6 @@
 from saya import Vk
 
 import regex
-import requests
 from datetime import datetime, timedelta
 
 import config
@@ -29,6 +28,8 @@ class V(Vk):
             (patterns.UPDATE, self.commands.update_command),
             (patterns.ADD_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(True)),
             (patterns.REMOVE_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(False)),
+            (patterns.ADD_GITHUB_PROFILE, lambda: self.commands.change_github_profile(True)),
+            (patterns.REMOVE_GITHUB_PROFILE, lambda: self.commands.change_github_profile(False)),
         )
 
     def message_new(self, event):
@@ -62,7 +63,7 @@ class V(Vk):
         user = self.data.get_or_create_user(from_id, self) if from_id > 0 else None
 
         message = event["text"].lstrip("/")
-        messages = self._get_messages(event)
+        messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = self.data.get_or_create_user(selected_message["from_id"], self) if selected_message else None
         is_bot_selected = selected_message and (selected_message["from_id"] < 0)
@@ -154,26 +155,6 @@ class V(Vk):
                     languages = match.group("languages")
                     return self.send_people_languages(event, languages)
 
-        match = regex.match(patterns.ADD_GITHUB_PROFILE, message)
-        if match:
-            profile = match.group('profile')
-            if not profile:
-                return
-            if profile != self.data.get_user_property(user, "github_profile"):
-                if requests.get(f'https://github.com/{profile}').status_code == 200:
-                    self.data.set_user_property(user, "github_profile", profile)
-                    self.data.save_user(user)
-            return self.send_github_profile(event, user)
-        match = regex.match(patterns.REMOVE_GITHUB_PROFILE, message)
-        if match:
-            profile = match.group('profile')
-            if not profile:
-                return
-            if profile == self.data.get_user_property(user, "github_profile"):
-                self.data.set_user_property(user, "github_profile", "")
-                self.data.save_user(user)
-            return self.send_github_profile(event, user)
-
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
         if peer_id in config.userbot_chats and peer_id in config.chats_deleting:
@@ -236,10 +217,6 @@ class V(Vk):
                 initial_karma,
                 new_karma)
 
-    def _get_messages(self, event):
-        reply_message = event.get("reply_message", {})
-        return [reply_message] if reply_message else event.get("fwd_messages", [])
-
     def get_programming_languages_string_with_parentheses_or_empty(self, user):
         programming_languages_string = ", ".join(self.data.get_user_sorted_programming_languages(user))
         if programming_languages_string == "":
@@ -254,13 +231,6 @@ class V(Vk):
     def get_programming_languages_string(self, user):
         languages = self.data.get_user_sorted_programming_languages(user)
         return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
-
-    def _get_default_programming_language(self, language):
-        for default_programming_language in config.default_programming_languages:
-            default_programming_language = default_programming_language.replace('\\', '')
-            if default_programming_language.lower() == language.lower():
-                return default_programming_language
-        return None
 
     def contains_string(self, strings, matchedString, ignoreCase):
         if ignoreCase:
@@ -460,7 +430,21 @@ class V(Vk):
     def send_msg(self, msg: str, peer_id: int) -> NoReturn:
         self.messages.send(message=msg, peer_id=peer_id, disable_mentions=1, random_id=0)
 
-    def _get_user_name(self, user_id):
+
+    @staticmethod
+    def get_messages(event):
+        reply_message = event.get("reply_message", {})
+        return [reply_message] if reply_message else event.get("fwd_messages", [])
+
+    @staticmethod
+    def get_default_programming_language(language):
+        for default_programming_language in config.default_programming_languages:
+            default_programming_language = default_programming_language.replace('\\', '')
+            if default_programming_language.lower() == language.lower():
+                return default_programming_language
+
+    @staticmethod
+    def get_user_name(user_id):
         return self.users.get(user_ids=user_id)['response'][0]["first_name"]
 
 

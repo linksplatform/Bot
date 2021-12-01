@@ -6,8 +6,9 @@ from social_ethosa import BetterUser
 from typing import NoReturn, Tuple, List
 from regex import Pattern
 from saya import Vk
-import regex
+import requests
 import config
+import regex
 
 
 class Commands:
@@ -53,7 +54,7 @@ class Commands:
 
     def change_programming_language(self, is_add: bool) -> NoReturn:
         """
-        Adds a new programming language in user profile.
+        Adds or removes a new programming language in user profile.
         """
         language = self.matched.group('language')
         language = self.vk_instance._get_default_programming_language(language)
@@ -70,6 +71,26 @@ class Commands:
             self.data_service.save_user(self.user)
         self.vk_instance.send_msg(
             CommandsBuilder.build_change_programming_languages(self.user, self.data_service),
+            self.peer_id)
+
+    def change_github_profile(self, is_add: bool) -> NoReturn:
+        """
+        Changes github profile.
+        """
+        profile = self.matched.group('profile')
+        if not profile:
+            return
+        user_profile = self.data_service.get_user_property(self.user, "github_profile")
+        condition = profile != user_profile if is_add else profile == user_profile
+        if not is_add:
+            profile = ""
+        if condition:
+            if is_add and requests.get(f'https://github.com/{profile}').status_code != 200:
+                return
+            self.data_service.set_user_property(self.user, "github_profile", profile)
+            self.data_service.save_user(self.user)
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_github_profile(self.user, self.data_service),
             self.peer_id)
 
     def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:

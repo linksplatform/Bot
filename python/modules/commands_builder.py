@@ -66,3 +66,17 @@ class CommandsBuilder:
         else:
             return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
                     f", Ваши языки программирования: {programming_languages_string}.")
+
+    @staticmethod
+    def build_github_profile(
+            user: BetterUser, data: BetterBotBaseDataService) -> str:
+        """
+        Builds changing github profile.
+        """
+        profile = DataBuilder.build_github_profile(user, data, default="отсутствует")
+        if not profile:
+            return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}], "
+                    f"у Вас не указана страничка на GitHub.")
+        else:
+            return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}], "
+                    f"Ваша страничка на GitHub — {profile}.")
