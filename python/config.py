@@ -21,8 +21,8 @@ chats_karma_whitelist = [
     2000000011
 ]
 
-positive_votes_per_karma = 1
-negative_votes_per_karma = 1
+positive_votes_per_karma = 2
+negative_votes_per_karma = 3
 
 karma_limit_hours = [
     { "min_karma": None, "max_karma": -19,  "limit": 8 },

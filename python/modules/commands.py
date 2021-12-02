@@ -13,8 +13,8 @@ import regex
 
 
 class Commands:
+    cmds: dict = {}
     def __init__(self, vk_instance: Vk, data_service: BetterBotBaseDataService):
-        self.cmds: dict = {}
         self.msg: str = ""
         self.msg_id: int = 0
         self.peer_id: int = 0
@@ -114,7 +114,8 @@ class Commands:
             return
         maximum_users = self.matched.group("maximum_users")
         maximum_users = int(maximum_users) if maximum_users else 0
-        users = self.vk_instance.get_users_sorted_by_karma(self.peer_id)
+        users = DataBuilder.get_users_sorted_by_karma(
+            self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
                  (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         self.vk_instance.send_msg(
@@ -128,7 +129,8 @@ class Commands:
         if self.peer_id < 2e9:
             return
         languages = regex.split(r"\s+", self.matched.group("languages"))
-        users = self.vk_instance.get_users_sorted_by_karma(self.peer_id, reverse)
+        users = DataBuilder.get_users_sorted_by_karma(
+            self.vk_instance, self.data_service, self.peer_id, reverse)
         users = [i for i in users if
                  ("programming_languages" in i and len(i["programming_languages"]) > 0) and
                  self.vk_instance.contains_all_strings(i["programming_languages"], languages, True)]
@@ -241,18 +243,31 @@ class Commands:
                 initial_karma,
                 new_karma)
 
-    def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:
+    @staticmethod
+    def register_cmd(cmd: Pattern, action: callable) -> NoReturn:
         """
         Registers a new command.
         """
-        self.cmds[cmd] = action
+        Commands.cmds[cmd] = action
 
-    def register_cmds(self, *cmds: Tuple[Pattern, callable]) -> NoReturn:
+    @staticmethod
+    def register_cmds(*cmds: Tuple[Pattern, callable]) -> NoReturn:
         """
         Registers a new commands.
         """
         for cmd, action in cmds:
-            self.cmds[cmd] = action
+            Commands.cmds[cmd] = action
+
+    @staticmethod
+    def _register_decorator(cmd: Pattern, args: list, action: callable) -> NoReturn:
+        Commands.cmds[cmd] = lambda: action(args)
+
+    @staticmethod
+    def register(cmd: Pattern, *args) -> callable:
+        """
+        Command register decorator.
+        """
+        return lambda action: Commands._register_decorator(cmd, args, action)
 
     def process(self, msg: str, peer_id: int, from_id: int,
                 fwd_messages: List[dict], msg_id: int,
@@ -279,7 +294,7 @@ class Commands:
         if from_id < 0:
             return
 
-        for cmd, action in self.cmds.items():
+        for cmd, action in Commands.cmds.items():
             self.matched: list = regex.match(cmd, msg)
             if self.matched:
                 action()
