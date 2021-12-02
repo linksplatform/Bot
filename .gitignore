@@ -137,3 +137,11 @@ python/users/*
 .vs
 obj/
 bin/
+
+# Nim
+nimcache/
+nimblecache/
+htmldocs/
+
+*.exe
+
