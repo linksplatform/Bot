@@ -2,8 +2,9 @@
 from modules.commands_builder import CommandsBuilder
 from modules.data_service import BetterBotBaseDataService
 from modules.data_builder import DataBuilder
-from social_ethosa import BetterUser
 from typing import NoReturn, Tuple, List
+from datetime import datetime, timedelta
+from social_ethosa import BetterUser
 from regex import Pattern
 from saya import Vk
 import requests
@@ -15,6 +16,7 @@ class Commands:
     def __init__(self, vk_instance: Vk, data_service: BetterBotBaseDataService):
         self.cmds: dict = {}
         self.msg: str = ""
+        self.msg_id: int = 0
         self.peer_id: int = 0
         self.from_id: int = 0
         self.user: BetterUser = None
@@ -48,8 +50,8 @@ class Commands:
         Updates user profile.
         """
         name = self.vk_instance.get_user_name(self.from_id)
-        self.data_service.set_user_property(self.user, "name", name)
-        self.data_service.save_user(self.user)
+        self.data_service.set_user_property(self.current_user, "name", name)
+        self.data_service.save_user(self.current_user)
         self.info_message()
 
     def change_programming_language(self, is_add: bool) -> NoReturn:
@@ -60,17 +62,17 @@ class Commands:
         language = self.vk_instance.get_default_programming_language(language)
         if not language:
             return
-        languages = self.data_service.get_user_property(self.user, "programming_languages")
+        languages = self.data_service.get_user_property(self.current_user, "programming_languages")
         condition = language not in languages if is_add else language in languages
         if condition:
             if is_add:
                 languages.append(language)
             else:
                 languages.remove(language)
-            self.data_service.set_user_property(self.user, "programming_languages", languages)
-            self.data_service.save_user(self.user)
+            self.data_service.set_user_property(self.current_user, "programming_languages", languages)
+            self.data_service.save_user(self.current_user)
         self.vk_instance.send_msg(
-            CommandsBuilder.build_change_programming_languages(self.user, self.data_service),
+            CommandsBuilder.build_change_programming_languages(self.current_user, self.data_service),
             self.peer_id)
 
     def change_github_profile(self, is_add: bool) -> NoReturn:
@@ -80,17 +82,17 @@ class Commands:
         profile = self.matched.group('profile')
         if not profile:
             return
-        user_profile = self.data_service.get_user_property(self.user, "github_profile")
+        user_profile = self.data_service.get_user_property(self.current_user, "github_profile")
         condition = profile != user_profile if is_add else profile == user_profile
         if not is_add:
             profile = ""
         if condition:
             if is_add and requests.get(f'https://github.com/{profile}').status_code != 200:
                 return
-            self.data_service.set_user_property(self.user, "github_profile", profile)
-            self.data_service.save_user(self.user)
+            self.data_service.set_user_property(self.current_user, "github_profile", profile)
+            self.data_service.save_user(self.current_user)
         self.vk_instance.send_msg(
-            CommandsBuilder.build_github_profile(self.user, self.data_service),
+            CommandsBuilder.build_github_profile(self.current_user, self.data_service),
             self.peer_id)
 
     def karma_message(self) -> NoReturn:
@@ -134,6 +136,111 @@ class Commands:
             CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled),
             self.peer_id)
 
+    def apply_karma(self) -> NoReturn:
+        """
+        Changes user karma.
+        """
+        if self.peer_id < 2e9 or not self.karma_enabled or not self.matched or self.is_bot_selected:
+            return
+        if not self.user:
+            selected_user_id = self.matched.group("selectedUserId")
+            if selected_user_id:
+                self.user = self.data_service.get_or_create_user(int(selected_user_id), self)
+
+        if self.user and (self.data_service.get_user_property(self.user, "uid") != self.from_id):
+            operator = self.matched.group("operator")[0]
+            amount = self.matched.group("amount")
+            amount = int(amount) if amount else 0
+
+            utcnow = datetime.utcnow()
+
+            # Downvotes disabled for users with negative karma
+            if (operator == "-") and (self.data_service.get_user_property(self.user, "karma") < 0):
+                self.vk_instance.delete_message(self.peer_id, self.msg_id)
+                self.vk_instance.send_msg(
+                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
+                    self.peer_id)
+                return
+
+            # Collective votes limit
+            if amount == 0:
+                utclast = datetime.fromtimestamp(float(self.data_service.get_user_property(self.user, "last_collective_vote")))
+                difference = utcnow - utclast
+                hours_difference = difference.total_seconds() / 3600
+                hours_limit = self.vk_instance.get_karma_hours_limit(
+                    self.data_service.get_user_property(self.user, "karma"))
+                if hours_difference < hours_limit:
+                    self.vk_instance.delete_message(self.peer_id, self.msg_id)
+                    self.vk_instance.send_msg(
+                        CommandsBuilder.build_not_enough_hours(
+                            self.current_user, self.data_service,
+                            hours_limit, difference.total_seconds() / 60),
+                        self.peer_id)
+                    return
+
+            user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(operator, amount)
+
+            if collective_vote_applied:
+                self.data_service.set_user_property(self.user, "last_collective_vote", int(utcnow.timestamp()))
+                self.data_service.save_user(self.user)
+
+            self.data_service.save_user(self.current_user)
+
+            if user_karma_change:
+                self.data_service.save_user(self.user)
+                self.vk_instance.send_msg(
+                    CommandsBuilder.build_karma_change(
+                        user_karma_change, selected_user_karma_change, voters),
+                    self.peer_id)
+            self.vk_instance.delete_message(self.peer_id, self.msg_id)
+
+    def apply_karma_change(self, operator: str, amount: int) -> tuple:
+        selected_user_karma_change = None
+        user_karma_change = None
+        collective_vote_applied = None
+        voters = None
+
+        # Personal karma transfer
+        if amount > 0:
+            if self.data_service.get_user_property(self.user, "karma") < amount:
+                self.vk_instance.send_msg(
+                    CommandsBuilder.build_not_enough_karma(self.user, self.data_service),
+                    self.peer_id)
+                return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
+            else:
+                user_karma_change = self.apply_user_karma(-amount)
+                amount = -amount if operator == "-" else amount
+                selected_user_karma_change = self.apply_user_karma(selected_user, amount)
+
+        # Collective vote
+        elif amount == 0:
+            if operator == "+":
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("supporters", config.positive_votes_per_karma, +1)
+            else:
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("opponents", config.negative_votes_per_karma, -1)
+
+        return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
+
+    def apply_collective_vote(self, current_voters: str, number_of_voters: int, amount: int) -> tuple:
+        vote_applied = None
+        if self.from_id not in self.user[current_voters]:
+            self.user[current_voters].append(self.from_id)
+            vote_applied = True
+        if len(self.user[current_voters]) >= number_of_voters:
+            voters = self.user[current_voters]
+            self.user[current_voters] = []
+            return self.apply_user_karma(amount), voters, vote_applied
+        return (None, None, vote_applied)
+
+    def apply_user_karma(self, amount: int) -> Tuple[int, str, int, int]:
+        initial_karma = self.data_service.get_user_property(self.user, "karma")
+        new_karma = initial_karma + amount
+        self.data_service.set_user_property(self.user, "karma", new_karma)
+        return (self.user.uid,
+                self.data_service.get_user_property(self.user, "name"),
+                initial_karma,
+                new_karma)
+
     def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:
         """
         Registers a new command.
@@ -148,7 +255,7 @@ class Commands:
             self.cmds[cmd] = action
 
     def process(self, msg: str, peer_id: int, from_id: int,
-                fwd_messages: List[dict],
+                fwd_messages: List[dict], msg_id: int,
                 user: BetterUser, selected_user: BetterUser) -> NoReturn:
         """
         Process commands
@@ -159,6 +266,7 @@ class Commands:
         - {from_id} - user ID.
         """
         self.msg = msg
+        self.msg_id = msg_id
         self.from_id = from_id
         self.peer_id = peer_id
         self.karma_enabled = peer_id in config.chats_karma_whitelist
@@ -166,6 +274,7 @@ class Commands:
         self.selected_message = fwd_messages[0] if len(fwd_messages) == 1 else None
         self.is_bot_selected = self.selected_message and (self.selected_message["from_id"] < 0)
         self.user = selected_user if selected_user else user
+        self.current_user = user
 
         if from_id < 0:
             return

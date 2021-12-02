@@ -1,7 +1,6 @@
 from saya import Vk
 
 import regex
-from datetime import datetime, timedelta
 
 import config
 import patterns
@@ -37,6 +36,7 @@ class V(Vk):
             (patterns.TOP_LANGUAGES, self.commands.top_langs),
             (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
             (patterns.BOTTOM_LANGUAGES, lambda: self.commands.top_langs(True)),
+            (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 
     def message_new(self, event):
@@ -44,9 +44,10 @@ class V(Vk):
         Handling all new messages.
         """
         event = event["object"]["message"]
-        msg = event["text"]
+        msg = event["text"].lstrip("/")
         peer_id = event["peer_id"]
         from_id = event["from_id"]
+        msg_id = event["conversation_message_id"]
 
         if peer_id in self.messages_to_delete:
             peer = CHAT_ID_OFFSET + config.userbot_chats[peer_id]
@@ -69,191 +70,12 @@ class V(Vk):
 
         user = self.data.get_or_create_user(from_id, self) if from_id > 0 else None
 
-        message = event["text"].lstrip("/")
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = self.data.get_or_create_user(selected_message["from_id"], self) if selected_message else None
-        is_bot_selected = selected_message and (selected_message["from_id"] < 0)
 
-        karma_enabled = event["peer_id"] in config.chats_karma_whitelist
-        group_chat = event["peer_id"] >= CHAT_ID_OFFSET
+        self.commands.process(msg, peer_id, from_id, messages, msg_id, user, selected_user)
 
-        self.commands.process(msg, peer_id, from_id, messages, user, selected_user)
-
-        if group_chat:
-            if karma_enabled:
-                match = regex.match(patterns.APPLY_KARMA, message)
-                if match:
-                    # Only regular users can be selected
-                    if is_bot_selected:
-                        return
-
-                    if not selected_user:
-                        selected_user_id = match.group("selectedUserId")
-                        if selected_user_id:
-                            selected_user = self.data.get_or_create_user(int(selected_user_id), self)
-
-                    if selected_user and (self.data.get_user_property(user, "uid") != selected_user.uid):
-                        operator = match.group("operator")[0]
-                        amount = match.group("amount")
-                        amount = int(amount) if amount else 0
-
-                        utcnow = datetime.utcnow()
-
-                        # Downvotes disabled for users with negative karma
-                        if (operator == "-") and (self.data.get_user_property(user, "karma") < 0):
-                            self.delete_message(event)
-                            self.send_not_enough_karma_error(event, user)
-                            return
-
-                        # Collective votes limit
-                        if amount == 0:
-                            utclast = datetime.fromtimestamp(float(self.data.get_user_property(user, "last_collective_vote")));
-                            difference = utcnow - utclast
-                            hours_difference = difference.total_seconds() / 3600;
-                            hours_limit = self.get_karma_hours_limit(self.data.get_user_property(user, "karma"));
-                            if hours_difference < hours_limit:
-                                self.delete_message(event)
-                                self.send_not_enough_hours_error(event, user, hours_limit, difference.total_seconds() / 60)
-                                return
-
-                        user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(event, user, selected_user, operator, amount)
-
-                        if collective_vote_applied:
-                            self.data.set_user_property(user, "last_collective_vote", int(utcnow.timestamp()))
-                            self.data.save_user(user)
-
-                        self.data.save_user(selected_user)
-
-                        if user_karma_change:
-                            self.data.save_user(user)
-                        self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
-                        self.delete_message(event)
-                        return
-
-    def delete_message(self, event, delay=2):
-        peer_id = event['peer_id']
-        if peer_id in config.userbot_chats and peer_id in config.chats_deleting:
-            if peer_id not in self.messages_to_delete:
-                self.messages_to_delete.update({peer_id: []})
-
-            message_id = event['conversation_message_id']
-            data = {'date': datetime.now() + timedelta(seconds=delay), 'id': message_id}
-            self.messages_to_delete[peer_id].append(data)
-
-    def get_karma_hours_limit(self, karma):
-        for limit_item in config.karma_limit_hours:
-            if (not limit_item["min_karma"]) or (karma >= limit_item["min_karma"]):
-                if (not limit_item["max_karma"]) or (karma < limit_item["max_karma"]):
-                    return limit_item["limit"]
-        return 168 # hours (a week)
-
-    def apply_karma_change(self, event, user, selected_user, operator, amount):
-        selected_user_karma_change = None
-        user_karma_change = None
-        collective_vote_applied = None
-        voters = None
-
-        # Personal karma transfer
-        if amount > 0:
-            if self.data.get_user_property(user, "karma") < amount:
-                self.send_not_enough_karma_error(event, user)
-                return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
-            else:
-                user_karma_change = self.apply_user_karma(user, -amount)
-                amount = -amount if operator == "-" else amount
-                selected_user_karma_change = self.apply_user_karma(selected_user, amount)
-
-        # Collective vote
-        elif amount == 0:
-            if operator == "+":
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "supporters", config.positive_votes_per_karma, +1)
-            else:
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote(user, selected_user, "opponents", config.negative_votes_per_karma, -1)
-
-        return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
-
-    def apply_collective_vote(self, user, selected_user, current_voters, number_of_voters, amount):
-        vote_applied = None
-        if user.uid not in selected_user[current_voters]:
-            selected_user[current_voters].append(user.uid)
-            vote_applied = True
-        if len(selected_user[current_voters]) >= number_of_voters:
-            voters = selected_user[current_voters]
-            selected_user[current_voters] = []
-            return self.apply_user_karma(selected_user, amount), voters, vote_applied
-        return None, None, vote_applied
-
-    def apply_user_karma(self, user, amount):
-        initial_karma = self.data.get_user_property(user, "karma")
-        new_karma = initial_karma + amount
-        self.data.set_user_property(user, "karma", new_karma)
-        return (user.uid,
-                self.data.get_user_property(user, "name"),
-                initial_karma,
-                new_karma)
-
-    def get_programming_languages_string_with_parentheses_or_empty(self, user):
-        programming_languages_string = ", ".join(self.data.get_user_sorted_programming_languages(user))
-        if programming_languages_string == "":
-            return programming_languages_string
-        else:
-            return "(" + programming_languages_string + ")"
-
-    def get_github_profile_or_default(self, user, default="", prefix=""):
-        profile = self.data.get_user_property(user, "github_profile")
-        return f"{prefix}github.com/{profile}" if profile else default
-
-    def get_programming_languages_string(self, user):
-        languages = self.data.get_user_sorted_programming_languages(user)
-        return ", ".join(languages) if len(languages) > 0 else "отсутствуют"
-
-    def send_karma_change(self, event, user_karma_change, selected_user_karma_change, voters):
-        if selected_user_karma_change and user_karma_change:
-            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." % (user_karma_change + selected_user_karma_change))
-        elif selected_user_karma_change:
-            self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
-
-    def get_karma_string(self, user):
-        plus_string = ""
-        minus_string = ""
-        karma = self.data.get_user_property(user, "karma")
-        plus_votes = len(self.data.get_user_property(user, "supporters"))
-        minus_votes = len(self.data.get_user_property(user, "opponents"))
-        if plus_votes > 0:
-            plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
-        if minus_votes > 0:
-            minus_string = "-%.1f" % (minus_votes / config.negative_votes_per_karma)
-        if plus_votes > 0 or minus_votes > 0:
-            return f"[{karma}][{plus_string}{minus_string}]"
-        else:
-            return f"[{karma}]"
-
-    def send_top_users(self, event, users):
-        if not users:
-            return
-        user_strings = ["%s [id%s|%s]%s %s" % (self.get_karma_string(user),
-                                               self.data.get_user_property(user, "uid"),
-                                               self.data.get_user_property(user, "name"),
-                                               self.get_github_profile_or_default(user, prefix=" - "),
-                                               self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
-        total_symbols = 0
-        i = 0
-        for user_string in user_strings:
-            user_string_length = len(user_string)
-            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
-                user_strings = user_strings[:i]
-            else:
-                total_symbols += user_string_length + 2
-                i += 1
-        response = "\n".join(user_strings)
-        self.send_message(event, response)
-
-    def calculate_real_karma(self, user):
-        base_karma = self.data.get_user_property(user, "karma")
-        up_votes = len(self.data.get_user_property(user, "supporters"))/config.positive_votes_per_karma
-        down_votes = len(self.data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
-        return base_karma + up_votes - down_votes
 
     def get_users_sorted_by_karma(self, peer_id, reverse_sort=True):
         members = self.get_members_ids(peer_id)
@@ -271,47 +93,19 @@ class V(Vk):
         users.reverse()
         return users
 
-    def send_people_users(self, event, users):
-        if not users:
-            return
-        user_strings = ["[id%s|%s]%s %s" % (self.data.get_user_property(user, "uid"),
-                                            self.data.get_user_property(user, "name"),
-                                            self.get_github_profile_or_default(user, prefix=" - "),
-                                            self.get_programming_languages_string_with_parentheses_or_empty(user)) for user in users]
-        total_symbols = 0
-        i = 0
-        for user_string in user_strings:
-            user_string_length = len(user_string)
-            if (total_symbols + user_string_length + 2) >= 4096: # Maximum message size for VK API (messages.send)
-                user_strings = user_strings[:i]
-            else:
-                total_symbols += user_string_length + 2
-                i += 1
-        response = "\n".join(user_strings)
-        self.send_message(event, response)
+    def calculate_real_karma(self, user):
+        base_karma = self.data.get_user_property(user, "karma")
+        up_votes = len(self.data.get_user_property(user, "supporters"))/config.positive_votes_per_karma
+        down_votes = len(self.data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
+        return base_karma + up_votes - down_votes
 
-    def send_people_languages(self, event, languages):
-        languages = regex.split(r"\s+", languages)
-        peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_name(peer_id)
-        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
-        self.send_people_users(event, users)
 
-    def send_top_languages(self, event, languages, reverse=True):
-        languages = regex.split(r"\s+", languages)
-        peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_karma(peer_id, reverse)
-        users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
-        self.send_top_users(event, users)
-
-    def send_not_enough_karma_error(self, event, user):
-        message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но Вашей кармы [{self.data.get_user_property(user, 'karma')}] недостаточно :("
-        self.send_message(event, message)
-
-    def send_not_enough_hours_error(self, event, user, hours_limit, difference_minutes):
-        message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
-        self.send_message(event, message)
-
+    def delete_message(self, peer_id: int, msg_id: int, delay: int = 2) -> NoReturn:
+        if peer_id in config.userbot_chats and peer_id in config.chats_deleting:
+            if peer_id not in self.messages_to_delete:
+                self.messages_to_delete.update({peer_id: []})
+            data = {'date': datetime.now() + timedelta(seconds=delay), 'id': msg_id}
+            self.messages_to_delete[peer_id].append(data)
 
     def get_members(self, peer_id):
         return self.messages.getConversationMembers(peer_id=peer_id)
@@ -364,6 +158,14 @@ class V(Vk):
                 matched_strings_count -= 1
                 if matched_strings_count == 0:
                     return True
+
+    @staticmethod
+    def get_karma_hours_limit(karma):
+        for limit_item in config.karma_limit_hours:
+            if not limit_item["min_karma"] or karma >= limit_item["min_karma"]:
+                if not limit_item["max_karma"] or karma < limit_item["max_karma"]:
+                    return limit_item["limit"]
+        return 168  # hours (a week)
 
 
 if __name__ == '__main__':

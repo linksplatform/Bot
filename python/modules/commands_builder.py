@@ -145,3 +145,12 @@ class CommandsBuilder:
                 total_symbols += user_string_length + 2
                 i += 1
         return "\n".join(user_strings)
+
+    @staticmethod
+    def build_karma_change(user_karma_change, selected_user_karma_change, voters) -> str:
+        if selected_user_karma_change and user_karma_change:
+            return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
+                    (user_karma_change + selected_user_karma_change))
+        elif selected_user_karma_change:
+            return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
+                (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
