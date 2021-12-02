@@ -2,6 +2,8 @@
 from modules.data_service import BetterBotBaseDataService
 from modules.data_builder import DataBuilder
 from social_ethosa import BetterUser
+from typing import List
+import config
 
 
 class CommandsBuilder:
@@ -84,6 +86,9 @@ class CommandsBuilder:
     @staticmethod
     def build_karma(
             user: BetterUser, data: BetterBotBaseDataService, is_self: bool) -> str:
+        """
+        Sends user karma amount.
+        """
         if is_self:
             return (f"[id{data.get_user_property(user, 'uid')}|"
                         f"{data.get_user_property(user, 'name')}], "
@@ -92,3 +97,51 @@ class CommandsBuilder:
             return (f"Карма [id{data.get_user_property(user, 'uid')}|"
                         f"{data.get_user_property(user, 'name')}] — "
                         f"{DataBuilder.build_karma(user, data)}.")
+
+    @staticmethod
+    def build_not_enough_karma(
+            user: BetterUser, data: BetterBotBaseDataService) -> str:
+        return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
+                f"{data.get_user_property(user, 'name')}], "
+                f"но Вашей кармы [{data.get_user_property(user, 'karma')}] "
+                f"недостаточно :(")
+
+    @staticmethod
+    def build_not_in_whitelist(
+            user: BetterUser, data: BetterBotBaseDataService,
+            peer_id: int) -> str:
+        return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
+                f"{data.get_user_property(user, 'name')}], "
+                f"но Ваша беседа [{peer_id}] отсутствует в белом списке для начисления кармы.")
+
+    @staticmethod
+    def build_not_enough_hours(
+            user: BetterUser, data: BetterBotBaseDataService,
+            hours_limit: int, difference_minutes: int) -> str:
+        return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
+                f"{data.get_user_property(user, 'name')}], "
+                f"но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. "
+                f":( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м.")
+
+    @staticmethod
+    def build_top_users(
+            users: List[BetterUser], data: BetterBotBaseDataService,
+            reverse: bool = False, has_karma: bool = True) -> str:
+        if not users:
+            return
+        if reverse:
+            users = reversed(users)
+        user_strings = [(f"{DataBuilder.build_karma(user, data) if has_karma else ''} "
+                         f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
+                         f"{DataBuilder.build_github_profile(user, data, prefix=' - ')} "
+                         f"{DataBuilder.build_programming_languages(user, data, '')}") for user in users]
+        total_symbols = 0
+        i = 0
+        for user_string in user_strings:
+            user_string_length = len(user_string)
+            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
+                user_strings = user_strings[:i]
+            else:
+                total_symbols += user_string_length + 2
+                i += 1
+        return "\n".join(user_strings)

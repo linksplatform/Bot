@@ -47,7 +47,7 @@ class Commands:
         """
         Updates user profile.
         """
-        name = self.vk_instance._get_user_name(self.from_id)
+        name = self.vk_instance.get_user_name(self.from_id)
         self.data_service.set_user_property(self.user, "name", name)
         self.data_service.save_user(self.user)
         self.info_message()
@@ -57,7 +57,7 @@ class Commands:
         Adds or removes a new programming language in user profile.
         """
         language = self.matched.group('language')
-        language = self.vk_instance._get_default_programming_language(language)
+        language = self.vk_instance.get_default_programming_language(language)
         if not language:
             return
         languages = self.data_service.get_user_property(self.user, "programming_languages")
@@ -104,6 +104,36 @@ class Commands:
             CommandsBuilder.build_karma(self.user, self.data_service, is_self),
             self.peer_id)
 
+    def top(self, reverse: bool = False) -> NoReturn:
+        """
+        Sends users top.
+        """
+        if self.peer_id < 2e9:
+            return
+        maximum_users = self.matched.group("maximum_users")
+        maximum_users = int(maximum_users) if maximum_users else 0
+        users = self.vk_instance.get_users_sorted_by_karma(self.peer_id)
+        users = [i for i in users if
+                 (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled),
+            self.peer_id)
+
+    def top_langs(self, reverse: bool = False) -> NoReturn:
+        """
+        Sends users top.
+        """
+        if self.peer_id < 2e9:
+            return
+        languages = regex.split(r"\s+", self.matched.group("languages"))
+        users = self.vk_instance.get_users_sorted_by_karma(self.peer_id, reverse)
+        users = [i for i in users if
+                 ("programming_languages" in i and len(i["programming_languages"]) > 0) and
+                 self.vk_instance.contains_all_strings(i["programming_languages"], languages, True)]
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled),
+            self.peer_id)
+
     def register_cmd(self, cmd: Pattern, action: callable) -> NoReturn:
         """
         Registers a new command.
@@ -118,7 +148,8 @@ class Commands:
             self.cmds[cmd] = action
 
     def process(self, msg: str, peer_id: int, from_id: int,
-                fwd_messages: List[dict], user, selected_user) -> NoReturn:
+                fwd_messages: List[dict],
+                user: BetterUser, selected_user: BetterUser) -> NoReturn:
         """
         Process commands
 
@@ -135,6 +166,9 @@ class Commands:
         self.selected_message = fwd_messages[0] if len(fwd_messages) == 1 else None
         self.is_bot_selected = self.selected_message and (self.selected_message["from_id"] < 0)
         self.user = selected_user if selected_user else user
+
+        if from_id < 0:
+            return
 
         for cmd, action in self.cmds.items():
             self.matched: list = regex.match(cmd, msg)

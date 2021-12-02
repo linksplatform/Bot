@@ -31,6 +31,12 @@ class V(Vk):
             (patterns.ADD_GITHUB_PROFILE, lambda: self.commands.change_github_profile(True)),
             (patterns.REMOVE_GITHUB_PROFILE, lambda: self.commands.change_github_profile(False)),
             (patterns.KARMA, self.commands.karma_message),
+            (patterns.TOP, self.commands.top),
+            (patterns.PEOPLE, self.commands.top),
+            (patterns.BOTTOM, lambda: self.commands.top(True)),
+            (patterns.TOP_LANGUAGES, self.commands.top_langs),
+            (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
+            (patterns.BOTTOM_LANGUAGES, lambda: self.commands.top_langs(True)),
         )
 
     def message_new(self, event):
@@ -76,16 +82,6 @@ class V(Vk):
 
         if group_chat:
             if karma_enabled:
-                match = regex.match(patterns.TOP, message)
-                if match:
-                    maximum_users = match.group("maximum_users")
-                    maximum_users = int(maximum_users) if maximum_users else 0
-                    return self.send_top(event, maximum_users)
-                match = regex.match(patterns.BOTTOM, message)
-                if match:
-                    maximum_users = match.group("maximum_users")
-                    maximum_users = int(maximum_users) if maximum_users else 0
-                    return self.send_bottom(event, maximum_users)
                 match = regex.match(patterns.APPLY_KARMA, message)
                 if match:
                     # Only regular users can be selected
@@ -134,24 +130,6 @@ class V(Vk):
                         self.send_karma_change(event, user_karma_change, selected_user_karma_change, voters)
                         self.delete_message(event)
                         return
-                match = regex.match(patterns.TOP_LANGUAGES, message)
-                if match:
-                    languages = match.group("languages")
-                    return self.send_top_languages(event, languages)
-                match = regex.match(patterns.BOTTOM_LANGUAGES, message)
-                if match:
-                    languages = match.group("languages")
-                    return self.send_top_languages(event, languages, False)
-            else:
-                match = regex.match(patterns.PEOPLE, message)
-                if match:
-                    maximum_users = match.group("maximum_users")
-                    maximum_users = int(maximum_users) if maximum_users else 0
-                    return self.send_people(event, maximum_users)
-                match = regex.match(patterns.PEOPLE_LANGUAGES, message)
-                if match:
-                    languages = match.group("languages")
-                    return self.send_people_languages(event, languages)
 
     def delete_message(self, event, delay=2):
         peer_id = event['peer_id']
@@ -236,15 +214,6 @@ class V(Vk):
         elif selected_user_karma_change:
             self.send_message(event, "Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" % (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
 
-    def send_karma(self, event, user, is_self=True):
-        if is_self:
-            response = "[id%s|%s], Ваша карма — %s."
-        else:
-            response = "Карма [id%s|%s] — %s."
-        self.send_message(event, response % (self.data.get_user_property(user, "uid"),
-                                             self.data.get_user_property(user, "name"),
-                                             self.get_karma_string(user)))
-
     def get_karma_string(self, user):
         plus_string = ""
         minus_string = ""
@@ -302,17 +271,6 @@ class V(Vk):
         users.reverse()
         return users
 
-    def send_bottom(self, event, maximum_users):
-        peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_karma(peer_id)
-        users = [i for i in users if
-                 (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        if (maximum_users > 0) and (len(users) >= maximum_users):
-            users.reverse()
-            self.send_top_users(event, users[:maximum_users])
-        else:
-            self.send_top_users(event, reversed(users))
-
     def send_people_users(self, event, users):
         if not users:
             return
@@ -332,25 +290,6 @@ class V(Vk):
         response = "\n".join(user_strings)
         self.send_message(event, response)
 
-    def send_people(self, event, maximum_users):
-        peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_name(peer_id)
-        users = [i for i in users if i["github_profile"] or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        if (maximum_users > 0) and (len(users) >= maximum_users):
-            self.send_people_users(event, users[:maximum_users])
-        else:
-            self.send_people_users(event, users)
-
-    def send_top(self, event, maximum_users):
-        peer_id = event["peer_id"]
-        users = self.get_users_sorted_by_karma(peer_id)
-        users = [i for i in users if
-                 (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
-        if (maximum_users > 0) and (len(users) >= maximum_users):
-            self.send_top_users(event, users[:maximum_users])
-        else:
-            self.send_top_users(event, users)
-
     def send_people_languages(self, event, languages):
         languages = regex.split(r"\s+", languages)
         peer_id = event["peer_id"]
@@ -365,25 +304,6 @@ class V(Vk):
         users = [i for i in users if ("programming_languages" in i and len(i["programming_languages"]) > 0) and self.contains_all_strings(i["programming_languages"], languages, True)]
         self.send_top_users(event, users)
 
-    def send_github_profile(self, event, user):
-        profile = self.get_github_profile_or_default(user, default="отсутствует")
-        if not profile:
-            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], у Вас не указана страничка на GitHub.")
-        else:
-            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], Ваша страничка на GitHub — {profile}.")
-
-    def send_programming_languages_list(self, event, user):
-        programming_languages_string = self.get_programming_languages_string(user)
-        if not programming_languages_string:
-            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], у Вас не указано языков программирования.")
-        else:
-            self.send_message(event, f"[id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], Ваши языки программирования: {programming_languages_string}.")
-
-    def send_not_in_whitelist(self, event, user):
-        peer_id = event["peer_id"]
-        message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но Ваша беседа [{peer_id}] отсутствует в белом списке для начисления кармы."
-        self.send_message(event, message)
-
     def send_not_enough_karma_error(self, event, user):
         message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но Вашей кармы [{self.data.get_user_property(user, 'karma')}] недостаточно :("
         self.send_message(event, message)
@@ -392,13 +312,14 @@ class V(Vk):
         message = f"Извините, [id{self.data.get_user_property(user, 'uid')}|{self.data.get_user_property(user, 'name')}], но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. :( До следующего голоса осталось {int(hours_limit * 60 - difference_minutes)} м."
         self.send_message(event, message)
 
+
     def get_members(self, peer_id):
         return self.messages.getConversationMembers(peer_id=peer_id)
 
     def get_members_ids(self, peer_id):
         members = self.get_members(peer_id)
         if "error" in members:
-            return None
+            return
         else:
             return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
 
@@ -434,17 +355,15 @@ class V(Vk):
             for string in strings:
                 if string == matchedString:
                     return True
-        return False
 
     @staticmethod
-    def contains_all_strings(self, strings, matchedStrings, ignoreCase):
+    def contains_all_strings(strings, matchedStrings, ignoreCase):
         matched_strings_count = len(matchedStrings)
         for string in strings:
             if V.contains_string(matchedStrings, string, ignoreCase):
                 matched_strings_count -= 1
                 if matched_strings_count == 0:
                     return True
-        return False
 
 
 if __name__ == '__main__':
