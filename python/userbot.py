@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import requests
 
-from tokens import UserToken
+from tokens import USER_TOKEN
 from exceptions import TooManyMessagesError
 
 class UserBot:
     def __init__(self):
         self.url = 'https://api.vk.com/method/'
-        self.token = UserToken
+        self.token = USER_TOKEN
 
     def delete_messages(self, conversation_message_ids: list, peer_id: int):
         if len(conversation_message_ids) <= 24:
