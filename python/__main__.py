@@ -15,7 +15,11 @@ CHAT_ID_OFFSET = 2e9
 
 
 class V(Vk):
+    """Provides working with VK API as group.
+    """
     def __init__(self, token: str, group_id: int, debug: bool = True):
+        """Auth as VK group and register commands.
+        """
         Vk.__init__(self, token=token, group_id=group_id, debug=debug)
         self.messages_to_delete = {}
         self.userbot = UserBot()
@@ -45,7 +49,7 @@ class V(Vk):
             (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 
-    def message_new(self, event):
+    def message_new(self, event) -> NoReturn:
         """Handling all new messages.
         """
         event = event["object"]["message"]
@@ -86,6 +90,8 @@ class V(Vk):
 
     def delete_message(self, peer_id: int, msg_id: int,
                        delay: int = 2) -> NoReturn:
+        """Assigns messages to deleting.
+        """
         if peer_id in config.USERBOT_CHATS and peer_id in config.CHATS_DELETING:
             if peer_id not in self.messages_to_delete:
                 self.messages_to_delete.update({peer_id: []})
@@ -96,9 +102,13 @@ class V(Vk):
             self.messages_to_delete[peer_id].append(data)
 
     def get_members(self, peer_id: int):
+        """Returns all conversation members.
+        """
         return self.messages.getConversationMembers(peer_id=peer_id)
 
     def get_members_ids(self, peer_id: int):
+        """Returns all conversation member's IDs
+        """
         members = self.get_members(peer_id)
         if "error" in members:
             return
@@ -115,27 +125,36 @@ class V(Vk):
         self.messages.send(message=msg, peer_id=peer_id, disable_mentions=1, random_id=0)
 
     def get_user_name(self, user_id: int) -> str:
+        """Returns user firstname.
+        """
         return self.users.get(user_ids=user_id)['response'][0]["first_name"]
 
 
     @staticmethod
     def get_messages(event):
+        """Returns forward messages or reply message if available.
+        """
         reply_message = event.get("reply_message", {})
         return [reply_message] if reply_message else event.get("fwd_messages", [])
 
     @staticmethod
     def get_default_programming_language(language: str) -> str:
-        for language in config.default_programming_languages:
-            language = language.replace('\\', '')
-            if language.lower() == language.lower():
-                return language
+        """Returns default appearance of language
+        """
+        language = language.lower()
+        for lang in config.default_programming_languages:
+            if lang.replace('\\', '').lower() == language:
+                return lang
 
     @staticmethod
     def contains_string(strings: List[str], matched_string: List[str],
                         ignore_case: bool) -> bool:
+        """Returns True if `matched_string` in `strings`.
+        """
         if ignore_case:
+            matched_string = matched_string.lower()
             for string in strings:
-                if string.lower() == matched_string.lower():
+                if string.lower() == matched_string:
                     return True
         else:
             for string in strings:
@@ -146,6 +165,8 @@ class V(Vk):
     @staticmethod
     def contains_all_strings(strings: List[str], matched_strings: List[str],
                              ignore_case: bool) -> bool:
+        """Returns True if `strings` in `matched_strings`.
+        """
         matched_strings_count = len(matched_strings)
         for string in strings:
             if V.contains_string(matched_strings, string, ignore_case):
