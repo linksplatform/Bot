@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from modules.data_service import BetterBotBaseDataService
+from datetime import datetime, timedelta
 from modules.commands import Commands
 from typing import NoReturn, List
 from tokens import BOT_TOKEN
@@ -7,7 +8,6 @@ from userbot import UserBot
 from saya import Vk
 import patterns
 import config
-import regex
 
 
 CHAT_ID_OFFSET = 2e9

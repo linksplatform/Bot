@@ -3,7 +3,7 @@ from modules.commands_builder import CommandsBuilder
 from modules.data_service import BetterBotBaseDataService
 from modules.data_builder import DataBuilder
 from typing import NoReturn, Tuple, List
-from datetime import datetime, timedelta
+from datetime import datetime
 from social_ethosa import BetterUser
 from regex import Pattern, split, match
 from saya import Vk
@@ -28,26 +28,20 @@ class Commands:
         self.matched: list = []
 
     def help_message(self) -> NoReturn:
-        """
-        Sends help message
-        """
+        """Sends help message"""
         self.vk_instance.send_msg(
             CommandsBuilder.build_help_message(self.peer_id, self.karma_enabled),
             self.peer_id)
 
     def info_message(self) -> NoReturn:
-        """
-        Sends user info
-        """
+        """Sends user info"""
         self.vk_instance.send_msg(
             CommandsBuilder.build_info_message(
                 self.user, self.data_service, self.from_id, self.karma_enabled),
             self.peer_id)
 
     def update_command(self) -> NoReturn:
-        """
-        Updates user profile.
-        """
+        """Updates user profile."""
         name = self.vk_instance.get_user_name(self.from_id)
         self.data_service.set_user_property(self.current_user, "name", name)
         self.data_service.save_user(self.current_user)
@@ -75,9 +69,7 @@ class Commands:
             self.peer_id)
 
     def change_github_profile(self, is_add: bool) -> NoReturn:
-        """
-        Changes github profile.
-        """
+        """Changes github profile."""
         profile = self.matched.group('profile')
         if not profile:
             return
@@ -95,9 +87,7 @@ class Commands:
             self.peer_id)
 
     def karma_message(self) -> NoReturn:
-        """
-        Shows user's karma.
-        """
+        """Shows user's karma."""
         if self.peer_id < 2e9 and not self.karma_enabled:
             return
         is_self = self.data_service.get_user_property(self.user, 'uid') == self.from_id
@@ -106,9 +96,7 @@ class Commands:
             self.peer_id)
 
     def top(self, reverse: bool = False) -> NoReturn:
-        """
-        Sends users top.
-        """
+        """Sends users top."""
         if self.peer_id < 2e9:
             return
         # maximum_users = self.matched.group("maximum_users")
@@ -122,9 +110,7 @@ class Commands:
             self.peer_id)
 
     def top_langs(self, reverse: bool = False) -> NoReturn:
-        """
-        Sends users top.
-        """
+        """Sends users top."""
         if self.peer_id < 2e9:
             return
         languages = split(r"\s+", self.matched.group("languages"))
@@ -138,9 +124,7 @@ class Commands:
             self.peer_id)
 
     def apply_karma(self) -> NoReturn:
-        """
-        Changes user karma.
-        """
+        """Changes user karma."""
         if self.peer_id < 2e9 or not self.karma_enabled or not self.matched or self.is_bot_selected:
             return
         if not self.user:
@@ -244,16 +228,12 @@ class Commands:
 
     @staticmethod
     def register_cmd(cmd: Pattern, action: callable) -> NoReturn:
-        """
-        Registers a new command.
-        """
+        """Registers a new command."""
         Commands.cmds[cmd] = action
 
     @staticmethod
     def register_cmds(*cmds: Tuple[Pattern, callable]) -> NoReturn:
-        """
-        Registers a new commands.
-        """
+        """Registers a new commands."""
         for cmd, action in cmds:
             Commands.cmds[cmd] = action
 
@@ -271,8 +251,7 @@ class Commands:
     def process(self, msg: str, peer_id: int, from_id: int,
                 fwd_messages: List[dict], msg_id: int,
                 user: BetterUser, selected_user: BetterUser) -> NoReturn:
-        """
-        Process commands
+        """Process commands
 
         Arguments:
         - {msg} - event message;
