@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
-from modules.data_service import BetterBotBaseDataService
 from datetime import datetime, timedelta
-from modules.commands import Commands
 from typing import NoReturn, List
+
+from modules.data_service import BetterBotBaseDataService
+from modules.commands import Commands
 from tokens import BOT_TOKEN
 from userbot import UserBot
 from saya import Vk
@@ -24,17 +25,23 @@ class V(Vk):
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
             (patterns.UPDATE, self.commands.update_command),
-            (patterns.ADD_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(True)),
-            (patterns.REMOVE_PROGRAMMING_LANGUAGE, lambda: self.commands.change_programming_language(False)),
-            (patterns.ADD_GITHUB_PROFILE, lambda: self.commands.change_github_profile(True)),
-            (patterns.REMOVE_GITHUB_PROFILE, lambda: self.commands.change_github_profile(False)),
+            (patterns.ADD_PROGRAMMING_LANGUAGE,
+             lambda: self.commands.change_programming_language(True)),
+            (patterns.REMOVE_PROGRAMMING_LANGUAGE,
+             lambda: self.commands.change_programming_language(False)),
+            (patterns.ADD_GITHUB_PROFILE,
+             lambda: self.commands.change_github_profile(True)),
+            (patterns.REMOVE_GITHUB_PROFILE,
+             lambda: self.commands.change_github_profile(False)),
             (patterns.KARMA, self.commands.karma_message),
             (patterns.TOP, self.commands.top),
             (patterns.PEOPLE, self.commands.top),
-            (patterns.BOTTOM, lambda: self.commands.top(True)),
+            (patterns.BOTTOM,
+             lambda: self.commands.top(True)),
             (patterns.TOP_LANGUAGES, self.commands.top_langs),
             (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
-            (patterns.BOTTOM_LANGUAGES, lambda: self.commands.top_langs(True)),
+            (patterns.BOTTOM_LANGUAGES,
+             lambda: self.commands.top_langs(True)),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 
@@ -72,14 +79,20 @@ class V(Vk):
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = self.data.get_or_create_user(selected_message["from_id"], self) if selected_message else None
 
-        self.commands.process(msg, peer_id, from_id, messages, msg_id, user, selected_user)
+        self.commands.process(
+            msg, peer_id, from_id, messages, msg_id,
+            user, selected_user)
 
 
-    def delete_message(self, peer_id: int, msg_id: int, delay: int = 2) -> NoReturn:
+    def delete_message(self, peer_id: int, msg_id: int,
+                       delay: int = 2) -> NoReturn:
         if peer_id in config.USERBOT_CHATS and peer_id in config.CHATS_DELETING:
             if peer_id not in self.messages_to_delete:
                 self.messages_to_delete.update({peer_id: []})
-            data = {'date': datetime.now() + timedelta(seconds=delay), 'id': msg_id}
+            data = {
+                'date': datetime.now() + timedelta(seconds=delay),
+                'id': msg_id
+            }
             self.messages_to_delete[peer_id].append(data)
 
     def get_members(self, peer_id: int):
@@ -89,7 +102,8 @@ class V(Vk):
         members = self.get_members(peer_id)
         if "error" in members:
             return
-        return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
+        return [m["member_id"]
+                for m in members["response"]["items"] if m["member_id"] > 0]
 
     def send_msg(self, msg: str, peer_id: int) -> NoReturn:
         """Sends message to chat with {peer_id}.
@@ -111,27 +125,30 @@ class V(Vk):
 
     @staticmethod
     def get_default_programming_language(language: str) -> str:
-        for default_programming_language in config.default_programming_languages:
-            default_programming_language = default_programming_language.replace('\\', '')
-            if default_programming_language.lower() == language.lower():
-                return default_programming_language
+        for language in config.default_programming_languages:
+            language = language.replace('\\', '')
+            if language.lower() == language.lower():
+                return language
 
     @staticmethod
-    def contains_string(strings: List[str], matchedString: List[str], ignoreCase: bool) -> bool:
-        if ignoreCase:
+    def contains_string(strings: List[str], matched_string: List[str],
+                        ignore_case: bool) -> bool:
+        if ignore_case:
             for string in strings:
-                if string.lower() == matchedString.lower():
+                if string.lower() == matched_string.lower():
                     return True
         else:
             for string in strings:
-                if string == matchedString:
+                if string == matched_string:
                     return True
+        return False
 
     @staticmethod
-    def contains_all_strings(strings: List[str], matchedStrings: List[str], ignoreCase: bool) -> bool:
-        matched_strings_count = len(matchedStrings)
+    def contains_all_strings(strings: List[str], matched_strings: List[str],
+                             ignore_case: bool) -> bool:
+        matched_strings_count = len(matched_strings)
         for string in strings:
-            if V.contains_string(matchedStrings, string, ignoreCase):
+            if V.contains_string(matched_strings, string, ignore_case):
                 matched_strings_count -= 1
                 if matched_strings_count == 0:
                     return True

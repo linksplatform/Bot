@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
+from typing import NoReturn
+
 from exceptions import TooManyMessagesError
 from tokens import USER_TOKEN
 from requests import Session
+
 
 class UserBot:
     def __init__(self):
