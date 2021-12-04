@@ -111,7 +111,7 @@ class V(Vk):
         """
         members = self.get_members(peer_id)
         if "error" in members:
-            return
+            return None
         return [m["member_id"]
                 for m in members["response"]["items"] if m["member_id"] > 0]
 
@@ -145,6 +145,7 @@ class V(Vk):
         for lang in config.default_programming_languages:
             if lang.replace('\\', '').lower() == language:
                 return lang
+        return ""
 
     @staticmethod
     def contains_string(strings: List[str], matched_string: List[str],
@@ -173,6 +174,7 @@ class V(Vk):
                 matched_strings_count -= 1
                 if matched_strings_count == 0:
                     return True
+        return False
 
     @staticmethod
     def get_karma_hours_limit(karma: int) -> int:
