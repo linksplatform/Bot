@@ -8,8 +8,7 @@ from typing import List
 class CommandsBuilder:
     @staticmethod
     def build_help_message(peer_id: int, karma: bool) -> str:
-        """
-        Builds help message.
+        """Builds help message.
 
         Arguments:
         - {peer_id} - chat ID;
@@ -29,8 +28,7 @@ class CommandsBuilder:
     @staticmethod
     def build_info_message(user: BetterUser, data: BetterBotBaseDataService,
                            from_id: int, karma: bool) -> str:
-        """
-        Builds info message.
+        """Builds info message.
 
         Arguments:
         - {user} - selected user;
@@ -57,8 +55,7 @@ class CommandsBuilder:
     @staticmethod
     def build_change_programming_languages(
             user: BetterUser, data: BetterBotBaseDataService) -> str:
-        """
-        Builds changing programming languages.
+        """Builds changing programming languages.
         """
         programming_languages_string = DataBuilder.build_programming_languages(user, data)
         if not programming_languages_string:
@@ -71,8 +68,7 @@ class CommandsBuilder:
     @staticmethod
     def build_github_profile(
             user: BetterUser, data: BetterBotBaseDataService) -> str:
-        """
-        Builds changing github profile.
+        """Builds changing github profile.
         """
         profile = DataBuilder.build_github_profile(user, data, default="отсутствует")
         if not profile:
@@ -85,8 +81,7 @@ class CommandsBuilder:
     @staticmethod
     def build_karma(
             user: BetterUser, data: BetterBotBaseDataService, is_self: bool) -> str:
-        """
-        Sends user karma amount.
+        """Sends user karma amount.
         """
         if is_self:
             return (f"[id{data.get_user_property(user, 'uid')}|"

@@ -39,8 +39,7 @@ class V(Vk):
         )
 
     def message_new(self, event):
-        """
-        Handling all new messages.
+        """Handling all new messages.
         """
         event = event["object"]["message"]
         msg = event["text"].lstrip("/")
@@ -93,8 +92,7 @@ class V(Vk):
         return [m["member_id"] for m in members["response"]["items"] if m["member_id"] > 0]
 
     def send_msg(self, msg: str, peer_id: int) -> NoReturn:
-        """
-        Sends message to chat with {peer_id}.
+        """Sends message to chat with {peer_id}.
 
         Arguments:
         - {msg} -- message text;

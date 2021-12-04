@@ -16,29 +16,12 @@ class BetterBotBaseDataService:
         self.base.addPattern("karma", 0)
 
     def get_or_create_user(self, user_id, vk):
-        """
-        Returns a user object. Automatically creates it, if need.
+        """Returns a user object. Automatically creates it, if need.
         """
         return self.base.autoInstall(user_id, vk)
 
-    def get_user_sorted_programming_languages(self, user, sort=True, reverse_sort=False):
-        """
-        Returns user's programming languages.
-
-        Arguments:
-        - {user} -- user object;
-        - {sort} -- return sorted list, if True;
-        - {reverse_sort} -- uses for {sort} arg.
-        """
-        languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
-        languages = languages if type(languages) == list else []
-        if sort:
-            return sorted(languages, reverse=reverse_sort)
-        return languages
-
     def get_users(self, other_keys, sort_key=None, reverse_sort=True):
-        """
-        Returns users and their key values.
+        """Returns users and their key values.
 
         Arguments:
         - {other_keys} -- list of user keys;
@@ -48,6 +31,21 @@ class BetterBotBaseDataService:
         if sort_key:
             users = sorted(users, key=sort_key, reverse=reverse_sort)
         return users
+
+    @staticmethod
+    def get_user_sorted_programming_languages(user, sort=True, reverse_sort=False):
+        """Returns user's programming languages.
+
+        Arguments:
+        - {user} -- user object;
+        - {sort} -- return sorted list, if True;
+        - {reverse_sort} -- uses for {sort} arg.
+        """
+        languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
+        languages = languages if isinstance(languages, list) else []
+        if sort:
+            return sorted(languages, reverse=reverse_sort)
+        return languages
 
     @staticmethod
     def get_user_property(user, property_name):

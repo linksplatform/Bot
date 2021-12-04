@@ -10,8 +10,7 @@ class DataBuilder:
     def build_programming_languages(
             user: BetterUser, data: BetterBotBaseDataService,
             default: str = "отсутствуют") -> str:
-        """
-        Builds the user's programming languages and returns its string representation.
+        """Builds the user's programming languages and returns its string representation.
         """
         languages = data.get_user_sorted_programming_languages(user)
         return ", ".join(languages) if len(languages) > 0 else default
@@ -19,16 +18,14 @@ class DataBuilder:
     @staticmethod
     def build_github_profile(user: BetterUser, data: BetterBotBaseDataService,
                              default: str = "", prefix: str = "") -> str:
-        """
-        Builds the user's github profile and returns its string representation.
+        """Builds the user's github profile and returns its string representation.
         """
         profile = data.get_user_property(user, "github_profile")
         return f"{prefix}github.com/{profile}" if profile else default
 
     @staticmethod
     def build_karma(user: BetterUser, data: BetterBotBaseDataService) -> str:
-        """
-        Builds the user's karma and returns its string representation.
+        """Builds the user's karma and returns its string representation.
         """
         plus_string = ""
         minus_string = ""
