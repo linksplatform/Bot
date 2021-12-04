@@ -159,7 +159,7 @@ class Commands:
                 utclast = datetime.fromtimestamp(float(self.data_service.get_user_property(self.user, "last_collective_vote")))
                 difference = utcnow - utclast
                 hours_difference = difference.total_seconds() / 3600
-                hours_limit = self.vk_instance.get_karma_hours_limit(
+                hours_limit = self.vk_instance.karma_limit(
                     self.data_service.get_user_property(self.user, "karma"))
                 if hours_difference < hours_limit:
                     self.vk_instance.delete_message(self.peer_id, self.msg_id)

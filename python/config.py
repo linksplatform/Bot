@@ -9,7 +9,8 @@ CHATS_DELETING = [
     #2000000006
 ]
 
-# Check your search line, when you`re in the needed chat. Then copy it`s id after "vk.com/im?peers=c"
+# Check your search line, when you`re in the needed chat.
+# Then copy it`s id after "vk.com/im?peers=c"
 USERBOT_CHATS = {
     #2000000001: 477,
     #2000000006: 423

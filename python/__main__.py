@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Main Bot module.
+"""
 from datetime import datetime, timedelta
 from typing import NoReturn, List
 
@@ -81,7 +83,9 @@ class V(Vk):
 
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
-        selected_user = self.data.get_or_create_user(selected_message["from_id"], self) if selected_message else None
+        selected_user = (
+            self.data.get_or_create_user(selected_message["from_id"], self)
+            if selected_message else None)
 
         self.commands.process(
             msg, peer_id, from_id, messages, msg_id,
@@ -177,7 +181,9 @@ class V(Vk):
         return False
 
     @staticmethod
-    def get_karma_hours_limit(karma: int) -> int:
+    def karma_limit(karma: int) -> int:
+        """Returns karma hours limit.
+        """
         for limit_item in config.KARMA_LIMIT_HOURS:
             if not limit_item["min_karma"] or karma >= limit_item["min_karma"]:
                 if not limit_item["max_karma"] or karma < limit_item["max_karma"]:
