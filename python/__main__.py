@@ -16,7 +16,7 @@ import config
 CHAT_ID_OFFSET = 2e9
 
 
-class V(Vk):
+class Bot(Vk):
     """Provides working with VK API as group.
     """
     def __init__(self, token: str, group_id: int, debug: bool = True):
@@ -174,7 +174,7 @@ class V(Vk):
         """
         matched_strings_count = len(matched_strings)
         for string in strings:
-            if V.contains_string(matched_strings, string, ignore_case):
+            if Bot.contains_string(matched_strings, string, ignore_case):
                 matched_strings_count -= 1
                 if matched_strings_count == 0:
                     return True
@@ -192,5 +192,5 @@ class V(Vk):
 
 
 if __name__ == '__main__':
-    vk = V(token=BOT_TOKEN, group_id=config.BOT_GROUP_ID, debug=True)
+    vk = Bot(token=BOT_TOKEN, group_id=config.BOT_GROUP_ID, debug=True)
     vk.start_listen()

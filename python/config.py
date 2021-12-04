@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Provides config around bot.
+"""
 
 # Bot's VK group id (change it to your group id)
 BOT_GROUP_ID = 190877945
