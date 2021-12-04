@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Config module to management your tokens.
+"""
 
 # Can be found in `API usage` settings of the bot's VK group
 BOT_TOKEN = ''
