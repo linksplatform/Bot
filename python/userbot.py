@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Provides working with VK API as user.
+"""
 from typing import NoReturn
 
 from exceptions import TooManyMessagesError
@@ -7,12 +9,14 @@ from requests import Session
 
 
 class UserBot:
-    def __init__(self):
-        self.url = 'https://api.vk.com/method/'
-        self.token = USER_TOKEN
-        self.session = Session()
+    """Automatically deleting unnecessary messages.
+    """
+    session = Session()
+    url = 'https://api.vk.com/method/'
+    token = USER_TOKEN
 
-    def delete_messages(self, conversation_message_ids: list,
+    @staticmethod
+    def delete_messages(conversation_message_ids: list,
                         peer_id: int) -> NoReturn:
         """Deletes all conversations messages
         """
@@ -30,7 +34,17 @@ class UserBot:
                 index = index + 1;
             }
             return 1;'''
-            data = {'access_token': self.token, 'code': code % params, 'v': '5.103'}
-            return self.session.post(self.url + 'execute', data=data).json()
+            data = {
+                'access_token': UserBot.token,
+                'code': code % params,
+                'v': '5.103'
+            }
+            return UserBot.execute(data)
         raise TooManyMessagesError(
             'Maximum amount was reached (%d/24)' % len(conversation_message_ids))
+
+    @staticmethod
+    def execute(data: str) -> dict:
+        """Executes VK Script.
+        """
+        return UserBot.session.post(UserBot.url + 'execute', data=data).json()
