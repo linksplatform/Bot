@@ -5,11 +5,10 @@ from modules.data_builder import DataBuilder
 from typing import NoReturn, Tuple, List
 from datetime import datetime, timedelta
 from social_ethosa import BetterUser
-from regex import Pattern
+from regex import Pattern, split, match
 from saya import Vk
 import requests
 import config
-import regex
 
 
 class Commands:
@@ -112,8 +111,8 @@ class Commands:
         """
         if self.peer_id < 2e9:
             return
-        maximum_users = self.matched.group("maximum_users")
-        maximum_users = int(maximum_users) if maximum_users else 0
+        # maximum_users = self.matched.group("maximum_users")
+        # maximum_users = int(maximum_users) if maximum_users else 0
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
@@ -128,7 +127,7 @@ class Commands:
         """
         if self.peer_id < 2e9:
             return
-        languages = regex.split(r"\s+", self.matched.group("languages"))
+        languages = split(r"\s+", self.matched.group("languages"))
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id, reverse)
         users = [i for i in users if
@@ -295,7 +294,7 @@ class Commands:
             return
 
         for cmd, action in Commands.cmds.items():
-            self.matched: list = regex.match(cmd, msg)
+            self.matched: list = match(cmd, msg)
             if self.matched:
                 action()
                 return
