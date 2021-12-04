@@ -41,8 +41,8 @@ class Commands:
         Sends user info
         """
         self.vk_instance.send_msg(
-            CommandsBuilder.build_info_message(self.user, self.data_service,
-                                               self.from_id, self.karma_enabled),
+            CommandsBuilder.build_info_message(
+                self.user, self.data_service, self.from_id, self.karma_enabled),
             self.peer_id)
 
     def update_command(self) -> NoReturn:

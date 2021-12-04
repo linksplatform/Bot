@@ -17,7 +17,7 @@ class V(Vk):
     def __init__(self, token: str, group_id: int, debug: bool = True):
         Vk.__init__(self, token=token, group_id=group_id, debug=debug)
         self.messages_to_delete = {}
-        # self.userbot = UserBot()
+        self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
         self.commands = Commands(self, self.data)
         self.commands.register_cmds(
