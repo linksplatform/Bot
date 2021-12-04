@@ -5,4 +5,3 @@
 class TooManyMessagesError(Exception):
     """Raises when sends too many messages.
     """
-    pass
