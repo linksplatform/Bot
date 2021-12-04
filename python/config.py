@@ -1,30 +1,30 @@
 # -*- coding: utf-8 -*-
 
 # Bot's VK group id (change it to your group id)
-bot_group_id = 190877945
+BOT_GROUP_ID = 190877945
 
 # Pluses and minuses will be removed in these chats
-chats_deleting = [
+CHATS_DELETING = [
     #2000000001,
     #2000000006
 ]
 
 # Check your search line, when you`re in the needed chat. Then copy it`s id after "vk.com/im?peers=c"
-userbot_chats = {
+USERBOT_CHATS = {
     #2000000001: 477,
     #2000000006: 423
 }
 
 # Chats where you can change reputation of other users
-chats_karma_whitelist = [
+CHATS_KARMA_WHITELIST = [
     2000000001,
     2000000011
 ]
 
-positive_votes_per_karma = 2
-negative_votes_per_karma = 3
+POSITIVE_VOTES_PER_KARMA = 2
+NEGATIVE_VOTES_PER_KARMA = 3
 
-karma_limit_hours = [
+KARMA_LIMIT_HOURS = [
     { "min_karma": None, "max_karma": -19,  "limit": 8 },
     { "min_karma": -19,  "max_karma": -1,   "limit": 4 },
     { "min_karma": -1,  "max_karma": 2,   "limit": 2 },
@@ -32,7 +32,7 @@ karma_limit_hours = [
     { "min_karma": 20,   "max_karma": None, "limit": 0.5 },
 ]
 
-default_programming_languages = [
+DEFAULT_PROGRAMMING_LANGUAGES = [
     "Assembler",
     "JavaScript",
     "TypeScript",
@@ -130,5 +130,4 @@ default_programming_languages = [
     "Nemerle",
 ]
 
-default_programming_languages_pattern_string = "|".join(default_programming_languages)
-
+DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(default_programming_languages)

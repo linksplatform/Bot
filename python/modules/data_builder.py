@@ -36,9 +36,9 @@ class DataBuilder:
         plus_votes = len(data.get_user_property(user, "supporters"))
         minus_votes = len(data.get_user_property(user, "opponents"))
         if plus_votes > 0:
-            plus_string = "+%.1f" % (plus_votes / config.positive_votes_per_karma)
+            plus_string = "+%.1f" % (plus_votes / config.POSITIVE_VOTES_PER_KARMA)
         if minus_votes > 0:
-            minus_string = "-%.1f" % (minus_votes / config.negative_votes_per_karma)
+            minus_string = "-%.1f" % (minus_votes / config.NEGATIVE_VOTES_PER_KARMA)
         if plus_votes > 0 or minus_votes > 0:
             return f"[{karma}][{plus_string}{minus_string}]"
         else:
@@ -72,6 +72,6 @@ class DataBuilder:
     @staticmethod
     def calculate_real_karma(user: BetterUser, data: BetterBotBaseDataService) -> int:
         base_karma = data.get_user_property(user, "karma")
-        up_votes = len(data.get_user_property(user, "supporters"))/config.positive_votes_per_karma
-        down_votes = len(data.get_user_property(user, "opponents"))/config.negative_votes_per_karma
+        up_votes = len(data.get_user_property(user, "supporters"))/config.POSITIVE_VOTES_PER_KARMA
+        down_votes = len(data.get_user_property(user, "opponents"))/config.NEGATIVE_VOTES_PER_KARMA
         return base_karma + up_votes - down_votes

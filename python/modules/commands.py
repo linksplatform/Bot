@@ -217,9 +217,9 @@ class Commands:
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("supporters", config.positive_votes_per_karma, +1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("supporters", config.POSITIVE_VOTES_PER_KARMA, +1)
             else:
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("opponents", config.negative_votes_per_karma, -1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("opponents", config.NEGATIVE_VOTES_PER_KARMA, -1)
 
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
@@ -284,7 +284,7 @@ class Commands:
         self.msg_id = msg_id
         self.from_id = from_id
         self.peer_id = peer_id
-        self.karma_enabled = peer_id in config.chats_karma_whitelist
+        self.karma_enabled = peer_id in config.CHATS_KARMA_WHITELIST
         self.fwd_messages = fwd_messages
         self.selected_message = fwd_messages[0] if len(fwd_messages) == 1 else None
         self.is_bot_selected = self.selected_message and (self.selected_message["from_id"] < 0)

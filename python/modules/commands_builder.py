@@ -3,7 +3,6 @@ from modules.data_service import BetterBotBaseDataService
 from modules.data_builder import DataBuilder
 from social_ethosa import BetterUser
 from typing import List
-import config
 
 
 class CommandsBuilder:

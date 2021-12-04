@@ -49,7 +49,7 @@ class V(Vk):
         msg_id = event["conversation_message_id"]
 
         if peer_id in self.messages_to_delete:
-            peer = CHAT_ID_OFFSET + config.userbot_chats[peer_id]
+            peer = CHAT_ID_OFFSET + config.USERBOT_CHATS[peer_id]
             new_messages_to_delete = []
             ids = []
 
@@ -77,7 +77,7 @@ class V(Vk):
 
 
     def delete_message(self, peer_id: int, msg_id: int, delay: int = 2) -> NoReturn:
-        if peer_id in config.userbot_chats and peer_id in config.chats_deleting:
+        if peer_id in config.USERBOT_CHATS and peer_id in config.CHATS_DELETING:
             if peer_id not in self.messages_to_delete:
                 self.messages_to_delete.update({peer_id: []})
             data = {'date': datetime.now() + timedelta(seconds=delay), 'id': msg_id}
@@ -140,7 +140,7 @@ class V(Vk):
 
     @staticmethod
     def get_karma_hours_limit(karma: int) -> int:
-        for limit_item in config.karma_limit_hours:
+        for limit_item in config.KARMA_LIMIT_HOURS:
             if not limit_item["min_karma"] or karma >= limit_item["min_karma"]:
                 if not limit_item["max_karma"] or karma < limit_item["max_karma"]:
                     return limit_item["limit"]
@@ -148,5 +148,5 @@ class V(Vk):
 
 
 if __name__ == '__main__':
-    vk = V(token=BOT_TOKEN, group_id=config.bot_group_id, debug=True)
+    vk = V(token=BOT_TOKEN, group_id=config.BOT_GROUP_ID, debug=True)
     vk.start_listen()
