@@ -135,6 +135,7 @@ python/users/*
 
 # Visual Studio
 .vs
+# Builed files
 obj/
 bin/
 
