@@ -13,7 +13,11 @@ import config
 
 class Commands:
     cmds: dict = {}
-    def __init__(self, vk_instance: Vk, data_service: BetterBotBaseDataService):
+    def __init__(
+        self,
+        vk_instance: Vk,
+        data_service: BetterBotBaseDataService
+    ):
         self.msg: str = ""
         self.msg_id: int = 0
         self.peer_id: int = 0
@@ -50,7 +54,10 @@ class Commands:
         self.data_service.save_user(self.current_user)
         self.info_message()
 
-    def change_programming_language(self, is_add: bool) -> NoReturn:
+    def change_programming_language(
+        self,
+        is_add: bool
+    ) -> NoReturn:
         """Adds or removes a new programming language in user profile.
         """
         language = self.matched.group('language')
@@ -70,7 +77,10 @@ class Commands:
             CommandsBuilder.build_change_programming_languages(self.current_user, self.data_service),
             self.peer_id)
 
-    def change_github_profile(self, is_add: bool) -> NoReturn:
+    def change_github_profile(
+        self,
+        is_add: bool
+    ) -> NoReturn:
         """Changes github profile.
         """
         profile = self.matched.group('profile')
@@ -99,7 +109,10 @@ class Commands:
             CommandsBuilder.build_karma(self.user, self.data_service, is_self),
             self.peer_id)
 
-    def top(self, reverse: bool = False) -> NoReturn:
+    def top(
+        self,
+        reverse: bool = False
+    ) -> NoReturn:
         """Sends users top.
         """
         if self.peer_id < 2e9:
@@ -114,7 +127,10 @@ class Commands:
             CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled),
             self.peer_id)
 
-    def top_langs(self, reverse: bool = False) -> NoReturn:
+    def top_langs(
+        self,
+        reverse: bool = False
+    ) -> NoReturn:
         """Sends users top.
         """
         if self.peer_id < 2e9:
@@ -189,7 +205,11 @@ class Commands:
                 self.peer_id)
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
-    def apply_karma_change(self, operator: str, amount: int) -> tuple:
+    def apply_karma_change(
+        self,
+        operator: str,
+        amount: int
+    ) -> tuple:
         selected_user_karma_change = None
         user_karma_change = None
         collective_vote_applied = None
@@ -216,13 +236,24 @@ class Commands:
 
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
-    def apply_collective_vote(self, current_voters: str, number_of_voters: int, amount: int) -> tuple:
+    def apply_collective_vote(
+        self,
+        current_voters: str,
+        number_of_voters: int,
+        amount: int
+    ) -> tuple:
         vote_applied = None
         print(self.user.uid, self.current_user.uid)
         print(self.user[current_voters])
         if self.current_user.uid not in self.user[current_voters]:
             self.user[current_voters].append(self.current_user.uid)
             vote_applied = True
+        else:
+            self.vk_instance.send_msg(
+                (f'Вы уже голосовали за [id{self.user.uid}|'
+                 f'{self.vk_instance.get_user_name(self.user.uid, "acc")}].'),
+                self.peer_id
+            )
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
             self.user[current_voters] = []
@@ -239,31 +270,50 @@ class Commands:
                 new_karma)
 
     @staticmethod
-    def register_cmd(cmd: Pattern, action: callable) -> NoReturn:
+    def register_cmd(
+        cmd: Pattern,
+        action: callable
+    ) -> NoReturn:
         """Registers a new command.
         """
         Commands.cmds[cmd] = action
 
     @staticmethod
-    def register_cmds(*cmds: Tuple[Pattern, callable]) -> NoReturn:
+    def register_cmds(
+        *cmds: Tuple[Pattern, callable]
+    ) -> NoReturn:
         """Registers a new commands.
         """
         for cmd, action in cmds:
             Commands.cmds[cmd] = action
 
     @staticmethod
-    def _register_decorator(cmd: Pattern, args: list, action: callable) -> NoReturn:
+    def _register_decorator(
+        cmd: Pattern,
+        args: list,
+        action: callable
+    ) -> NoReturn:
         Commands.cmds[cmd] = lambda: action(args)
 
     @staticmethod
-    def register(cmd: Pattern, *args) -> callable:
+    def register(
+        cmd: Pattern,
+        *args
+    ) -> callable:
         """Command register decorator.
         """
         return lambda action: Commands._register_decorator(cmd, args, action)
 
-    def process(self, msg: str, peer_id: int, from_id: int,
-                fwd_messages: List[dict], msg_id: int,
-                user: BetterUser, selected_user: BetterUser) -> NoReturn:
+    def process(
+        self,
+        msg: str,
+        peer_id: int,
+        from_id: int,
+        fwd_messages: List[dict],
+        msg_id: int,
+        user: BetterUser,
+        selected_user: BetterUser
+    ) -> NoReturn:
         """Process commands
 
         Arguments:

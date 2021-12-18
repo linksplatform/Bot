@@ -7,7 +7,10 @@ from typing import List
 
 class CommandsBuilder:
     @staticmethod
-    def build_help_message(peer_id: int, karma: bool) -> str:
+    def build_help_message(
+        peer_id: int,
+        karma: bool
+    ) -> str:
         """Builds help message.
 
         Arguments:
@@ -26,8 +29,12 @@ class CommandsBuilder:
                         "Документация — vk.cc/auqYdx")
 
     @staticmethod
-    def build_info_message(user: BetterUser, data: BetterBotBaseDataService,
-                           from_id: int, karma: bool) -> str:
+    def build_info_message(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        from_id: int,
+        karma: bool
+    ) -> str:
         """Builds info message.
 
         Arguments:
@@ -54,7 +61,9 @@ class CommandsBuilder:
 
     @staticmethod
     def build_change_programming_languages(
-            user: BetterUser, data: BetterBotBaseDataService) -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService
+    ) -> str:
         """Builds changing programming languages.
         """
         programming_languages_string = DataBuilder.build_programming_languages(user, data)
@@ -67,7 +76,9 @@ class CommandsBuilder:
 
     @staticmethod
     def build_github_profile(
-            user: BetterUser, data: BetterBotBaseDataService) -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService
+    ) -> str:
         """Builds changing github profile.
         """
         profile = DataBuilder.build_github_profile(user, data, default="отсутствует")
@@ -80,7 +91,10 @@ class CommandsBuilder:
 
     @staticmethod
     def build_karma(
-            user: BetterUser, data: BetterBotBaseDataService, is_self: bool) -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        is_self: bool
+    ) -> str:
         """Sends user karma amount.
         """
         if is_self:
@@ -94,7 +108,9 @@ class CommandsBuilder:
 
     @staticmethod
     def build_not_enough_karma(
-            user: BetterUser, data: BetterBotBaseDataService) -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService
+    ) -> str:
         return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
                 f"{data.get_user_property(user, 'name')}], "
                 f"но Вашей кармы [{data.get_user_property(user, 'karma')}] "
@@ -102,16 +118,21 @@ class CommandsBuilder:
 
     @staticmethod
     def build_not_in_whitelist(
-            user: BetterUser, data: BetterBotBaseDataService,
-            peer_id: int) -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        peer_id: int
+    ) -> str:
         return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
                 f"{data.get_user_property(user, 'name')}], "
                 f"но Ваша беседа [{peer_id}] отсутствует в белом списке для начисления кармы.")
 
     @staticmethod
     def build_not_enough_hours(
-            user: BetterUser, data: BetterBotBaseDataService,
-            hours_limit: int, difference_minutes: int) -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        hours_limit: int,
+        difference_minutes: int
+    ) -> str:
         return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
                 f"{data.get_user_property(user, 'name')}], "
                 f"но с момента вашего последнего голоса ещё не прошло {hours_limit} ч. "
@@ -119,8 +140,11 @@ class CommandsBuilder:
 
     @staticmethod
     def build_top_users(
-            users: List[BetterUser], data: BetterBotBaseDataService,
-            reverse: bool = False, has_karma: bool = True) -> str:
+        users: List[BetterUser],
+        data: BetterBotBaseDataService,
+        reverse: bool = False,
+        has_karma: bool = True
+    ) -> str:
         if not users:
             return
         if reverse:
@@ -141,7 +165,11 @@ class CommandsBuilder:
         return "\n".join(user_strings)
 
     @staticmethod
-    def build_karma_change(user_karma_change, selected_user_karma_change, voters) -> str:
+    def build_karma_change(
+        user_karma_change,
+        selected_user_karma_change,
+        voters
+    ) -> str:
         if selected_user_karma_change and user_karma_change:
             return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
                     (user_karma_change + selected_user_karma_change))
