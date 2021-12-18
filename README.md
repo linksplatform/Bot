@@ -11,6 +11,13 @@ cd Bot
 pip3 install -r requirements.txt
 ```
 
+## Update
+
+```
+git pull
+pip3 install -r requirements.txt --upgrade
+```
+
 ## Configure
 
 0. Enable VK Long Poll API with `5.103` version for your bot's group. ![Screenshot_20210630_110401](https://user-images.githubusercontent.com/1431904/123924747-eed01900-d992-11eb-8f8e-cf66b398ed90.png)
