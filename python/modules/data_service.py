@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
-from social_ethosa import BetterBotBase
+from typing import Optional, List, Dict, Any, NoReturn
+
+from social_ethosa import BetterBotBase, BetterUser
+from saya import Vk
 
 
 class BetterBotBaseDataService:
@@ -15,12 +18,21 @@ class BetterBotBaseDataService:
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
 
-    def get_or_create_user(self, user_id, vk):
+    def get_or_create_user(
+        self,
+        user_id: int,
+        vk: Vk
+    ):
         """Returns a user object. Automatically creates it, if need.
         """
         return self.base.autoInstall(user_id, vk)
 
-    def get_users(self, other_keys, sort_key=None, reverse_sort=True):
+    def get_users(
+        self,
+        other_keys: List[str],
+        sort_key: Optional[str],
+        reverse_sort: bool = True
+    ) -> List[BetterUser]:
         """Returns users and their key values.
 
         Arguments:
@@ -33,13 +45,16 @@ class BetterBotBaseDataService:
         return users
 
     @staticmethod
-    def get_user_sorted_programming_languages(user, sort=True, reverse_sort=False):
+    def get_user_sorted_programming_languages(
+        user,
+        sort: bool = True,
+        reverse_sort: bool = False
+    ) -> List[str]:
         """Returns user's programming languages.
 
-        Arguments:
-        - {user} -- user object;
-        - {sort} -- return sorted list, if True;
-        - {reverse_sort} -- uses for {sort} arg.
+        :param user: -- user object;
+        :param sort: -- return sorted list, if True;
+        :param reverse_sort: -- uses for {sort} arg.
         """
         languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
         languages = languages if isinstance(languages, list) else []
@@ -48,15 +63,25 @@ class BetterBotBaseDataService:
         return languages
 
     @staticmethod
-    def get_user_property(user, property_name):
+    def get_user_property(
+        user: Dict[str, Any] | BetterUser,
+        property_name: str
+    ) -> Any:
         return user[property_name] if isinstance(user, dict) else eval(f"user.{property_name}")
 
     @staticmethod
-    def set_user_property(user, property_name, value):
+    def set_user_property(
+        user: Dict[str, Any] | BetterUser,
+        property_name: str,
+        value: Any
+    ) -> NoReturn:
         if isinstance(user, dict):
             user[property_name] = value
         else:
             exec(f"user.{property_name} = value")
 
-    def save_user(self, user):
+    def save_user(
+        self,
+        user: BetterUser
+    ):
         self.base.save(user)
