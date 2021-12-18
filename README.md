@@ -30,7 +30,18 @@ pip3 install -r requirements.txt --upgrade
 
 ```Shell
 cd python
+```
+
+With output to console:
+
+```Shell
 python3 __main__.py
+```
+
+With output to file:
+
+```Shell
+python3 __main__.py > bot.log 2>&1
 ```
 
 ## Do not upload tokens.py with your real tokens please
