@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import Optional, List, Dict, Any, NoReturn
+from typing import Optional, List, Dict, Any, NoReturn, Union
 
 from social_ethosa import BetterBotBase, BetterUser
 from saya import Vk
@@ -64,14 +64,14 @@ class BetterBotBaseDataService:
 
     @staticmethod
     def get_user_property(
-        user: Dict[str, Any] | BetterUser,
+        user: Union[Dict[str, Any], BetterUser],
         property_name: str
     ) -> Any:
         return user[property_name] if isinstance(user, dict) else eval(f"user.{property_name}")
 
     @staticmethod
     def set_user_property(
-        user: Dict[str, Any] | BetterUser,
+        user: Union[Dict[str, Any], BetterUser],
         property_name: str,
         value: Any
     ) -> NoReturn:
