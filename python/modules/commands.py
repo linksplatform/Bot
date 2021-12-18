@@ -172,6 +172,14 @@ class Commands:
 
             # Collective votes limit
             if amount == 0:
+                current_voters = "supporters" if operator == "+" else "opponents"
+                if self.current_user.uid in self.user[current_voters]:
+                    self.vk_instance.send_msg(
+                        (f'Вы уже голосовали за [id{self.user.uid}|'
+                         f'{self.vk_instance.get_user_name(self.user.uid, "acc")}].'),
+                        self.peer_id
+                    )
+                    return
                 utclast = datetime.fromtimestamp(
                     float(self.data_service.get_user_property(
                         self.current_user, "last_collective_vote")
@@ -246,12 +254,6 @@ class Commands:
         if self.current_user.uid not in self.user[current_voters]:
             self.user[current_voters].append(self.current_user.uid)
             vote_applied = True
-        else:
-            self.vk_instance.send_msg(
-                (f'Вы уже голосовали за [id{self.user.uid}|'
-                 f'{self.vk_instance.get_user_name(self.user.uid, "acc")}].'),
-                self.peer_id
-            )
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
             self.user[current_voters] = []
