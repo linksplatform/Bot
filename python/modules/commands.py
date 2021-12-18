@@ -197,15 +197,15 @@ class Commands:
 
         # Personal karma transfer
         if amount > 0:
-            if self.data_service.get_user_property(self.user, "karma") < amount:
+            if self.data_service.get_user_property(self.current_user, "karma") < amount:
                 self.vk_instance.send_msg(
-                    CommandsBuilder.build_not_enough_karma(self.user, self.data_service),
+                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
                     self.peer_id)
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
                 user_karma_change = self.apply_user_karma(-amount)
                 amount = -amount if operator == "-" else amount
-                selected_user_karma_change = self.apply_user_karma(selected_user, amount)
+                selected_user_karma_change = self.apply_user_karma(amount)
 
         # Collective vote
         elif amount == 0:
@@ -218,8 +218,10 @@ class Commands:
 
     def apply_collective_vote(self, current_voters: str, number_of_voters: int, amount: int) -> tuple:
         vote_applied = None
-        if self.from_id not in self.user[current_voters]:
-            self.user[current_voters].append(self.from_id)
+        print(self.user.uid, self.current_user.uid)
+        print(self.user[current_voters])
+        if self.current_user.uid not in self.user[current_voters]:
+            self.user[current_voters].append(self.current_user.uid)
             vote_applied = True
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
