@@ -180,7 +180,7 @@ class Bot(Vk):
         """Returns default appearance of language
         """
         language = language.lower()
-        for lang in config.default_programming_languages:
+        for lang in config.DEFAULT_PROGRAMMING_LANGUAGES:
             if lang.replace('\\', '').lower() == language:
                 return lang
         return ""
