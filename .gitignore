@@ -483,3 +483,11 @@ python/users/*
 
 # Builed files
 obj/
+bin/
+
+# Nim
+nimcache/
+nimblecache/
+htmldocs/
+
+*.exe
