@@ -156,11 +156,14 @@ class Commands:
 
             # Collective votes limit
             if amount == 0:
-                utclast = datetime.fromtimestamp(float(self.data_service.get_user_property(self.user, "last_collective_vote")))
+                utclast = datetime.fromtimestamp(
+                    float(self.data_service.get_user_property(
+                        self.current_user, "last_collective_vote")
+                ))
                 difference = utcnow - utclast
                 hours_difference = difference.total_seconds() / 3600
                 hours_limit = self.vk_instance.karma_limit(
-                    self.data_service.get_user_property(self.user, "karma"))
+                    self.data_service.get_user_property(self.current_user, "karma"))
                 if hours_difference < hours_limit:
                     self.vk_instance.delete_message(self.peer_id, self.msg_id)
                     self.vk_instance.send_msg(
