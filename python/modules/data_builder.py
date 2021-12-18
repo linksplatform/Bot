@@ -8,23 +8,32 @@ import config
 class DataBuilder:
     @staticmethod
     def build_programming_languages(
-            user: BetterUser, data: BetterBotBaseDataService,
-            default: str = "отсутствуют") -> str:
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        default: str = "отсутствуют"
+    ) -> str:
         """Builds the user's programming languages and returns its string representation.
         """
         languages = data.get_user_sorted_programming_languages(user)
         return ", ".join(languages) if len(languages) > 0 else default
 
     @staticmethod
-    def build_github_profile(user: BetterUser, data: BetterBotBaseDataService,
-                             default: str = "", prefix: str = "") -> str:
+    def build_github_profile(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        default: str = "",
+        prefix: str = ""
+    ) -> str:
         """Builds the user's github profile and returns its string representation.
         """
         profile = data.get_user_property(user, "github_profile")
         return f"{prefix}github.com/{profile}" if profile else default
 
     @staticmethod
-    def build_karma(user: BetterUser, data: BetterBotBaseDataService) -> str:
+    def build_karma(
+        user: BetterUser,
+        data: BetterBotBaseDataService
+    ) -> str:
         """Builds the user's karma and returns its string representation.
         """
         plus_string = ""
@@ -43,8 +52,11 @@ class DataBuilder:
 
     @staticmethod
     def get_users_sorted_by_karma(
-            vk_instance, data: BetterBotBaseDataService,
-            peer_id: int, reverse_sort=True) -> List[BetterUser]:
+        vk_instance,
+        data: BetterBotBaseDataService,
+        peer_id: int,
+        reverse_sort: bool = True
+    ) -> List[BetterUser]:
         members = vk_instance.get_members_ids(peer_id)
         users = data.get_users(
             other_keys=["karma", "name", "programming_languages",
@@ -57,8 +69,10 @@ class DataBuilder:
 
     @staticmethod
     def get_users_sorted_by_name(
-            vk_instance, data: BetterBotBaseDataService,
-            peer_id: int) -> List[BetterUser]:
+        vk_instance,
+        data: BetterBotBaseDataService,
+        peer_id: int
+    ) -> List[BetterUser]:
         members = vk_instance.get_members_ids(peer_id)
         users = data.get_users(other_keys=["name", "programming_languages", "github_profile", "uid"])
         if members:
@@ -67,7 +81,10 @@ class DataBuilder:
         return users
 
     @staticmethod
-    def calculate_real_karma(user: BetterUser, data: BetterBotBaseDataService) -> int:
+    def calculate_real_karma(
+        user: BetterUser,
+        data: BetterBotBaseDataService
+    ) -> int:
         base_karma = data.get_user_property(user, "karma")
         up_votes = len(data.get_user_property(user, "supporters"))/config.POSITIVE_VOTES_PER_KARMA
         down_votes = len(data.get_user_property(user, "opponents"))/config.NEGATIVE_VOTES_PER_KARMA

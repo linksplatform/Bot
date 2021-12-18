@@ -2,7 +2,7 @@
 """Main Bot module.
 """
 from datetime import datetime, timedelta
-from typing import NoReturn, List
+from typing import NoReturn, List, Dict, Any
 
 from modules.data_service import BetterBotBaseDataService
 from modules.commands import Commands
@@ -19,7 +19,12 @@ CHAT_ID_OFFSET = 2e9
 class Bot(Vk):
     """Provides working with VK API as group.
     """
-    def __init__(self, token: str, group_id: int, debug: bool = True):
+    def __init__(
+        self,
+        token: str,
+        group_id: int,
+        debug: bool = True
+    ):
         """Auth as VK group and register commands.
         """
         Vk.__init__(self, token=token, group_id=group_id, debug=debug)
@@ -51,7 +56,10 @@ class Bot(Vk):
             (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 
-    def message_new(self, event) -> NoReturn:
+    def message_new(
+        self,
+        event: Dict[str, Any]
+    ) -> NoReturn:
         """Handling all new messages.
         """
         event = event["object"]["message"]
@@ -92,8 +100,12 @@ class Bot(Vk):
             user, selected_user)
 
 
-    def delete_message(self, peer_id: int, msg_id: int,
-                       delay: int = 2) -> NoReturn:
+    def delete_message(
+        self,
+        peer_id: int,
+        msg_id: int,
+        delay: int = 2
+    ) -> NoReturn:
         """Assigns messages to deleting.
         """
         if peer_id in config.USERBOT_CHATS and peer_id in config.CHATS_DELETING:
@@ -119,19 +131,39 @@ class Bot(Vk):
         return [m["member_id"]
                 for m in members["response"]["items"] if m["member_id"] > 0]
 
-    def send_msg(self, msg: str, peer_id: int) -> NoReturn:
+    def send_msg(
+        self,
+        msg: str,
+        peer_id: int
+    ) -> NoReturn:
         """Sends message to chat with {peer_id}.
 
         Arguments:
         - {msg} -- message text;
         - {peer_id} -- chat ID.
         """
-        self.messages.send(message=msg, peer_id=peer_id, disable_mentions=1, random_id=0)
+        self.messages.send(
+            message=msg, peer_id=peer_id,
+            disable_mentions=1, random_id=0
+        )
 
-    def get_user_name(self, user_id: int) -> str:
+    def get_user_name(
+        self,
+        user_id: int,
+        name_case: str = "nom"
+    ) -> str:
         """Returns user firstname.
+
+        :param name_case: The declension case for the user's first and last name.
+            Possible values:
+            • Nominative – nom,
+            • Genitive – gen,
+            • dative – dat,
+            • accusative – acc,
+            • instrumental – ins,
+            • prepositional – abl.
         """
-        return self.users.get(user_ids=user_id)['response'][0]["first_name"]
+        return self.users.get(user_ids=user_id, name_case=name_case)['response'][0]["first_name"]
 
 
     @staticmethod
@@ -142,7 +174,9 @@ class Bot(Vk):
         return [reply_message] if reply_message else event.get("fwd_messages", [])
 
     @staticmethod
-    def get_default_programming_language(language: str) -> str:
+    def get_default_programming_language(
+        language: str
+    ) -> str:
         """Returns default appearance of language
         """
         language = language.lower()
@@ -152,8 +186,11 @@ class Bot(Vk):
         return ""
 
     @staticmethod
-    def contains_string(strings: List[str], matched_string: List[str],
-                        ignore_case: bool) -> bool:
+    def contains_string(
+        strings: List[str],
+        matched_string: List[str],
+        ignore_case: bool
+    ) -> bool:
         """Returns True if `matched_string` in `strings`.
         """
         if ignore_case:
@@ -168,8 +205,11 @@ class Bot(Vk):
         return False
 
     @staticmethod
-    def contains_all_strings(strings: List[str], matched_strings: List[str],
-                             ignore_case: bool) -> bool:
+    def contains_all_strings(
+        strings: List[str],
+        matched_strings: List[str],
+        ignore_case: bool
+    ) -> bool:
         """Returns True if `strings` in `matched_strings`.
         """
         matched_strings_count = len(matched_strings)
