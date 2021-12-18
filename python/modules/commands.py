@@ -147,7 +147,7 @@ class Commands:
             utcnow = datetime.utcnow()
 
             # Downvotes disabled for users with negative karma
-            if (operator == "-") and (self.data_service.get_user_property(self.user, "karma") < 0):
+            if (operator == "-") and (self.data_service.get_user_property(self.current_user, "karma") < 0):
                 self.vk_instance.delete_message(self.peer_id, self.msg_id)
                 self.vk_instance.send_msg(
                     CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
