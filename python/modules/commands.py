@@ -192,7 +192,7 @@ class Commands:
             user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(operator, amount)
 
             if collective_vote_applied:
-                self.data_service.set_user_property(self.user, "last_collective_vote", int(utcnow.timestamp()))
+                self.data_service.set_user_property(self.current_user, "last_collective_vote", int(utcnow.timestamp()))
                 self.data_service.save_user(self.user)
 
             self.data_service.save_user(self.current_user)
@@ -243,8 +243,6 @@ class Commands:
         amount: int
     ) -> tuple:
         vote_applied = None
-        print(self.user.uid, self.current_user.uid)
-        print(self.user[current_voters])
         if self.current_user.uid not in self.user[current_voters]:
             self.user[current_voters].append(self.current_user.uid)
             vote_applied = True
