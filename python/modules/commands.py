@@ -180,10 +180,10 @@ class Commands:
 
             if user_karma_change:
                 self.data_service.save_user(self.user)
-                self.vk_instance.send_msg(
-                    CommandsBuilder.build_karma_change(
-                        user_karma_change, selected_user_karma_change, voters),
-                    self.peer_id)
+            self.vk_instance.send_msg(
+                CommandsBuilder.build_karma_change(
+                    user_karma_change, selected_user_karma_change, voters),
+                self.peer_id)
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
     def apply_karma_change(self, operator: str, amount: int) -> tuple:
