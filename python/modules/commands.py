@@ -61,7 +61,7 @@ class Commands:
         """Adds or removes a new programming language in user profile.
         """
         language = self.matched.group('language')
-        language = self.vk_instance.get_default_programming_language(language)
+        language = self.vk_instance.get_default_programming_language(language).replace('\\', '')
         if not language:
             return
         languages = self.data_service.get_user_property(self.current_user, "programming_languages")
