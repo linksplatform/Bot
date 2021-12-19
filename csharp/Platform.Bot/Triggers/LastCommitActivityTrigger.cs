@@ -1,15 +1,16 @@
-﻿using Interfaces;
-using Octokit;
-using Platform.Communication.Protocol.Lino;
-using Storage.Remote.GitHub;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Interfaces;
+using Octokit;
+using Platform.Communication.Protocol.Lino;
+using Storage.Remote.GitHub;
 
-namespace Platform.Bot
+namespace Platform.Bot.Triggers
 {
-    internal class LastCommitActivityTrigger : ITrigger<Issue>
+    using TContext = Issue;
+    internal class LastCommitActivityTrigger : ITrigger<TContext>
     {
         private readonly GitHubStorage Storage;
 
@@ -17,13 +18,13 @@ namespace Platform.Bot
 
         public LastCommitActivityTrigger(GitHubStorage storage) => Storage = storage;
 
-        public bool Condition(Issue issue) => issue.Title.ToLower() == "last 3 months commit activity";
+        public bool Condition(TContext context) => context.Title.ToLower() == "last 3 months commit activity";
 
-        public void Action(Issue issue)
+        public void Action(TContext context)
         {
             var issueService = Storage.Client.Issue;
-            var owner = issue.Repository.Owner.Login;
-            var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
+            var owner = context.Repository.Owner.Login;
+            var users = GetActivities(GetIgnoredRepositories(Parser.Parse(context.Body)), owner);
             StringBuilder sb = new();
             foreach (var user in users)
             {
@@ -36,10 +37,10 @@ namespace Platform.Bot
                 sb.AppendLine("------------------");
             }
             var result = sb.ToString();
-            var comment = issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, result);
+            var comment = issueService.Comment.Create(owner, context.Repository.Name, context.Number, result);
             comment.Wait();
             Console.WriteLine($"Last commit activity comment is added: {comment.Result.HtmlUrl}");
-            Storage.CloseIssue(issue);
+            Storage.CloseIssue(context);
         }
 
         public HashSet<string> GetIgnoredRepositories(IList<Link> links)
