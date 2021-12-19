@@ -17,26 +17,26 @@ namespace FileManager
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "delete";
+        public bool Condition(Context context) => context.Args[0].ToLower() == "delete";
 
         /// <summary>
         /// <para>
-        /// Actions the arguments.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context arguments) => arguments.FileStorage.Delete(ulong.Parse(arguments.Args[1]));
+        public void Action(Context context) => context.FileStorage.Delete(ulong.Parse(context.Args[1]));
     }
 }

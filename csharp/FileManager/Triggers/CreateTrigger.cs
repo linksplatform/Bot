@@ -19,26 +19,26 @@ namespace FileManager
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "create";
+        public bool Condition(Context context) => context.Args[0].ToLower() == "create";
 
         /// <summary>
         /// <para>
-        /// Actions the arguments.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context arguments) => Console.WriteLine(arguments.FileStorage.AddFile(File.ReadAllText(arguments.Args[2])));
+        public void Action(Context context) => Console.WriteLine(context.FileStorage.AddFile(File.ReadAllText(context.Args[2])));
     }
 }
