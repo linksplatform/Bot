@@ -13,7 +13,7 @@ namespace Platform.Bot
     /// </para>
     /// <para></para>
     /// </summary>
-    public class ProgrammerRole
+    public class IssueTracker
     {
         /// <summary>
         /// <para>
@@ -21,7 +21,7 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        public readonly GitHubStorage GitHubAPI;
+        public readonly GitHubStorage GitHubApi;
 
         /// <summary>
         /// <para>
@@ -41,7 +41,7 @@ namespace Platform.Bot
 
         /// <summary>
         /// <para>
-        /// Initializes a new <see cref="ProgrammerRole"/> instance.
+        /// Initializes a new <see cref="IssueTracker"/> instance.
         /// </para>
         /// <para></para>
         /// </summary>
@@ -53,7 +53,7 @@ namespace Platform.Bot
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI)
+        public IssueTracker(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI)
         {
             GitHubAPI = gitHubAPI;
             Triggers = triggers;
