@@ -1,17 +1,30 @@
 # -*- coding: utf-8 -*-
-import requests
+"""Provides working with VK API as user.
+"""
+from typing import NoReturn
 
-from tokens import UserToken
 from exceptions import TooManyMessagesError
+from tokens import USER_TOKEN
+from requests import Session
+
 
 class UserBot:
-    def __init__(self):
-        self.url = 'https://api.vk.com/method/'
-        self.token = UserToken
+    """Automatically deleting unnecessary messages.
+    """
+    session = Session()
+    url = 'https://api.vk.com/method/'
+    token = USER_TOKEN
 
-    def delete_messages(self, conversation_message_ids: list, peer_id: int):
+    @staticmethod
+    def delete_messages(conversation_message_ids: list,
+                        peer_id: int) -> NoReturn:
+        """Deletes all conversations messages
+        """
         if len(conversation_message_ids) <= 24:
-            params = { 'conversation_message_ids': conversation_message_ids, 'peer_id': peer_id }
+            params = {
+                'conversation_message_ids': conversation_message_ids,
+                'peer_id': peer_id
+            }
             code = '''
             var ids = API.messages.getByConversationMessageId(%s).items@.id;
             var deleted = [];
@@ -21,7 +34,17 @@ class UserBot:
                 index = index + 1;
             }
             return 1;'''
-            data = {'access_token': self.token, 'code': code % params, 'v': '5.103'}
-            return requests.post(self.url + 'execute', data=data).json()
-        else:
-            raise TooManyMessagesError('Maximum amount was reached (%d/24)' % len(conversation_message_ids))
+            data = {
+                'access_token': UserBot.token,
+                'code': code % params,
+                'v': '5.103'
+            }
+            return UserBot.execute(data)
+        raise TooManyMessagesError(
+            'Maximum amount was reached (%d/24)' % len(conversation_message_ids))
+
+    @staticmethod
+    def execute(data: str) -> dict:
+        """Executes VK Script.
+        """
+        return UserBot.session.post(UserBot.url + 'execute', data=data).json()

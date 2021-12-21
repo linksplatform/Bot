@@ -1,4 +1,4 @@
-saya
+saya>=0.3.15
 social_ethosa
 regex
 requests

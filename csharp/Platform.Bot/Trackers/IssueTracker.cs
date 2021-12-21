@@ -49,7 +49,7 @@ namespace Platform.Bot.Trackers
         /// <para>A triggers.</para>
         /// <para></para>
         /// </param>
-        /// <param name="gitHubApi">
+        /// <param name="gitHubAPI">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
