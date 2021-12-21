@@ -18,7 +18,7 @@
       "output": {
         ".html": {
           "relative_path": "README.html",
-          "hash": "4CytIK9wucIPj8hx9VgGMg=="
+          "hash": "Drq8rh6gVaSUHFOeKMp2sw=="
         }
       },
       "is_incremental": false,
@@ -30,7 +30,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.Context.html",
-          "hash": "U4zPQBcDEXIPHQRb/dDbJg=="
+          "hash": "rn5YlhB4FYCriFWPiCnkAw=="
         }
       },
       "is_incremental": false,
@@ -42,7 +42,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.CreateFileSetTrigger.html",
-          "hash": "nzM6s25U0J+GCCsY716rxQ=="
+          "hash": "P8ncGQJbb2pojZ06DPzSWA=="
         }
       },
       "is_incremental": false,
@@ -54,7 +54,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.CreateTrigger.html",
-          "hash": "aaKA97ukuT6GrbJouosmSQ=="
+          "hash": "SZnwx5OSlhZngw8Lec6NKw=="
         }
       },
       "is_incremental": false,
@@ -66,7 +66,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.DeleteTrigger.html",
-          "hash": "t2XI4RJqC7aCo/ZBjhBXSA=="
+          "hash": "xDMwhShXYzE3IhAeG7PdjA=="
         }
       },
       "is_incremental": false,
@@ -78,7 +78,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.GetFilesByFileSetNameTrigger.html",
-          "hash": "rPWQplnhDUkfZIBoRmDV5w=="
+          "hash": "BlMXC8oM5kZuOhTBYcgNrQ=="
         }
       },
       "is_incremental": false,
@@ -90,7 +90,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.HelpTrigger.html",
-          "hash": "aYRGvuIvxbAOV9L9GyOfxg=="
+          "hash": "tMgAQ3j5MaIOgSDHRQ+8hw=="
         }
       },
       "is_incremental": false,
@@ -102,7 +102,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.LinksPrinterTrigger.html",
-          "hash": "cswWKIG7SzfWWj8ZrFjeTA=="
+          "hash": "J8cQYhk07xISyt6+/SU4qQ=="
         }
       },
       "is_incremental": false,
@@ -114,7 +114,7 @@
       "output": {
         ".html": {
           "relative_path": "api/FileManager.ShowTrigger.html",
-          "hash": "itEYbUC7ErRxbs211ZKdPg=="
+          "hash": "QPb4QZoKiPNw77Xz9wsUpg=="
         }
       },
       "is_incremental": false,
@@ -138,7 +138,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Interfaces.ITrigger-1.html",
-          "hash": "CUK/G9S1fWc4O422K92b5Q=="
+          "hash": "8jI7tBYNRqNUSNWE3lZvLQ=="
         }
       },
       "is_incremental": false,
@@ -162,7 +162,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Platform.Bot.ProgrammerRole.html",
-          "hash": "qoePxpVSJx66BCa7Tx7ZLA=="
+          "hash": "LLvQ9m2Gmuno8AC3TehQ/w=="
         }
       },
       "is_incremental": false,
@@ -174,7 +174,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Platform.Bot.ProtectMainBranchTrigger.html",
-          "hash": "XndBU1bMWlTZgJLiWBzZ8w=="
+          "hash": "QY9GUghFSLkNg6Pc0DCBSQ=="
         }
       },
       "is_incremental": false,
@@ -198,7 +198,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Storage.Local.File.html",
-          "hash": "aVPgKxK8xylzZHH6eStvRg=="
+          "hash": "XB0Pz5aEf3ZWNJYMZhyATA=="
         }
       },
       "is_incremental": false,
@@ -210,7 +210,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Storage.Local.FileStorage.html",
-          "hash": "HU3LG3VouUtLWVnyGv2EoQ=="
+          "hash": "QFGLN6AsR4AikKjmtoFUBQ=="
         }
       },
       "is_incremental": false,
@@ -234,7 +234,7 @@
       "output": {
         ".html": {
           "relative_path": "api/Storage.Remote.GitHub.GitHubStorage.html",
-          "hash": "63k6cp3TlzEAcREyDSqATQ=="
+          "hash": "Jk51Ipul6o+Z3drTXPajPg=="
         }
       },
       "is_incremental": false,

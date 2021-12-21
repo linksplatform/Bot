@@ -5,9 +5,9 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Bot | LinksPlatform's Platform.Bot Library </title>
+    <title>VK Bot | LinksPlatform's Platform.Bot Library </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Bot | LinksPlatform's Platform.Bot Library ">
+    <meta name="title" content="VK Bot | LinksPlatform's Platform.Bot Library ">
     <meta name="generator" content="docfx 2.51.0.0">
     
     <link rel="shortcut icon" href="favicon.ico">
@@ -70,8 +70,310 @@
         <div class="article row grid">
           <div class="col-md-10">
             <article class="content wrap" id="_content" data-uid="">
-<h1 id="bot">Bot</h1>
+<h1 id="vk-bot">VK Bot</h1>
 
+<h2 id="help">Help</h2>
+<h3 id="список-команд">Список команд</h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Значение</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>⭐</td>
+<td>команды работающие и в беседах и в личных сообщениях бота.</td>
+</tr>
+<tr>
+<td>⚡ </td>
+<td>команды работающие во всех беседах.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>команды работающие только в чате с включенной кармой.</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Команда</th>
+<th>Описание</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>⭐</td>
+<td>help</td>
+<td>Вывести сообщения с основной информацией о боте.</td>
+</tr>
+<tr>
+<td>⚡</td>
+<td>people</td>
+<td>Вывести информацию о участниках беседы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>top</td>
+<td>Вывести информацию о участниках беседы в порядке уменьшения кармы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>top [ЯЗЫКИ]</td>
+<td>Вывести информацию о участниках беседы с указанными языками в порядке уменьшения кармы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>top [ЧИСЛО]</td>
+<td>Вывести информацию об указанном числе участников беседы в порядке уменьшения кармы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>bottom</td>
+<td>Вывести информацию о участниках беседы в порядке увеличения кармы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>bottom [ЯЗЫКИ]</td>
+<td>Вывести информацию о участниках беседы с указанными языками в порядке увеличения кармы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>bottom [ЧИСЛО]</td>
+<td>Вывести информацию об указанном числе участников беседы беседы в порядке увеличения кармы.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>karma</td>
+<td>Вывод своей кармы или кармы участника беседы из пересланного сообщения.</td>
+</tr>
+<tr>
+<td>⭐</td>
+<td>info</td>
+<td>Вывести общую информацию (карма (только для бесед с кармой), добавленные языки, ссылка на профиль github) о себе или участнике беседы из пересланного сообщения.</td>
+</tr>
+<tr>
+<td>⭐</td>
+<td>update</td>
+<td>Обновить информацию о вас (имя). Эта команда так же выводит информацию о вас как это делает команда info.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>+</td>
+<td>Проголосовать за повышение кармы участника беседы из пересланного сообщения.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>-</td>
+<td>Проголосовать за понижение кармы участника беседы из пересланного сообщения.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>+[ЧИСЛО]</td>
+<td>Повысить карму участника беседы из пересланного сообщения на указанное число, потратив свою.</td>
+</tr>
+<tr>
+<td>✔️</td>
+<td>-[ЧИСЛО]</td>
+<td>Понизить карму участника беседы из пересланного сообщения на указанное число, потратив свою.</td>
+</tr>
+<tr>
+<td>⭐</td>
+<td>+= [ЯЗЫК]</td>
+<td>Добавить язык программирования в свой профиль.</td>
+</tr>
+<tr>
+<td>⭐</td>
+<td>-= [ЯЗЫК]</td>
+<td>Убрать язык программирования из своего профиля.</td>
+</tr>
+<tr>
+<td>⭐</td>
+<td>+= [ССЫЛКА]</td>
+<td>Добавить ссылку на профиль github в свой профиль.</td>
+</tr>
+<tr>
+<td>⭐</td>
+<td>-= [ССЫЛКА]</td>
+<td>Убрать ссылку на профиль github из своего профиля.</td>
+</tr>
+</tbody>
+</table>
+<p>Так же возможно использование альтернативных названий команд.</p>
+<table>
+<thead>
+<tr>
+<th>Английская версия</th>
+<th>Русская версия</th>
+<th>Алиас</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>help</td>
+<td>помощь</td>
+<td></td>
+</tr>
+<tr>
+<td>people</td>
+<td>люди</td>
+<td></td>
+</tr>
+<tr>
+<td>top</td>
+<td>топ</td>
+<td>верх</td>
+</tr>
+<tr>
+<td>bottom</td>
+<td>дно</td>
+<td>низ</td>
+</tr>
+<tr>
+<td>karma</td>
+<td>карма</td>
+<td></td>
+</tr>
+<tr>
+<td>info</td>
+<td>инфо</td>
+<td></td>
+</tr>
+<tr>
+<td>update</td>
+<td>обновить</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>При голосовании за повышение или понижение кармы пользователя требуется 2 или 3 голоса от различных участников беседы соответственно.</p>
+<p>Голосовать за понижение кармы пользователя можно только при неотрицательной карме.</p>
+<p>Промежуток между вкладом голосов за изменение кармы пользователей зависит от показателя кармы голосующего:</p>
+<table>
+<thead>
+<tr>
+<th>Карма</th>
+<th>Промежуток</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>до -20</td>
+<td>8 часов</td>
+</tr>
+<tr>
+<td>от -19 до -2</td>
+<td>4 часа</td>
+</tr>
+<tr>
+<td>от -1 до 1</td>
+<td>2 часа</td>
+</tr>
+<tr>
+<td>от 2 до 19</td>
+<td>1 час</td>
+</tr>
+<tr>
+<td>от 20</td>
+<td>30 минут</td>
+</tr>
+</tbody>
+</table>
+<p>Список доступных языков программирования</p>
+<ul>
+<li>Assembler</li>
+<li>JavaScript</li>
+<li>TypeScript</li>
+<li>Java</li>
+<li>Python</li>
+<li>PHP</li>
+<li>Ruby</li>
+<li>C++</li>
+<li>C</li>
+<li>Shell</li>
+<li>C#</li>
+<li>Objective-C</li>
+<li>R</li>
+<li>VimL</li>
+<li>Go</li>
+<li>Perl</li>
+<li>CoffeeScript</li>
+<li>TeX</li>
+<li>Swift</li>
+<li>Kotlin</li>
+<li>F#</li>
+<li>Scala</li>
+<li>Scheme</li>
+<li>Emacs Lisp</li>
+<li>Lisp</li>
+<li>Haskell</li>
+<li>Lua</li>
+<li>Clojure</li>
+<li>TLA+</li>
+<li>PlusCal</li>
+<li>Matlab</li>
+<li>Groovy</li>
+<li>Puppet</li>
+<li>Rust</li>
+<li>PowerShell</li>
+<li>Pascal</li>
+<li>Delphi</li>
+<li>SQL</li>
+<li>Nim</li>
+<li>1С</li>
+<li>КуМир</li>
+<li>Scratch</li>
+<li>Prolog</li>
+<li>GLSL</li>
+<li>HLSL</li>
+<li>Whitespace</li>
+<li>Basic</li>
+<li>Visual Basic</li>
+<li>Parser</li>
+<li>Erlang</li>
+<li>Wolfram</li>
+<li>Brainfuck</li>
+<li>Pawn</li>
+<li>Cobol</li>
+<li>Fortran</li>
+<li>Arduino</li>
+<li>Makefile</li>
+<li>CMake</li>
+<li>D</li>
+<li>Forth</li>
+<li>Dart</li>
+<li>Ada</li>
+<li>Julia</li>
+<li>Malbolge</li>
+<li>Лого</li>
+<li>Verilog</li>
+<li>VHDL</li>
+<li>Altera</li>
+<li>Processing</li>
+<li>MetaQuotes</li>
+<li>Algol</li>
+<li>Piet</li>
+<li>Shakespeare</li>
+<li>G-code</li>
+<li>Whirl</li>
+<li>Chef</li>
+<li>BIT</li>
+<li>Ook</li>
+<li>MoonScript</li>
+<li>PureScript</li>
+<li>Idris</li>
+<li>Elm</li>
+<li>Minecraft</li>
+<li>Crystal</li>
+<li>C--</li>
+<li>Go!</li>
+<li>Tcl</li>
+<li>Solidity</li>
+</ul>
+<p>Если нужного языка нет в списке, о его добавлении можно попросить <a href="https://github.com/linksplatform/Bot/issues/15">здесь</a></p>
 <h2 id="prerequisites">Prerequisites</h2>
 <ul>
 <li><a href="https://git-scm.com/downloads">Git</a></li>
