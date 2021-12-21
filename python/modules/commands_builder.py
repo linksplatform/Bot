@@ -144,7 +144,7 @@ class CommandsBuilder:
         data: BetterBotBaseDataService,
         reverse: bool = False,
         has_karma: bool = True,
-        maximum_users: int = 10
+        maximum_users: int = -1
     ) -> str:
         if not users:
             return

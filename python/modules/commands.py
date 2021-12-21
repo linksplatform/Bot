@@ -118,7 +118,7 @@ class Commands:
         if self.peer_id < 2e9:
             return
         maximum_users = self.matched.group("maximum_users")
-        maximum_users = int(maximum_users) if maximum_users else 10
+        maximum_users = int(maximum_users) if maximum_users else -1
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
