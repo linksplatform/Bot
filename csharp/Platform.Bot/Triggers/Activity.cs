@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Platform.Bot
+namespace Platform.Bot.Triggers
 {
     internal class Activity
     {

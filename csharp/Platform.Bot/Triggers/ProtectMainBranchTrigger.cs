@@ -1,23 +1,22 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
 
-namespace Platform.Bot
+namespace Platform.Bot.Triggers
 {
-    public class ProtectMainBranchTrigger : ITrigger<Issue>
+    using TContext = Issue;
+    public class ProtectMainBranchTrigger : ITrigger<TContext>
     {
         private readonly GitHubStorage Storage;
         public ProtectMainBranchTrigger(GitHubStorage storage) => Storage = storage;
-        public bool Condition(Issue issue) => issue.Title.ToLower() == "protect default branch in all organization's repositories";
+        public bool Condition(TContext context) => context.Title.ToLower() == "protect default branch in all organization's repositories";
 
-        public void Action(Issue issue)
+        public void Action(TContext context)
         {
-            var repositories = Storage.Client.Repository.GetAllForOrg(issue.Repository.Owner.Login).Result;
+            var repositories = Storage.Client.Repository.GetAllForOrg(context.Repository.Owner.Login).Result;
             var results = UpdateRepositoriesDefaultBranchProtection(repositories);
             StringBuilder failedRepositoriesComment = new(repositories.Count * repositories[0].Name.Length);
             foreach (var result in results.Where(result => !result.Value))
@@ -28,12 +27,12 @@ namespace Platform.Bot
             {
                 failedRepositoriesComment.AppendLine(
                     "TODO: Fix default branch protection of these repositories. Failed repositories:");
-                Storage.Client.Issue.Comment.Create(issue.Repository.Id, issue.Number, failedRepositoriesComment.ToString());
+                Storage.Client.Issue.Comment.Create(context.Repository.Id, context.Number, failedRepositoriesComment.ToString());
             }
             else
             {
-                Storage.Client.Issue.Comment.Create(issue.Repository.Id, issue.Number, "Success. All repositories default branch protection is updated.");
-                Storage.CloseIssue(issue);
+                Storage.Client.Issue.Comment.Create(context.Repository.Id, context.Number, "Success. All repositories default branch protection is updated.");
+                Storage.CloseIssue(context);
             }
         }
 

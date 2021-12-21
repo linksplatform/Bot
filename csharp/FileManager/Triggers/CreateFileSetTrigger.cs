@@ -20,41 +20,41 @@ namespace FileManager
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "createfileset";
+        public bool Condition(Context context) => context.Args[0].ToLower() == "createfileset";
 
         /// <summary>
         /// <para>
-        /// Actions the arguments.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context arguments)
+        public void Action(Context context)
         {
             List<File> files = new();
-            for (var i = 2; i < arguments.Args.Length - 1; i += 2)
+            for (var i = 2; i < context.Args.Length - 1; i += 2)
             {
                 files.Add(new File()
                 {
-                    Path = arguments.Args[i],
-                    Content = System.IO.File.ReadAllText(arguments.Args[i + 1])
+                    Path = context.Args[i],
+                    Content = System.IO.File.ReadAllText(context.Args[i + 1])
                 });
             }
-            var set = arguments.FileStorage.CreateFileSet(arguments.Args[1]);
+            var set = context.FileStorage.CreateFileSet(context.Args[1]);
             foreach (var file in files)
             {
-                arguments.FileStorage.AddFileToSet(set, arguments.FileStorage.AddFile(file.Content), file.Path);
+                context.FileStorage.AddFileToSet(set, context.FileStorage.AddFile(file.Content), file.Path);
             }
             Console.WriteLine(set);
         }

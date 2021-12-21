@@ -6,6 +6,8 @@ using Storage.Local;
 using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
+using Platform.Bot.Trackers;
+using Platform.Bot.Triggers;
 
 namespace Platform.Bot
 {
@@ -31,15 +33,16 @@ namespace Platform.Bot
             try
             {
                 var api = new GitHubStorage(username, token, appName);
-                new ProgrammerRole(
+                new IssueTracker(
                     new List<ITrigger<Issue>> {
                         new HelloWorldTrigger(api, dbContext, fileSetName),
                         new OrganizationLastMonthActivityTrigger(api),
                         new LastCommitActivityTrigger(api),
-                        new ProtectMainBranchTrigger(api)
+                        new ProtectMainBranchTrigger(api),
                     },
                     api
                 ).Start(cancellation.Token);
+                new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start(cancellation.Token);
             }
             catch (Exception ex)
             {

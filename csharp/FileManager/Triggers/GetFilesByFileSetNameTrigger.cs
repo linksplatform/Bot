@@ -18,29 +18,29 @@ namespace FileManager
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "getfilesbyfilessetname";
+        public bool Condition(Context context) => context.Args[0].ToLower() == "getfilesbyfilessetname";
 
         /// <summary>
         /// <para>
-        /// Actions the arguments.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context arguments)
+        public void Action(Context context)
         {
-            var files = arguments.FileStorage.GetFilesFromSet(arguments.Args[1]);
+            var files = context.FileStorage.GetFilesFromSet(context.Args[1]);
             foreach (var file in files)
             {
                 Console.WriteLine($"Path: {file.Path}\nContent: {file.Content}");

@@ -3,18 +3,19 @@ using Octokit;
 using Storage.Local;
 using Storage.Remote.GitHub;
 
-namespace Platform.Bot
+namespace Platform.Bot.Triggers
 {
+    using TContext = Issue;
     /// <summary>
     /// <para>
     /// Represents the hello world trigger.
     /// </para>
     /// <para></para>
     /// </summary>
-    /// <seealso cref="ITrigger{Issue}"/>
-    internal class HelloWorldTrigger : ITrigger<Issue>
+    /// <seealso cref="ITrigger{TContext}"/>
+    internal class HelloWorldTrigger : ITrigger<TContext>
     {
-        private readonly GitHubStorage gitHubAPI;
+        private readonly GitHubStorage gitHubApi;
         private readonly FileStorage fileStorage;
         private readonly string fileSetName;
 
@@ -24,7 +25,7 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="gitHubAPI">
+        /// <param name="gitHubApi">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
@@ -36,9 +37,9 @@ namespace Platform.Bot
         /// <para>A file set name.</para>
         /// <para></para>
         /// </param>
-        public HelloWorldTrigger(GitHubStorage gitHubAPI, FileStorage fileStorage, string fileSetName)
+        public HelloWorldTrigger(GitHubStorage gitHubApi, FileStorage fileStorage, string fileSetName)
         {
-            this.gitHubAPI = gitHubAPI;
+            this.gitHubApi = gitHubApi;
             this.fileStorage = fileStorage;
             this.fileSetName = fileSetName;
         }
@@ -46,22 +47,22 @@ namespace Platform.Bot
 
         /// <summary>
         /// <para>
-        /// Actions the obj.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="obj">
-        /// <para>The obj.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
 
-        public void Action(Issue obj)
+        public void Action(TContext context)
         {
             foreach (var file in fileStorage.GetFilesFromSet(fileSetName))
             {
-                gitHubAPI.CreateOrUpdateFile(obj.Repository.Name, obj.Repository.DefaultBranch, file);
+                gitHubApi.CreateOrUpdateFile(context.Repository.Name, context.Repository.DefaultBranch, file);
             }
-            gitHubAPI.CloseIssue(obj);
+            gitHubApi.CloseIssue(context);
         }
 
 
@@ -71,14 +72,14 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="obj">
-        /// <para>The obj.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Issue obj) => obj.Title.ToLower() == "hello world";
+        public bool Condition(TContext context) => context.Title.ToLower() == "hello world";
     }
 }

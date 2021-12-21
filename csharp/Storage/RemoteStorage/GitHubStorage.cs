@@ -135,7 +135,7 @@ namespace Storage.Remote.GitHub
         /// <para></para>
         /// </param>
         /// <param name="reposiroty">
-        /// <para>The reposiroty.</para>
+        /// <para>The repository.</para>
         /// <para></para>
         /// </param>
         /// <returns>
@@ -155,7 +155,7 @@ namespace Storage.Remote.GitHub
         /// <para></para>
         /// </param>
         /// <param name="reposiroty">
-        /// <para>The reposiroty.</para>
+        /// <para>The repository.</para>
         /// <para></para>
         /// </param>
         /// <returns>
