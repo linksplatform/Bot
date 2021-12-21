@@ -117,14 +117,14 @@ class Commands:
         """
         if self.peer_id < 2e9:
             return
-        # maximum_users = self.matched.group("maximum_users")
-        # maximum_users = int(maximum_users) if maximum_users else 0
+        maximum_users = self.matched.group("maximum_users")
+        maximum_users = int(maximum_users) if maximum_users else 10
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
                  (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
         self.vk_instance.send_msg(
-            CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled),
+            CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled, maximum_users),
             self.peer_id)
 
     def top_langs(

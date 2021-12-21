@@ -143,7 +143,8 @@ class CommandsBuilder:
         users: List[BetterUser],
         data: BetterBotBaseDataService,
         reverse: bool = False,
-        has_karma: bool = True
+        has_karma: bool = True,
+        maximum_users: int = 10
     ) -> str:
         if not users:
             return
@@ -162,7 +163,7 @@ class CommandsBuilder:
             else:
                 total_symbols += user_string_length + 2
                 i += 1
-        return "\n".join(user_strings)
+        return "\n".join(user_strings[:maximum_users])
 
     @staticmethod
     def build_karma_change(
