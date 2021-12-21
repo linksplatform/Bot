@@ -231,9 +231,9 @@ class Commands:
                     self.peer_id)
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
-                user_karma_change = self.apply_user_karma(-amount)
+                user_karma_change = self.apply_user_karma(self.current_user, -amount)
                 amount = -amount if operator == "-" else amount
-                selected_user_karma_change = self.apply_user_karma(amount)
+                selected_user_karma_change = self.apply_user_karma(self.user, amount)
 
         # Collective vote
         elif amount == 0:
@@ -257,15 +257,15 @@ class Commands:
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
             self.user[current_voters] = []
-            return self.apply_user_karma(amount), voters, vote_applied
+            return self.apply_user_karma(self.user, amount), voters, vote_applied
         return (None, None, vote_applied)
 
-    def apply_user_karma(self, amount: int) -> Tuple[int, str, int, int]:
-        initial_karma = self.data_service.get_user_property(self.user, "karma")
+    def apply_user_karma(self, user: BetterUser, amount: int) -> Tuple[int, str, int, int]:
+        initial_karma = self.data_service.get_user_property(user, "karma")
         new_karma = initial_karma + amount
-        self.data_service.set_user_property(self.user, "karma", new_karma)
-        return (self.user.uid,
-                self.data_service.get_user_property(self.user, "name"),
+        self.data_service.set_user_property(user, "karma", new_karma)
+        return (user.uid,
+                self.data_service.get_user_property(user, "name"),
                 initial_karma,
                 new_karma)
 
