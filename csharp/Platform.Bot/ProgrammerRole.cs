@@ -63,9 +63,9 @@ namespace Platform.Bot
         {
             while (!token.IsCancellationRequested)
             {
-                foreach (var trigger in Triggers)
+                foreach (var issue in GitHubAPI.GetIssues())
                 {
-                    foreach (var issue in GitHubAPI.GetIssues())
+                    foreach (var trigger in Triggers)
                     {
                         if (trigger.Condition(issue))
                         {

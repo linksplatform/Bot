@@ -23,7 +23,9 @@ namespace Platform.Bot
         {
             var issueService = Storage.Client.Issue;
             var owner = issue.Repository.Owner.Login;
-            var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
+            var ignoredRepositories =
+                issue.Body != null ? GetIgnoredRepositories(Parser.Parse(issue.Body)) : default;
+            var users = GetActivities(owner, ignoredRepositories);
             StringBuilder sb = new();
             foreach (var user in users)
             {
@@ -56,17 +58,21 @@ namespace Platform.Bot
             return ignoredRepos;
         }
 
-        public HashSet<Activity> GetActivities(HashSet<string> ignoredRepositories, string owner)
+        public HashSet<Activity> GetActivities(string owner, HashSet<string> ignoredRepositories = default)
         {
             HashSet<Activity> activeUsers = new();
             foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
             {
-                if (ignoredRepositories.Contains(repository.Name))
+                if (ignoredRepositories?.Contains(repository.Name) ?? false)
                 {
                     continue;
                 }
                 foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-3)))
                 {
+                    if (!Storage.Client.Organization.Member.CheckMember(owner, commit.Author.Login).Result)
+                    {
+                        continue;
+                    }
                     if (!activeUsers.Any(x => x.Url == commit.Author.Url))
                     {
                         activeUsers.Add(new Activity() { Url = commit.Author.Url, Repositories = new List<string> { repository.Url } });
