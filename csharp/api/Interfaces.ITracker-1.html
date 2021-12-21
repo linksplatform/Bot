@@ -5,10 +5,10 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
-    <title>Interface ITrigger&lt;TContext&gt;
+    <title>Interface ITracker&lt;TContext&gt;
    | LinksPlatform's Platform.Bot Library </title>
     <meta name="viewport" content="width=device-width">
-    <meta name="title" content="Interface ITrigger&lt;TContext&gt;
+    <meta name="title" content="Interface ITracker&lt;TContext&gt;
    | LinksPlatform's Platform.Bot Library ">
     <meta name="generator" content="docfx 2.51.0.0">
     
@@ -78,22 +78,22 @@
         </div>
         <div class="article row grid-right">
           <div class="col-md-10">
-            <article class="content wrap" id="_content" data-uid="Interfaces.ITrigger`1">
+            <article class="content wrap" id="_content" data-uid="Interfaces.ITracker`1">
   
   
-  <h1 id="Interfaces_ITrigger_1" data-uid="Interfaces.ITrigger`1" class="text-break">Interface ITrigger&lt;TContext&gt;
+  <h1 id="Interfaces_ITracker_1" data-uid="Interfaces.ITracker`1" class="text-break">Interface ITracker&lt;TContext&gt;
   </h1>
   <div class="markdown level0 summary"><p>
-Defines the trigger.
+Represents the programmer role.
 </p>
 <p>
 </div>
   <div class="markdown level0 conceptual"></div>
   <h6><strong>Namespace</strong>: <a class="xref" href="Interfaces.html">Interfaces</a></h6>
   <h6><strong>Assembly</strong>: Interfaces.dll</h6>
-  <h5 id="Interfaces_ITrigger_1_syntax">Syntax</h5>
+  <h5 id="Interfaces_ITracker_1_syntax">Syntax</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public interface ITrigger&lt;TContext&gt;</code></pre>
+    <pre><code class="lang-csharp hljs">public interface ITracker&lt;TContext&gt;</code></pre>
   </div>
   <h5 class="typeParameters">Type Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -110,26 +110,130 @@ Defines the trigger.
       </tr>
     </tbody>
   </table>
+  <h3 id="properties">Properties
+  </h3>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITracker_1_GitHubApi.md&amp;value=---%0Auid%3A%20Interfaces.ITracker%601.GitHubApi%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITracker.cs/#L23">View Source</a>
+  </span>
+  <a id="Interfaces_ITracker_1_GitHubApi_" data-uid="Interfaces.ITracker`1.GitHubApi*"></a>
+  <h4 id="Interfaces_ITracker_1_GitHubApi" data-uid="Interfaces.ITracker`1.GitHubApi">GitHubApi</h4>
+  <div class="markdown level1 summary"><p>
+The git hub api.
+</p>
+<p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">GitHubStorage GitHubApi { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><a class="xref" href="Storage.Remote.GitHub.GitHubStorage.html">GitHubStorage</a></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITracker_1_MinimumInteractionInterval.md&amp;value=---%0Auid%3A%20Interfaces.ITracker%601.MinimumInteractionInterval%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITracker.cs/#L31">View Source</a>
+  </span>
+  <a id="Interfaces_ITracker_1_MinimumInteractionInterval_" data-uid="Interfaces.ITracker`1.MinimumInteractionInterval*"></a>
+  <h4 id="Interfaces_ITracker_1_MinimumInteractionInterval" data-uid="Interfaces.ITracker`1.MinimumInteractionInterval">MinimumInteractionInterval</h4>
+  <div class="markdown level1 summary"><p>
+The minimum interaction interval.
+</p>
+<p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">TimeSpan MinimumInteractionInterval { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">TimeSpan</span></td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
+  <span class="small pull-right mobile-hide">
+    <span class="divider">|</span>
+    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITracker_1_Triggers.md&amp;value=---%0Auid%3A%20Interfaces.ITracker%601.Triggers%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+  </span>
+  <span class="small pull-right mobile-hide">
+    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITracker.cs/#L39">View Source</a>
+  </span>
+  <a id="Interfaces_ITracker_1_Triggers_" data-uid="Interfaces.ITracker`1.Triggers*"></a>
+  <h4 id="Interfaces_ITracker_1_Triggers" data-uid="Interfaces.ITracker`1.Triggers">Triggers</h4>
+  <div class="markdown level1 summary"><p>
+The triggers.
+</p>
+<p>
+</div>
+  <div class="markdown level1 conceptual"></div>
+  <h5 class="decalaration">Declaration</h5>
+  <div class="codewrapper">
+    <pre><code class="lang-csharp hljs">List&lt;ITrigger&lt;TContext&gt;&gt; Triggers { get; }</code></pre>
+  </div>
+  <h5 class="propertyValue">Property Value</h5>
+  <table class="table table-bordered table-striped table-condensed">
+    <thead>
+      <tr>
+        <th>Type</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><span class="xref">List</span>&lt;<a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;TContext&gt;&gt;</td>
+        <td></td>
+      </tr>
+    </tbody>
+  </table>
   <h3 id="methods">Methods
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITrigger_1_Action__0_.md&amp;value=---%0Auid%3A%20Interfaces.ITrigger%601.Action(%600)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITracker_1_Start_CancellationToken_.md&amp;value=---%0Auid%3A%20Interfaces.ITracker%601.Start(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITrigger.cs/#L38">View Source</a>
+    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITracker.cs/#L51">View Source</a>
   </span>
-  <a id="Interfaces_ITrigger_1_Action_" data-uid="Interfaces.ITrigger`1.Action*"></a>
-  <h4 id="Interfaces_ITrigger_1_Action__0_" data-uid="Interfaces.ITrigger`1.Action(`0)">Action(TContext)</h4>
+  <a id="Interfaces_ITracker_1_Start_" data-uid="Interfaces.ITracker`1.Start*"></a>
+  <h4 id="Interfaces_ITracker_1_Start_CancellationToken_" data-uid="Interfaces.ITracker`1.Start(CancellationToken)">Start(CancellationToken)</h4>
   <div class="markdown level1 summary"><p>
-Actions the context.
+Starts the cancellation token.
 </p>
 <p>
 </div>
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">void Action(TContext context)</code></pre>
+    <pre><code class="lang-csharp hljs">void Start(CancellationToken cancellationToken)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -142,64 +246,9 @@ Actions the context.
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">TContext</span></td>
-        <td><span class="parametername">context</span></td>
-        <td><p>The context.</p>
-<p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITrigger_1_Condition__0_.md&amp;value=---%0Auid%3A%20Interfaces.ITrigger%601.Condition(%600)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITrigger.cs/#L26">View Source</a>
-  </span>
-  <a id="Interfaces_ITrigger_1_Condition_" data-uid="Interfaces.ITrigger`1.Condition*"></a>
-  <h4 id="Interfaces_ITrigger_1_Condition__0_" data-uid="Interfaces.ITrigger`1.Condition(`0)">Condition(TContext)</h4>
-  <div class="markdown level1 summary"><p>
-Determines whether this instance condition.
-</p>
-<p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">bool Condition(TContext context)</code></pre>
-  </div>
-  <h5 class="parameters">Parameters</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Name</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">TContext</span></td>
-        <td><span class="parametername">context</span></td>
-        <td><p>The context.</p>
-<p>
-</td>
-      </tr>
-    </tbody>
-  </table>
-  <h5 class="returns">Returns</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="https://docs.microsoft.com/dotnet/api/system.boolean">Boolean</a></td>
-        <td><p>The bool</p>
+        <td><span class="xref">CancellationToken</span></td>
+        <td><span class="parametername">cancellationToken</span></td>
+        <td><p>The cancellation token.</p>
 <p>
 </td>
       </tr>
@@ -213,10 +262,10 @@ Determines whether this instance condition.
               <div class="contribution">
                 <ul class="nav">
                   <li>
-                    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITrigger_1.md&amp;value=---%0Auid%3A%20Interfaces.ITrigger%601%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
+                    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Interfaces_ITracker_1.md&amp;value=---%0Auid%3A%20Interfaces.ITracker%601%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITrigger.cs/#L10" class="contribution-link">View Source</a>
+                    <a href="https://github.com/linksplatform/Bot/blob/9bb34a469824f6a5b5b9fafcfb0085062c72d80b/csharp/Interfaces/ITracker.cs/#L15" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

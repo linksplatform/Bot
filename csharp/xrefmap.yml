@@ -269,6 +269,83 @@ references:
   commentId: N:Interfaces
   fullName: Interfaces
   nameWithType: Interfaces
+- uid: Interfaces.ITracker`1
+  name: ITracker<TContext>
+  href: api/Interfaces.ITracker-1.html
+  commentId: T:Interfaces.ITracker`1
+  name.vb: ITracker(Of TContext)
+  fullName: Interfaces.ITracker<TContext>
+  fullName.vb: Interfaces.ITracker(Of TContext)
+  nameWithType: ITracker<TContext>
+  nameWithType.vb: ITracker(Of TContext)
+- uid: Interfaces.ITracker`1.GitHubApi
+  name: GitHubApi
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_GitHubApi
+  commentId: P:Interfaces.ITracker`1.GitHubApi
+  fullName: Interfaces.ITracker<TContext>.GitHubApi
+  fullName.vb: Interfaces.ITracker(Of TContext).GitHubApi
+  nameWithType: ITracker<TContext>.GitHubApi
+  nameWithType.vb: ITracker(Of TContext).GitHubApi
+- uid: Interfaces.ITracker`1.GitHubApi*
+  name: GitHubApi
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_GitHubApi_
+  commentId: Overload:Interfaces.ITracker`1.GitHubApi
+  isSpec: "True"
+  fullName: Interfaces.ITracker<TContext>.GitHubApi
+  fullName.vb: Interfaces.ITracker(Of TContext).GitHubApi
+  nameWithType: ITracker<TContext>.GitHubApi
+  nameWithType.vb: ITracker(Of TContext).GitHubApi
+- uid: Interfaces.ITracker`1.MinimumInteractionInterval
+  name: MinimumInteractionInterval
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_MinimumInteractionInterval
+  commentId: P:Interfaces.ITracker`1.MinimumInteractionInterval
+  fullName: Interfaces.ITracker<TContext>.MinimumInteractionInterval
+  fullName.vb: Interfaces.ITracker(Of TContext).MinimumInteractionInterval
+  nameWithType: ITracker<TContext>.MinimumInteractionInterval
+  nameWithType.vb: ITracker(Of TContext).MinimumInteractionInterval
+- uid: Interfaces.ITracker`1.MinimumInteractionInterval*
+  name: MinimumInteractionInterval
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_MinimumInteractionInterval_
+  commentId: Overload:Interfaces.ITracker`1.MinimumInteractionInterval
+  isSpec: "True"
+  fullName: Interfaces.ITracker<TContext>.MinimumInteractionInterval
+  fullName.vb: Interfaces.ITracker(Of TContext).MinimumInteractionInterval
+  nameWithType: ITracker<TContext>.MinimumInteractionInterval
+  nameWithType.vb: ITracker(Of TContext).MinimumInteractionInterval
+- uid: Interfaces.ITracker`1.Start(CancellationToken)
+  name: Start(CancellationToken)
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Start_CancellationToken_
+  commentId: M:Interfaces.ITracker`1.Start(CancellationToken)
+  fullName: Interfaces.ITracker<TContext>.Start(CancellationToken)
+  fullName.vb: Interfaces.ITracker(Of TContext).Start(CancellationToken)
+  nameWithType: ITracker<TContext>.Start(CancellationToken)
+  nameWithType.vb: ITracker(Of TContext).Start(CancellationToken)
+- uid: Interfaces.ITracker`1.Start*
+  name: Start
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Start_
+  commentId: Overload:Interfaces.ITracker`1.Start
+  isSpec: "True"
+  fullName: Interfaces.ITracker<TContext>.Start
+  fullName.vb: Interfaces.ITracker(Of TContext).Start
+  nameWithType: ITracker<TContext>.Start
+  nameWithType.vb: ITracker(Of TContext).Start
+- uid: Interfaces.ITracker`1.Triggers
+  name: Triggers
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Triggers
+  commentId: P:Interfaces.ITracker`1.Triggers
+  fullName: Interfaces.ITracker<TContext>.Triggers
+  fullName.vb: Interfaces.ITracker(Of TContext).Triggers
+  nameWithType: ITracker<TContext>.Triggers
+  nameWithType.vb: ITracker(Of TContext).Triggers
+- uid: Interfaces.ITracker`1.Triggers*
+  name: Triggers
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Triggers_
+  commentId: Overload:Interfaces.ITracker`1.Triggers
+  isSpec: "True"
+  fullName: Interfaces.ITracker<TContext>.Triggers
+  fullName.vb: Interfaces.ITracker(Of TContext).Triggers
+  nameWithType: ITracker<TContext>.Triggers
+  nameWithType.vb: ITracker(Of TContext).Triggers
 - uid: Interfaces.ITrigger`1
   name: ITrigger<TContext>
   href: api/Interfaces.ITrigger-1.html
@@ -312,125 +389,271 @@ references:
   fullName.vb: Interfaces.ITrigger(Of TContext).Condition
   nameWithType: ITrigger<TContext>.Condition
   nameWithType.vb: ITrigger(Of TContext).Condition
-- uid: Platform.Bot
-  name: Platform.Bot
-  href: api/Platform.Bot.html
-  commentId: N:Platform.Bot
-  fullName: Platform.Bot
-  nameWithType: Platform.Bot
-- uid: Platform.Bot.ProgrammerRole
-  name: ProgrammerRole
-  href: api/Platform.Bot.ProgrammerRole.html
-  commentId: T:Platform.Bot.ProgrammerRole
-  fullName: Platform.Bot.ProgrammerRole
-  nameWithType: ProgrammerRole
-- uid: Platform.Bot.ProgrammerRole.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
-  name: ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage)
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_
-  commentId: M:Platform.Bot.ProgrammerRole.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
-  name.vb: ProgrammerRole(List(Of ITrigger(Of Issue)), GitHubStorage)
-  fullName: Platform.Bot.ProgrammerRole.ProgrammerRole(List<Interfaces.ITrigger<Issue>>, Storage.Remote.GitHub.GitHubStorage)
-  fullName.vb: Platform.Bot.ProgrammerRole.ProgrammerRole(List(Of Interfaces.ITrigger(Of Issue)), Storage.Remote.GitHub.GitHubStorage)
-  nameWithType: ProgrammerRole.ProgrammerRole(List<ITrigger<Issue>>, GitHubStorage)
-  nameWithType.vb: ProgrammerRole.ProgrammerRole(List(Of ITrigger(Of Issue)), GitHubStorage)
-- uid: Platform.Bot.ProgrammerRole.#ctor*
-  name: ProgrammerRole
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole__ctor_
-  commentId: Overload:Platform.Bot.ProgrammerRole.#ctor
+- uid: Platform.Bot.Trackers
+  name: Platform.Bot.Trackers
+  href: api/Platform.Bot.Trackers.html
+  commentId: N:Platform.Bot.Trackers
+  fullName: Platform.Bot.Trackers
+  nameWithType: Platform.Bot.Trackers
+- uid: Platform.Bot.Trackers.IssueTracker
+  name: IssueTracker
+  href: api/Platform.Bot.Trackers.IssueTracker.html
+  commentId: T:Platform.Bot.Trackers.IssueTracker
+  fullName: Platform.Bot.Trackers.IssueTracker
+  nameWithType: IssueTracker
+- uid: Platform.Bot.Trackers.IssueTracker.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
+  name: IssueTracker(List<ITrigger<Issue>>, GitHubStorage)
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_
+  commentId: M:Platform.Bot.Trackers.IssueTracker.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
+  name.vb: IssueTracker(List(Of ITrigger(Of Issue)), GitHubStorage)
+  fullName: Platform.Bot.Trackers.IssueTracker.IssueTracker(List<Interfaces.ITrigger<Issue>>, Storage.Remote.GitHub.GitHubStorage)
+  fullName.vb: Platform.Bot.Trackers.IssueTracker.IssueTracker(List(Of Interfaces.ITrigger(Of Issue)), Storage.Remote.GitHub.GitHubStorage)
+  nameWithType: IssueTracker.IssueTracker(List<ITrigger<Issue>>, GitHubStorage)
+  nameWithType.vb: IssueTracker.IssueTracker(List(Of ITrigger(Of Issue)), GitHubStorage)
+- uid: Platform.Bot.Trackers.IssueTracker.#ctor*
+  name: IssueTracker
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker__ctor_
+  commentId: Overload:Platform.Bot.Trackers.IssueTracker.#ctor
   isSpec: "True"
-  fullName: Platform.Bot.ProgrammerRole.ProgrammerRole
-  nameWithType: ProgrammerRole.ProgrammerRole
-- uid: Platform.Bot.ProgrammerRole.GitHubAPI
-  name: GitHubAPI
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_GitHubAPI
-  commentId: F:Platform.Bot.ProgrammerRole.GitHubAPI
-  fullName: Platform.Bot.ProgrammerRole.GitHubAPI
-  nameWithType: ProgrammerRole.GitHubAPI
-- uid: Platform.Bot.ProgrammerRole.MinimumInteractionInterval
+  fullName: Platform.Bot.Trackers.IssueTracker.IssueTracker
+  nameWithType: IssueTracker.IssueTracker
+- uid: Platform.Bot.Trackers.IssueTracker.GitHubApi
+  name: GitHubApi
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_GitHubApi
+  commentId: P:Platform.Bot.Trackers.IssueTracker.GitHubApi
+  fullName: Platform.Bot.Trackers.IssueTracker.GitHubApi
+  nameWithType: IssueTracker.GitHubApi
+- uid: Platform.Bot.Trackers.IssueTracker.GitHubApi*
+  name: GitHubApi
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_GitHubApi_
+  commentId: Overload:Platform.Bot.Trackers.IssueTracker.GitHubApi
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.IssueTracker.GitHubApi
+  nameWithType: IssueTracker.GitHubApi
+- uid: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
   name: MinimumInteractionInterval
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_MinimumInteractionInterval
-  commentId: F:Platform.Bot.ProgrammerRole.MinimumInteractionInterval
-  fullName: Platform.Bot.ProgrammerRole.MinimumInteractionInterval
-  nameWithType: ProgrammerRole.MinimumInteractionInterval
-- uid: Platform.Bot.ProgrammerRole.Start(CancellationToken)
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_MinimumInteractionInterval
+  commentId: P:Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
+  fullName: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
+  nameWithType: IssueTracker.MinimumInteractionInterval
+- uid: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval*
+  name: MinimumInteractionInterval
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_MinimumInteractionInterval_
+  commentId: Overload:Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
+  nameWithType: IssueTracker.MinimumInteractionInterval
+- uid: Platform.Bot.Trackers.IssueTracker.Start(CancellationToken)
   name: Start(CancellationToken)
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_Start_CancellationToken_
-  commentId: M:Platform.Bot.ProgrammerRole.Start(CancellationToken)
-  fullName: Platform.Bot.ProgrammerRole.Start(CancellationToken)
-  nameWithType: ProgrammerRole.Start(CancellationToken)
-- uid: Platform.Bot.ProgrammerRole.Start*
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Start_CancellationToken_
+  commentId: M:Platform.Bot.Trackers.IssueTracker.Start(CancellationToken)
+  fullName: Platform.Bot.Trackers.IssueTracker.Start(CancellationToken)
+  nameWithType: IssueTracker.Start(CancellationToken)
+- uid: Platform.Bot.Trackers.IssueTracker.Start*
   name: Start
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_Start_
-  commentId: Overload:Platform.Bot.ProgrammerRole.Start
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Start_
+  commentId: Overload:Platform.Bot.Trackers.IssueTracker.Start
   isSpec: "True"
-  fullName: Platform.Bot.ProgrammerRole.Start
-  nameWithType: ProgrammerRole.Start
-- uid: Platform.Bot.ProgrammerRole.Triggers
+  fullName: Platform.Bot.Trackers.IssueTracker.Start
+  nameWithType: IssueTracker.Start
+- uid: Platform.Bot.Trackers.IssueTracker.Triggers
   name: Triggers
-  href: api/Platform.Bot.ProgrammerRole.html#Platform_Bot_ProgrammerRole_Triggers
-  commentId: F:Platform.Bot.ProgrammerRole.Triggers
-  fullName: Platform.Bot.ProgrammerRole.Triggers
-  nameWithType: ProgrammerRole.Triggers
-- uid: Platform.Bot.ProtectMainBranchTrigger
-  name: ProtectMainBranchTrigger
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html
-  commentId: T:Platform.Bot.ProtectMainBranchTrigger
-  fullName: Platform.Bot.ProtectMainBranchTrigger
-  nameWithType: ProtectMainBranchTrigger
-- uid: Platform.Bot.ProtectMainBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
-  name: ProtectMainBranchTrigger(GitHubStorage)
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger__ctor_Storage_Remote_GitHub_GitHubStorage_
-  commentId: M:Platform.Bot.ProtectMainBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
-  fullName: Platform.Bot.ProtectMainBranchTrigger.ProtectMainBranchTrigger(Storage.Remote.GitHub.GitHubStorage)
-  nameWithType: ProtectMainBranchTrigger.ProtectMainBranchTrigger(GitHubStorage)
-- uid: Platform.Bot.ProtectMainBranchTrigger.#ctor*
-  name: ProtectMainBranchTrigger
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger__ctor_
-  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.#ctor
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Triggers
+  commentId: P:Platform.Bot.Trackers.IssueTracker.Triggers
+  fullName: Platform.Bot.Trackers.IssueTracker.Triggers
+  nameWithType: IssueTracker.Triggers
+- uid: Platform.Bot.Trackers.IssueTracker.Triggers*
+  name: Triggers
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Triggers_
+  commentId: Overload:Platform.Bot.Trackers.IssueTracker.Triggers
   isSpec: "True"
-  fullName: Platform.Bot.ProtectMainBranchTrigger.ProtectMainBranchTrigger
-  nameWithType: ProtectMainBranchTrigger.ProtectMainBranchTrigger
-- uid: Platform.Bot.ProtectMainBranchTrigger.Action(Issue)
-  name: Action(Issue)
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Action_Issue_
-  commentId: M:Platform.Bot.ProtectMainBranchTrigger.Action(Issue)
-  fullName: Platform.Bot.ProtectMainBranchTrigger.Action(Issue)
-  nameWithType: ProtectMainBranchTrigger.Action(Issue)
-- uid: Platform.Bot.ProtectMainBranchTrigger.Action*
+  fullName: Platform.Bot.Trackers.IssueTracker.Triggers
+  nameWithType: IssueTracker.Triggers
+- uid: Platform.Bot.Trackers.PullRequestTracker
+  name: PullRequestTracker
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html
+  commentId: T:Platform.Bot.Trackers.PullRequestTracker
+  fullName: Platform.Bot.Trackers.PullRequestTracker
+  nameWithType: PullRequestTracker
+- uid: Platform.Bot.Trackers.PullRequestTracker.#ctor(List{Interfaces.ITrigger{PullRequest}},Storage.Remote.GitHub.GitHubStorage)
+  name: PullRequestTracker(List<ITrigger<PullRequest>>, GitHubStorage)
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker__ctor_List_Interfaces_ITrigger_PullRequest___Storage_Remote_GitHub_GitHubStorage_
+  commentId: M:Platform.Bot.Trackers.PullRequestTracker.#ctor(List{Interfaces.ITrigger{PullRequest}},Storage.Remote.GitHub.GitHubStorage)
+  name.vb: PullRequestTracker(List(Of ITrigger(Of PullRequest)), GitHubStorage)
+  fullName: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker(List<Interfaces.ITrigger<PullRequest>>, Storage.Remote.GitHub.GitHubStorage)
+  fullName.vb: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker(List(Of Interfaces.ITrigger(Of PullRequest)), Storage.Remote.GitHub.GitHubStorage)
+  nameWithType: PullRequestTracker.PullRequestTracker(List<ITrigger<PullRequest>>, GitHubStorage)
+  nameWithType.vb: PullRequestTracker.PullRequestTracker(List(Of ITrigger(Of PullRequest)), GitHubStorage)
+- uid: Platform.Bot.Trackers.PullRequestTracker.#ctor*
+  name: PullRequestTracker
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker__ctor_
+  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker
+  nameWithType: PullRequestTracker.PullRequestTracker
+- uid: Platform.Bot.Trackers.PullRequestTracker.GitHubApi
+  name: GitHubApi
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_GitHubApi
+  commentId: P:Platform.Bot.Trackers.PullRequestTracker.GitHubApi
+  fullName: Platform.Bot.Trackers.PullRequestTracker.GitHubApi
+  nameWithType: PullRequestTracker.GitHubApi
+- uid: Platform.Bot.Trackers.PullRequestTracker.GitHubApi*
+  name: GitHubApi
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_GitHubApi_
+  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.GitHubApi
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.PullRequestTracker.GitHubApi
+  nameWithType: PullRequestTracker.GitHubApi
+- uid: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
+  name: MinimumInteractionInterval
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_MinimumInteractionInterval
+  commentId: P:Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
+  fullName: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
+  nameWithType: PullRequestTracker.MinimumInteractionInterval
+- uid: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval*
+  name: MinimumInteractionInterval
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_MinimumInteractionInterval_
+  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
+  nameWithType: PullRequestTracker.MinimumInteractionInterval
+- uid: Platform.Bot.Trackers.PullRequestTracker.Start(CancellationToken)
+  name: Start(CancellationToken)
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Start_CancellationToken_
+  commentId: M:Platform.Bot.Trackers.PullRequestTracker.Start(CancellationToken)
+  fullName: Platform.Bot.Trackers.PullRequestTracker.Start(CancellationToken)
+  nameWithType: PullRequestTracker.Start(CancellationToken)
+- uid: Platform.Bot.Trackers.PullRequestTracker.Start*
+  name: Start
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Start_
+  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.Start
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.PullRequestTracker.Start
+  nameWithType: PullRequestTracker.Start
+- uid: Platform.Bot.Trackers.PullRequestTracker.Triggers
+  name: Triggers
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Triggers
+  commentId: P:Platform.Bot.Trackers.PullRequestTracker.Triggers
+  fullName: Platform.Bot.Trackers.PullRequestTracker.Triggers
+  nameWithType: PullRequestTracker.Triggers
+- uid: Platform.Bot.Trackers.PullRequestTracker.Triggers*
+  name: Triggers
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Triggers_
+  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.Triggers
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.PullRequestTracker.Triggers
+  nameWithType: PullRequestTracker.Triggers
+- uid: Platform.Bot.Triggers
+  name: Platform.Bot.Triggers
+  href: api/Platform.Bot.Triggers.html
+  commentId: N:Platform.Bot.Triggers
+  fullName: Platform.Bot.Triggers
+  nameWithType: Platform.Bot.Triggers
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger
+  name: MergeDependabotBumpsTrigger
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html
+  commentId: T:Platform.Bot.Triggers.MergeDependabotBumpsTrigger
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger
+  nameWithType: MergeDependabotBumpsTrigger
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
+  name: MergeDependabotBumpsTrigger(GitHubStorage)
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html#Platform_Bot_Triggers_MergeDependabotBumpsTrigger__ctor_Storage_Remote_GitHub_GitHubStorage_
+  commentId: M:Platform.Bot.Triggers.MergeDependabotBumpsTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.MergeDependabotBumpsTrigger(Storage.Remote.GitHub.GitHubStorage)
+  nameWithType: MergeDependabotBumpsTrigger.MergeDependabotBumpsTrigger(GitHubStorage)
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.#ctor*
+  name: MergeDependabotBumpsTrigger
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html#Platform_Bot_Triggers_MergeDependabotBumpsTrigger__ctor_
+  commentId: Overload:Platform.Bot.Triggers.MergeDependabotBumpsTrigger.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.MergeDependabotBumpsTrigger
+  nameWithType: MergeDependabotBumpsTrigger.MergeDependabotBumpsTrigger
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Action(PullRequest)
+  name: Action(PullRequest)
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html#Platform_Bot_Triggers_MergeDependabotBumpsTrigger_Action_PullRequest_
+  commentId: M:Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Action(PullRequest)
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Action(PullRequest)
+  nameWithType: MergeDependabotBumpsTrigger.Action(PullRequest)
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Action*
   name: Action
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Action_
-  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.Action
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html#Platform_Bot_Triggers_MergeDependabotBumpsTrigger_Action_
+  commentId: Overload:Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Action
   isSpec: "True"
-  fullName: Platform.Bot.ProtectMainBranchTrigger.Action
-  nameWithType: ProtectMainBranchTrigger.Action
-- uid: Platform.Bot.ProtectMainBranchTrigger.Condition(Issue)
-  name: Condition(Issue)
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Condition_Issue_
-  commentId: M:Platform.Bot.ProtectMainBranchTrigger.Condition(Issue)
-  fullName: Platform.Bot.ProtectMainBranchTrigger.Condition(Issue)
-  nameWithType: ProtectMainBranchTrigger.Condition(Issue)
-- uid: Platform.Bot.ProtectMainBranchTrigger.Condition*
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Action
+  nameWithType: MergeDependabotBumpsTrigger.Action
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Condition(PullRequest)
+  name: Condition(PullRequest)
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html#Platform_Bot_Triggers_MergeDependabotBumpsTrigger_Condition_PullRequest_
+  commentId: M:Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Condition(PullRequest)
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Condition(PullRequest)
+  nameWithType: MergeDependabotBumpsTrigger.Condition(PullRequest)
+- uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Condition*
   name: Condition
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_Condition_
-  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.Condition
+  href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html#Platform_Bot_Triggers_MergeDependabotBumpsTrigger_Condition_
+  commentId: Overload:Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Condition
   isSpec: "True"
-  fullName: Platform.Bot.ProtectMainBranchTrigger.Condition
+  fullName: Platform.Bot.Triggers.MergeDependabotBumpsTrigger.Condition
+  nameWithType: MergeDependabotBumpsTrigger.Condition
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger
+  name: ProtectMainBranchTrigger
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html
+  commentId: T:Platform.Bot.Triggers.ProtectMainBranchTrigger
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger
+  nameWithType: ProtectMainBranchTrigger
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
+  name: ProtectMainBranchTrigger(GitHubStorage)
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger__ctor_Storage_Remote_GitHub_GitHubStorage_
+  commentId: M:Platform.Bot.Triggers.ProtectMainBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage)
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.ProtectMainBranchTrigger(Storage.Remote.GitHub.GitHubStorage)
+  nameWithType: ProtectMainBranchTrigger.ProtectMainBranchTrigger(GitHubStorage)
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.#ctor*
+  name: ProtectMainBranchTrigger
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger__ctor_
+  commentId: Overload:Platform.Bot.Triggers.ProtectMainBranchTrigger.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.ProtectMainBranchTrigger
+  nameWithType: ProtectMainBranchTrigger.ProtectMainBranchTrigger
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.Action(Issue)
+  name: Action(Issue)
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger_Action_Issue_
+  commentId: M:Platform.Bot.Triggers.ProtectMainBranchTrigger.Action(Issue)
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.Action(Issue)
+  nameWithType: ProtectMainBranchTrigger.Action(Issue)
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.Action*
+  name: Action
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger_Action_
+  commentId: Overload:Platform.Bot.Triggers.ProtectMainBranchTrigger.Action
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.Action
+  nameWithType: ProtectMainBranchTrigger.Action
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.Condition(Issue)
+  name: Condition(Issue)
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger_Condition_Issue_
+  commentId: M:Platform.Bot.Triggers.ProtectMainBranchTrigger.Condition(Issue)
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.Condition(Issue)
+  nameWithType: ProtectMainBranchTrigger.Condition(Issue)
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.Condition*
+  name: Condition
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger_Condition_
+  commentId: Overload:Platform.Bot.Triggers.ProtectMainBranchTrigger.Condition
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.Condition
   nameWithType: ProtectMainBranchTrigger.Condition
-- uid: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList{Repository})
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList{Repository})
   name: UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_UpdateRepositoriesDefaultBranchProtection_IReadOnlyList_Repository__
-  commentId: M:Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList{Repository})
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger_UpdateRepositoriesDefaultBranchProtection_IReadOnlyList_Repository__
+  commentId: M:Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList{Repository})
   name.vb: UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
-  fullName: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
-  fullName.vb: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
+  fullName.vb: Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
   nameWithType: ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList<Repository>)
   nameWithType.vb: ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection(IReadOnlyList(Of Repository))
-- uid: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection*
+- uid: Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection*
   name: UpdateRepositoriesDefaultBranchProtection
-  href: api/Platform.Bot.ProtectMainBranchTrigger.html#Platform_Bot_ProtectMainBranchTrigger_UpdateRepositoriesDefaultBranchProtection_
-  commentId: Overload:Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
+  href: api/Platform.Bot.Triggers.ProtectMainBranchTrigger.html#Platform_Bot_Triggers_ProtectMainBranchTrigger_UpdateRepositoriesDefaultBranchProtection_
+  commentId: Overload:Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
   isSpec: "True"
-  fullName: Platform.Bot.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
+  fullName: Platform.Bot.Triggers.ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
   nameWithType: ProtectMainBranchTrigger.UpdateRepositoriesDefaultBranchProtection
 - uid: Storage.Local
   name: Storage.Local
