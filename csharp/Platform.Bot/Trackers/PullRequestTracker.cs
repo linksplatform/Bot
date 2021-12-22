@@ -53,7 +53,6 @@ namespace Platform.Bot.Trackers
             Triggers = triggers;
         }
 
-
         /// <summary>
         /// <para>
         /// Starts the cancellation token.
