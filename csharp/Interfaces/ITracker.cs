@@ -24,14 +24,6 @@ namespace Interfaces
 
         /// <summary>
         /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
-
-        /// <summary>
-        /// <para>
         /// The triggers.
         /// </para>
         /// <para></para>
@@ -48,6 +40,6 @@ namespace Interfaces
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start(CancellationToken cancellationToken);
+        public void Start();
     }
 }
