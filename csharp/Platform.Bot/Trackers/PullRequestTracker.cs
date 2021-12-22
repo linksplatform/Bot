@@ -25,15 +25,6 @@ namespace Platform.Bot.Trackers
         /// </summary>
         public GitHubStorage GitHubApi { get; }
 
-
-        /// <summary>
-        /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
-
         /// <summary>
         /// <para>
         /// The triggers.
@@ -60,7 +51,6 @@ namespace Platform.Bot.Trackers
         {
             GitHubApi = gitHubApi;
             Triggers = triggers;
-            MinimumInteractionInterval = gitHubApi.MinimumInteractionInterval;
         }
 
 
@@ -74,24 +64,20 @@ namespace Platform.Bot.Trackers
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start(CancellationToken cancellationToken)
+        public void Start()
         {
-            while (!cancellationToken.IsCancellationRequested)
+            foreach (var trigger in Triggers)
             {
-                foreach (var trigger in Triggers)
+                foreach (var repository in GitHubApi.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
                 {
-                    foreach (var repository in GitHubApi.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
+                    foreach (var pullRequest in GitHubApi.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
                     {
-                        foreach (var pullRequest in GitHubApi.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
+                        if (trigger.Condition(pullRequest))
                         {
-                            if (trigger.Condition(pullRequest))
-                            {
-                                trigger.Action(pullRequest);
-                            }
+                            trigger.Action(pullRequest);
                         }
                     }
                 }
-                Thread.Sleep(MinimumInteractionInterval);
             }
         }
     }

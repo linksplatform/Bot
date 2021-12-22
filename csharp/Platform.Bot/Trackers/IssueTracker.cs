@@ -25,14 +25,6 @@ namespace Platform.Bot.Trackers
 
         /// <summary>
         /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
-
-        /// <summary>
-        /// <para>
         /// The triggers.
         /// </para>
         /// <para></para>
@@ -57,7 +49,6 @@ namespace Platform.Bot.Trackers
         {
             GitHubApi = gitHubApi;
             Triggers = triggers;
-            MinimumInteractionInterval = gitHubApi.MinimumInteractionInterval;
         }
 
 
@@ -67,25 +58,17 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="cancellationToken">
-        /// <para>The cancellation token.</para>
-        /// <para></para>
-        /// </param>
-        public void Start(CancellationToken cancellationToken)
+        public void Start()
         {
-            while (!cancellationToken.IsCancellationRequested)
+            foreach (var trigger in Triggers)
             {
-                foreach (var trigger in Triggers)
+                foreach (var issue in GitHubApi.GetIssues())
                 {
-                    foreach (var issue in GitHubApi.GetIssues())
+                    if (trigger.Condition(issue))
                     {
-                        if (trigger.Condition(issue))
-                        {
-                            trigger.Action(issue);
-                        }
+                        trigger.Action(issue);
                     }
                 }
-                Thread.Sleep(MinimumInteractionInterval);
             }
         }
     }
