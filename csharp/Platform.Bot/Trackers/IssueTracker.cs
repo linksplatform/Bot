@@ -57,13 +57,17 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public void Start()
+        /// <param name="cancellationToken">
+        /// <para>The cancellation token.</para>
+        /// <para></para>
+        /// </param>
+        public void Start(CancellationToken cancellationToken)
         {
             foreach (var trigger in Triggers)
             {
                 foreach (var issue in GitHubApi.GetIssues())
                 {
-                    if (trigger.Condition(issue))
+                    if (trigger.Condition(issue) && cancellationToken.IsCancellationRequested)
                     {
                         trigger.Action(issue);
                     }

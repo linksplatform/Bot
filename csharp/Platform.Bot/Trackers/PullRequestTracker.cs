@@ -63,7 +63,7 @@ namespace Platform.Bot.Trackers
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start()
+        public void Start(CancellationToken cancellationToken)
         {
             foreach (var trigger in Triggers)
             {
@@ -71,6 +71,10 @@ namespace Platform.Bot.Trackers
                 {
                     foreach (var pullRequest in GitHubApi.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
                     {
+                        if (cancellationToken.IsCancellationRequested)
+                        {
+                            return;
+                        }
                         if (trigger.Condition(pullRequest))
                         {
                             trigger.Action(pullRequest);

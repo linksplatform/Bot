@@ -40,6 +40,6 @@ namespace Interfaces
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start();
+        public void Start(CancellationToken cancellationToken);
     }
 }

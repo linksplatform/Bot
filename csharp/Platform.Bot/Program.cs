@@ -35,17 +35,17 @@ namespace Platform.Bot
             Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
             try
             {
-                var api = new GitHubStorage(username, token, appName);
-                while (!cancellation.Token.IsCancellationRequested)
+                while (true)
                 {
+                    var api = new GitHubStorage(username, token, appName);
                     new IssueTracker(new List<ITrigger<Issue>>
-                        {
-                            new HelloWorldTrigger(api, dbContext, fileSetName),
-                            new OrganizationLastMonthActivityTrigger(api),
-                            new LastCommitActivityTrigger(api),
-                            new ProtectMainBranchTrigger(api),
-                        }, api).Start();
-                    new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start();
+                    {
+                        new HelloWorldTrigger(api, dbContext, fileSetName),
+                        new OrganizationLastMonthActivityTrigger(api),
+                        new LastCommitActivityTrigger(api),
+                        new ProtectMainBranchTrigger(api),
+                    }, api).Start(cancellation.Token);
+                    new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start(cancellation.Token);
                     Thread.Sleep(minimumInteractionInterval);
                 }
             }
