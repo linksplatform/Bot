@@ -66,7 +66,11 @@ namespace Platform.Bot.Trackers
             {
                 foreach (var issue in GitHubApi.GetIssues())
                 {
-                    if (trigger.Condition(issue) && cancellationToken.IsCancellationRequested)
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        return;
+                    }
+                    if (trigger.Condition(issue))
                     {
                         trigger.Action(issue);
                     }
