@@ -18,8 +18,8 @@ namespace Platform.Bot.Triggers
     /// <seealso cref="ITrigger{Issue}"/>
     internal class OrganizationLastMonthActivityTrigger : ITrigger<TContext>
     {
-        private readonly GitHubStorage Storage;
-        private readonly Parser Parser = new();
+        private readonly GitHubStorage _gitHubApi;
+        private readonly Parser _parser = new();
 
         /// <summary>
         /// <para>
@@ -27,11 +27,11 @@ namespace Platform.Bot.Triggers
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="storage">
-        /// <para>A storage.</para>
+        /// <param name="gitHubApi">
+        /// <para>A gitHubApi.</para>
         /// <para></para>
         /// </param>
-        public OrganizationLastMonthActivityTrigger(GitHubStorage storage) => Storage = storage;
+        public OrganizationLastMonthActivityTrigger(GitHubStorage gitHubApi) => _gitHubApi = gitHubApi;
 
         /// <summary>
         /// <para>
@@ -61,11 +61,11 @@ namespace Platform.Bot.Triggers
         /// </param>
         public void Action(TContext context)
         {
-            var issueService = Storage.Client.Issue;
+            var issueService = _gitHubApi.Client.Issue;
             var owner = context.Repository.Owner.Login;
-            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(context.Body)), owner));
+            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(_parser.Parse(context.Body)), owner));
             issueService.Comment.Create(owner, context.Repository.Name, context.Number, activeUsersString);
-            Storage.CloseIssue(context);
+            _gitHubApi.CloseIssue(context);
         }
 
         /// <summary>
@@ -118,19 +118,19 @@ namespace Platform.Bot.Triggers
         {
             HashSet<string> activeUsers = new();
             var date = DateTime.Now.AddMonths(-1);
-            foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
+            foreach (var repository in _gitHubApi.Client.Repository.GetAllForOrg(owner).Result)
             {
                 if (ignoredRepositories.Contains(repository.Name))
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name))
+                foreach (var commit in _gitHubApi.GetCommits(repository.Owner.Login, repository.Name))
                 {
 
                     activeUsers.Add(commit.Author.Login);
 
                 }
-                foreach (var pullRequest in Storage.GetPullRequests(repository.Owner.Login, repository.Name))
+                foreach (var pullRequest in _gitHubApi.GetPullRequests(repository.Owner.Login, repository.Name))
                 {
                     foreach (var reviewer in pullRequest.RequestedReviewers)
                     {
@@ -140,7 +140,7 @@ namespace Platform.Bot.Triggers
                         }
                     }
                 }
-                foreach (var createdIssue in Storage.GetIssues(repository.Owner.Login, repository.Name))
+                foreach (var createdIssue in _gitHubApi.GetIssues(repository.Owner.Login, repository.Name))
                 {
                     activeUsers.Add(createdIssue.User.Login);
                 }

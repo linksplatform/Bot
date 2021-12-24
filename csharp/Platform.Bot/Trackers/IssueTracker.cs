@@ -1,7 +1,6 @@
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -41,7 +40,7 @@ namespace Platform.Bot.Trackers
         /// <para>A triggers.</para>
         /// <para></para>
         /// </param>
-        /// <param name="gitHubAPI">
+        /// <param name="gitHubApi">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>

@@ -1,7 +1,6 @@
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using Platform.Threading;

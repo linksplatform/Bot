@@ -12,20 +12,20 @@ namespace Platform.Bot.Triggers
     using TContext = Issue;
     internal class LastCommitActivityTrigger : ITrigger<TContext>
     {
-        private readonly GitHubStorage Storage;
+        private readonly GitHubStorage _gitHubApi;
 
-        private readonly Parser Parser = new();
+        private readonly Parser _parser = new();
 
-        public LastCommitActivityTrigger(GitHubStorage storage) => Storage = storage;
+        public LastCommitActivityTrigger(GitHubStorage gitHubApi) => _gitHubApi = gitHubApi;
 
         public bool Condition(TContext context) => context.Title.ToLower() == "last 3 months commit activity";
 
         public void Action(TContext context)
         {
-            var issueService = Storage.Client.Issue;
+            var issueService = _gitHubApi.Client.Issue;
             var owner = context.Repository.Owner.Login;
             var ignoredRepositories =
-                context.Body != null ? GetIgnoredRepositories(Parser.Parse(context.Body)) : default;
+                context.Body != null ? GetIgnoredRepositories(_parser.Parse(context.Body)) : default;
             var users = GetActivities(owner, ignoredRepositories);
             StringBuilder sb = new();
             foreach (var user in users)
@@ -38,7 +38,7 @@ namespace Platform.Bot.Triggers
             var comment = issueService.Comment.Create(owner, context.Repository.Name, context.Number, result);
             comment.Wait();
             Console.WriteLine($"Last commit activity comment is added: {comment.Result.HtmlUrl}");
-            Storage.CloseIssue(context);
+            _gitHubApi.CloseIssue(context);
         }
 
         public HashSet<string> GetIgnoredRepositories(IList<Link> links)
@@ -58,15 +58,15 @@ namespace Platform.Bot.Triggers
         public HashSet<Activity> GetActivities(string owner, HashSet<string> ignoredRepositories = default)
         {
             HashSet<Activity> activeUsers = new();
-            foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
+            foreach (var repository in _gitHubApi.Client.Repository.GetAllForOrg(owner).Result)
             {
                 if (ignoredRepositories?.Contains(repository.Name) ?? false)
                 {
                     continue;
                 }
-                foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-3)))
+                foreach (var commit in _gitHubApi.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-3)))
                 {
-                    if (!Storage.Client.Organization.Member.CheckMember(owner, commit.Author.Login).Result)
+                    if (!_gitHubApi.Client.Organization.Member.CheckMember(owner, commit.Author.Login).Result)
                     {
                         continue;
                     }

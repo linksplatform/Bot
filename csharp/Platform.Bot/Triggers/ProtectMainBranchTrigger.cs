@@ -10,13 +10,13 @@ namespace Platform.Bot.Triggers
     using TContext = Issue;
     public class ProtectMainBranchTrigger : ITrigger<TContext>
     {
-        private readonly GitHubStorage Storage;
-        public ProtectMainBranchTrigger(GitHubStorage storage) => Storage = storage;
+        private readonly GitHubStorage _gitHubApi;
+        public ProtectMainBranchTrigger(GitHubStorage gitHubApi) => _gitHubApi = gitHubApi;
         public bool Condition(TContext context) => context.Title.ToLower() == "protect default branch in all organization's repositories";
 
         public void Action(TContext context)
         {
-            var repositories = Storage.Client.Repository.GetAllForOrg(context.Repository.Owner.Login).Result;
+            var repositories = _gitHubApi.Client.Repository.GetAllForOrg(context.Repository.Owner.Login).Result;
             var results = UpdateRepositoriesDefaultBranchProtection(repositories);
             StringBuilder failedRepositoriesComment = new(repositories.Count * repositories[0].Name.Length);
             foreach (var result in results.Where(result => !result.Value))
@@ -27,12 +27,12 @@ namespace Platform.Bot.Triggers
             {
                 failedRepositoriesComment.AppendLine(
                     "TODO: Fix default branch protection of these repositories. Failed repositories:");
-                Storage.Client.Issue.Comment.Create(context.Repository.Id, context.Number, failedRepositoriesComment.ToString());
+                _gitHubApi.Client.Issue.Comment.Create(context.Repository.Id, context.Number, failedRepositoriesComment.ToString());
             }
             else
             {
-                Storage.Client.Issue.Comment.Create(context.Repository.Id, context.Number, "Success. All repositories default branch protection is updated.");
-                Storage.CloseIssue(context);
+                _gitHubApi.Client.Issue.Comment.Create(context.Repository.Id, context.Number, "Success. All repositories default branch protection is updated.");
+                _gitHubApi.CloseIssue(context);
             }
         }
 
@@ -47,7 +47,7 @@ namespace Platform.Bot.Triggers
                 }
                 var update = new BranchProtectionSettingsUpdate(new BranchProtectionPushRestrictionsUpdate());
                 var request =
-                    Storage.Client.Repository.Branch.UpdateBranchProtection(repository.Id,
+                    _gitHubApi.Client.Repository.Branch.UpdateBranchProtection(repository.Id,
                         repository.DefaultBranch, update);
                 request.Wait();
                 result.Add(repository.Name, request.IsCompletedSuccessfully);
