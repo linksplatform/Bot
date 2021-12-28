@@ -49,11 +49,10 @@ class Bot(Vk):
             (patterns.PEOPLE, self.commands.top),
             (patterns.BOTTOM,
              lambda: self.commands.top(True)),
-            (patterns.TOP_LANGUAGES,
+            (patterns.TOP_LANGUAGES, self.commands.top_langs),
+            (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
+            (patterns.BOTTOM_LANGUAGES,
              lambda: self.commands.top_langs(True)),
-            (patterns.PEOPLE_LANGUAGES,
-             lambda: self.commands.top_langs(True)),
-            (patterns.BOTTOM_LANGUAGES, self.commands.top_langs),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 
