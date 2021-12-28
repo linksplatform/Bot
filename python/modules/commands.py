@@ -137,7 +137,7 @@ class Commands:
             return
         languages = split(r"\s+", self.matched.group("languages"))
         users = DataBuilder.get_users_sorted_by_karma(
-            self.vk_instance, self.data_service, self.peer_id, reverse)
+            self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
                  ("programming_languages" in i and len(i["programming_languages"]) > 0) and
                  self.vk_instance.contains_all_strings(i["programming_languages"], languages, True)]
