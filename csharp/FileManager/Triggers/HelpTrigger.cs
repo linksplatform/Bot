@@ -18,27 +18,27 @@ namespace FileManager
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "help";
+        public bool Condition(Context context) => context.Args[0].ToLower() == "help";
 
         /// <summary>
         /// <para>
-        /// Actions the arguments.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context arguments) => Console.WriteLine(@"Use this program to manage links in your links repository. For close just press CTRL+C. 
+        public void Action(Context context) => Console.WriteLine(@"Use this program to manage links in your links repository. For close just press CTRL+C. 
 Avalible commands:
 1. Delete [address]
 2. Create [address] [path to file]

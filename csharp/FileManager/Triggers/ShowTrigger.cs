@@ -18,31 +18,31 @@ namespace FileManager
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context arguments) => arguments.Args[0].ToLower() == "show";
+        public bool Condition(Context context) => context.Args[0].ToLower() == "show";
 
         /// <summary>
         /// <para>
-        /// Actions the arguments.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="arguments">
-        /// <para>The arguments.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context arguments)
+        public void Action(Context context)
         {
-            if (arguments.Args[1] == "allFiles")
+            if (context.Args[1] == "allFiles")
             {
-                foreach (var file in arguments.FileStorage.GetAllFiles())
+                foreach (var file in context.FileStorage.GetAllFiles())
                 {
                     if (file.Content.Length < 50)
                     {
@@ -56,7 +56,7 @@ namespace FileManager
             }
             else
             {
-                Console.WriteLine(arguments.FileStorage.GetFileContent(ulong.Parse(arguments.Args[1])));
+                Console.WriteLine(context.FileStorage.GetFileContent(ulong.Parse(context.Args[1])));
             }
         }
     }

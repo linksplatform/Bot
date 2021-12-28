@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Platform.Bot
+namespace Platform.Bot.Trackers
 {
     /// <summary>
     /// <para>
@@ -13,7 +13,7 @@ namespace Platform.Bot
     /// </para>
     /// <para></para>
     /// </summary>
-    public class ProgrammerRole
+    public class IssueTracker : ITracker<Issue>
     {
         /// <summary>
         /// <para>
@@ -21,7 +21,7 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        public readonly GitHubStorage GitHubAPI;
+        public GitHubStorage GitHubApi { get; }
 
         /// <summary>
         /// <para>
@@ -29,7 +29,7 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        public readonly TimeSpan MinimumInteractionInterval;
+        public TimeSpan MinimumInteractionInterval { get; }
 
         /// <summary>
         /// <para>
@@ -37,11 +37,11 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        public readonly List<ITrigger<Issue>> Triggers;
+        public List<ITrigger<Issue>> Triggers { get; }
 
         /// <summary>
         /// <para>
-        /// Initializes a new <see cref="ProgrammerRole"/> instance.
+        /// Initializes a new <see cref="IssueTracker"/> instance.
         /// </para>
         /// <para></para>
         /// </summary>
@@ -53,28 +53,11 @@ namespace Platform.Bot
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public ProgrammerRole(List<ITrigger<Issue>> triggers, GitHubStorage gitHubAPI)
+        public IssueTracker(List<ITrigger<Issue>> triggers, GitHubStorage gitHubApi)
         {
-            GitHubAPI = gitHubAPI;
+            GitHubApi = gitHubApi;
             Triggers = triggers;
-            MinimumInteractionInterval = gitHubAPI.MinimumInteractionInterval;
-        }
-        private void ProcessIssues(CancellationToken token)
-        {
-            while (!token.IsCancellationRequested)
-            {
-                foreach (var trigger in Triggers)
-                {
-                    foreach (var issue in GitHubAPI.GetIssues())
-                    {
-                        if (trigger.Condition(issue))
-                        {
-                            trigger.Action(issue);
-                        }
-                    }
-                }
-                Thread.Sleep(MinimumInteractionInterval);
-            }
+            MinimumInteractionInterval = gitHubApi.MinimumInteractionInterval;
         }
 
 
@@ -88,6 +71,22 @@ namespace Platform.Bot
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start(CancellationToken cancellationToken) => ProcessIssues(cancellationToken);
+        public void Start(CancellationToken cancellationToken)
+        {
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                foreach (var trigger in Triggers)
+                {
+                    foreach (var issue in GitHubApi.GetIssues())
+                    {
+                        if (trigger.Condition(issue))
+                        {
+                            trigger.Action(issue);
+                        }
+                    }
+                }
+                Thread.Sleep(MinimumInteractionInterval);
+            }
+        }
     }
 }

@@ -7,9 +7,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Platform.Bot
+namespace Platform.Bot.Triggers
 {
-    internal class LastCommitActivityTrigger : ITrigger<Issue>
+    using TContext = Issue;
+    internal class LastCommitActivityTrigger : ITrigger<TContext>
     {
         private readonly GitHubStorage Storage;
 
@@ -17,29 +18,27 @@ namespace Platform.Bot
 
         public LastCommitActivityTrigger(GitHubStorage storage) => Storage = storage;
 
-        public bool Condition(Issue issue) => issue.Title.ToLower() == "last 3 months commit activity";
+        public bool Condition(TContext context) => context.Title.ToLower() == "last 3 months commit activity";
 
-        public void Action(Issue issue)
+        public void Action(TContext context)
         {
             var issueService = Storage.Client.Issue;
-            var owner = issue.Repository.Owner.Login;
-            var users = GetActivities(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner);
+            var owner = context.Repository.Owner.Login;
+            var ignoredRepositories =
+                context.Body != null ? GetIgnoredRepositories(Parser.Parse(context.Body)) : default;
+            var users = GetActivities(owner, ignoredRepositories);
             StringBuilder sb = new();
             foreach (var user in users)
             {
                 sb.AppendLine($"- **{user.Url.Replace("api.", "").Replace("users/", "")}**");
-                foreach (var repo in user.Repositories)
-                {
-                    sb.AppendLine($"  - {repo.Replace("api.", "").Replace("repos/", "")}");
-                }
                 // Break line
                 sb.AppendLine("------------------");
             }
             var result = sb.ToString();
-            var comment = issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, result);
+            var comment = issueService.Comment.Create(owner, context.Repository.Name, context.Number, result);
             comment.Wait();
             Console.WriteLine($"Last commit activity comment is added: {comment.Result.HtmlUrl}");
-            Storage.CloseIssue(issue);
+            Storage.CloseIssue(context);
         }
 
         public HashSet<string> GetIgnoredRepositories(IList<Link> links)
@@ -56,17 +55,21 @@ namespace Platform.Bot
             return ignoredRepos;
         }
 
-        public HashSet<Activity> GetActivities(HashSet<string> ignoredRepositories, string owner)
+        public HashSet<Activity> GetActivities(string owner, HashSet<string> ignoredRepositories = default)
         {
             HashSet<Activity> activeUsers = new();
             foreach (var repository in Storage.Client.Repository.GetAllForOrg(owner).Result)
             {
-                if (ignoredRepositories.Contains(repository.Name))
+                if (ignoredRepositories?.Contains(repository.Name) ?? false)
                 {
                     continue;
                 }
                 foreach (var commit in Storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-3)))
                 {
+                    if (!Storage.Client.Organization.Member.CheckMember(owner, commit.Author.Login).Result)
+                    {
+                        continue;
+                    }
                     if (!activeUsers.Any(x => x.Url == commit.Author.Url))
                     {
                         activeUsers.Add(new Activity() { Url = commit.Author.Url, Repositories = new List<string> { repository.Url } });

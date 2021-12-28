@@ -1,13 +1,14 @@
-﻿using Interfaces;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Interfaces;
 using Octokit;
 using Platform.Communication.Protocol.Lino;
 using Storage.Remote.GitHub;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Platform.Bot
+namespace Platform.Bot.Triggers
 {
+    using TContext = Issue;
     /// <summary>
     /// <para>
     /// Represents the organization last month activity trigger.
@@ -15,7 +16,7 @@ namespace Platform.Bot
     /// <para></para>
     /// </summary>
     /// <seealso cref="ITrigger{Issue}"/>
-    internal class OrganizationLastMonthActivityTrigger : ITrigger<Issue>
+    internal class OrganizationLastMonthActivityTrigger : ITrigger<TContext>
     {
         private readonly GitHubStorage Storage;
         private readonly Parser Parser = new();
@@ -38,33 +39,33 @@ namespace Platform.Bot
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="issue">
-        /// <para>The issue.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Issue issue) => issue.Title.ToLower() == "organization last month activity";
+        public bool Condition(TContext context) => context.Title.ToLower() == "organization last month activity";
 
         /// <summary>
         /// <para>
-        /// Actions the issue.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="issue">
-        /// <para>The issue.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Issue issue)
+        public void Action(TContext context)
         {
             var issueService = Storage.Client.Issue;
-            var owner = issue.Repository.Owner.Login;
-            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(issue.Body)), owner));
-            issueService.Comment.Create(owner, issue.Repository.Name, issue.Number, activeUsersString);
-            Storage.CloseIssue(issue);
+            var owner = context.Repository.Owner.Login;
+            var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(Parser.Parse(context.Body)), owner));
+            issueService.Comment.Create(owner, context.Repository.Name, context.Number, activeUsersString);
+            Storage.CloseIssue(context);
         }
 
         /// <summary>

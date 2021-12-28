@@ -15,26 +15,26 @@ namespace Interfaces
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="obj">
-        /// <para>The obj.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
         /// <returns>
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(TContext obj);
+        public bool Condition(TContext context);
 
         /// <summary>
         /// <para>
-        /// Actions the obj.
+        /// Actions the context.
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="obj">
-        /// <para>The obj.</para>
+        /// <param name="context">
+        /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(TContext obj);
+        public void Action(TContext context);
     }
 }
