@@ -36,6 +36,7 @@ namespace Storage.Local
         private readonly TLinkAddress _unicodeSymbolMarker;
         private readonly TLinkAddress _setMarker;
         private readonly TLinkAddress _fileMarker;
+        private readonly TLinkAddress _linksToInviteToTheOrganizationMarker;
         private readonly TLinkAddress Any;
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => Links.Exists(currentMappingIndex) ? currentMappingIndex : Links.CreateAndUpdate(_meaningRoot, Links.Constants.Itself);
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => Links.Exists(meaningRootIndex) ? meaningRootIndex : Links.CreatePoint();
@@ -64,6 +65,7 @@ namespace Storage.Local
             _unicodeSequenceMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _linksToInviteToTheOrganizationMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
             var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(Links);
@@ -74,6 +76,19 @@ namespace Storage.Local
             var sequenceWalker = new RightSequenceWalker<TLinkAddress>(Links, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
             _stringToUnicodeSequenceConverter = new CachingConverterDecorator<string, TLinkAddress>(new StringToUnicodeSequenceConverter<TLinkAddress>(Links, charToUnicodeSymbolConverter, balancedVariantConverter, _unicodeSequenceMarker));
             _unicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(new UnicodeSequenceToStringConverter<TLinkAddress>(Links, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter));
+        }
+
+        public void AddLinkToIvite(string linkToInvite) => Links.GetOrCreate(_linksToInviteToTheOrganizationMarker, _stringToUnicodeSequenceConverter.Convert(linkToInvite));
+
+        public List<string> GetLinksToInvite()
+        {
+            List<string> links = new();
+            var list = Links.All(new Link<UInt64>(index: Any, source: _linksToInviteToTheOrganizationMarker, target: Any));
+            foreach (var link in list)
+            {
+                links.Add(Convert(Links.GetTarget(link)));
+            }
+            return links;
         }
 
         /// <summary>
