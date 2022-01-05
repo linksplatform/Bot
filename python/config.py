@@ -126,6 +126,7 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
     r"Solidity",
     r"AssemblyScript",
     r"Vimscript",
+    r"Pony",
     r"LOLCODE",
     r"Elixir",
     r"X#",
