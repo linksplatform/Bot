@@ -148,7 +148,15 @@
 * C-- 
 * Go! 
 * Tcl 
-* Solidity 
+* Solidity
+* Nemerle
+* AssemblyScript
+* Vimscript
+* Pony
+* LOLCODE
+* Elixir
+* X#
+* NVPTX
 
 Если нужного языка нет в списке, о его добавлении можно попросить [здесь](https://github.com/linksplatform/Bot/issues/15)
 
