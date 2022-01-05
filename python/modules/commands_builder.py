@@ -17,7 +17,7 @@ class CommandsBuilder:
         - {peer_id} - chat ID;
         - {karma} - is karma enabled in chat.
         """
-        documentation_link = "https://vk.cc/c9TNs3"
+        documentation_link = "vk.cc/c9TNs3"
         if 0 < peer_id < 2e9:
             return ("Вы находитесь в личных сообщениях бота.\n"
                     f"Документация — {documentation_link}")
