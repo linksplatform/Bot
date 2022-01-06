@@ -88,6 +88,10 @@ namespace Storage.Local
             {
                 links.Add(Convert(Links.GetTarget(link)));
             }
+            foreach(var link in list)
+            {
+                Links.Delete(link);
+            }
             return links;
         }
 

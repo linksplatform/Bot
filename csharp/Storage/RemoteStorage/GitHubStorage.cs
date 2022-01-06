@@ -121,7 +121,12 @@ namespace Storage.Remote.GitHub
 
         public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty, DateTime date)
         {
-            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
+             return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
+        }
+
+        public void InviteToOrg(string org, string user)
+        {
+            Client.Organization.Member.AddOrUpdateOrganizationMembership(org, user, new OrganizationMembershipUpdate { Role = MembershipRole.Member});
         }
 
         /// <summary>
