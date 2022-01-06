@@ -30,21 +30,24 @@ namespace LinksPlatformDiscordBot
         }
         private async Task MessageReceived(SocketMessage message)
         {
-            if (message.Content.Contains("https://github.com"))
+            if (!message.Author.IsBot)
             {
-                if (message.Channel.Name == "main")
-                    await message.Channel.SendMessageAsync("@konard look at this dude");
-            }
-            if (message.Content.Contains("accept"))
-            {
-                if (message.Author.Username == "FirstAfterGod")
+                if (message.Content.Contains("https://github.com"))
                 {
-                    await message.Channel.SendMessageAsync("accepted.");
-                    string link = message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result.Content;
-                    LinksStorage.AddLinkToIvite(link);
-                    foreach (var a in LinksStorage.GetLinksToInvite())
+                    if (message.Channel.Name == "main")
+                        await message.Channel.SendMessageAsync("@konard would we accept " + "@" + message.Author.Username + " as our new team member?");
+                }
+                if (message.Content.Contains("accept"))
+                {
+                    if (message.Author.Username == "Konstantin Dyachenko" || message.Author.Username == "konard" || message.Author.Username == "FirstAfterGod")
                     {
-                        Console.WriteLine(a);
+                        string link = message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result.Content;
+                        LinksStorage.AddLinkToIvite(link);
+                        await message.Channel.SendMessageAsync("@" + message.Author.Username + " please accept invitation to our organization either by going to http://github.com/linksplatform or via email that was sent to you from GitHub.");
+                        foreach (var a in LinksStorage.GetLinksToInvite())
+                        {
+                            Console.WriteLine(a);
+                        }
                     }
                 }
             }

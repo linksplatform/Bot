@@ -9,6 +9,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\csharp\Storage\Storage.csproj" />
+		<ProjectReference Include="..\Storage\Storage.csproj" />
 	</ItemGroup>
 </Project>

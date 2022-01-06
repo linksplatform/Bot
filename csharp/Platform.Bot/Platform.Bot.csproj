@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\DiscordBot\DiscordBot.csproj" />
+    <ProjectReference Include="..\DiscordBot\DiscordBot.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
     <ProjectReference Include="..\Storage\Storage.csproj" />
   </ItemGroup>
