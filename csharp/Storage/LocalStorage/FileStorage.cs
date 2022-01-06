@@ -85,16 +85,12 @@ namespace Storage.Local
             List<string> links = new();
             Console.WriteLine("Before: " + Links.Count());
             var list = Links.All(new Link<UInt64>(index: Any, source: _linksToInviteToTheOrganizationMarker, target: Any));
-            foreach (var link in list)
-            {
-                Links.Delete(link);
-            }
             Console.WriteLine("After: " + Links.Count());
             foreach (var link in list)
             {
                 links.Add(Convert(Links.GetTarget(link)));
             }
-            foreach(var link in list)
+            foreach (var link in list)
             {
                 Links.Delete(link);
             }
