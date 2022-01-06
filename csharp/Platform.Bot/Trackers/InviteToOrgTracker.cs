@@ -33,7 +33,6 @@ namespace Platform.Bot.Trackers
             {
                 foreach (var link in Storage.GetLinksToInvite())
                 {
-                    Console.WriteLine(link);
                     GitHubStorage.InviteToOrg(OrgName, link.Replace("https://github.com/", ""));
                 }
                 Thread.Sleep(MinimumInteractionInterval);

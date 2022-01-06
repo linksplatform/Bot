@@ -73,6 +73,7 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
+            Console.WriteLine("issue Trecker has been started");
             while (!cancellationToken.IsCancellationRequested)
             {
                 foreach (var trigger in Triggers)
