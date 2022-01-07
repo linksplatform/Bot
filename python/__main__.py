@@ -87,12 +87,12 @@ class Bot(Vk):
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = self.data.get_or_create_user(from_id, self) if from_id > 0 else None
+        user = self.data.get_user(from_id, self) if from_id > 0 else None
 
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = (
-            self.data.get_or_create_user(selected_message["from_id"], self)
+            self.data.get_user(selected_message["from_id"], self)
             if selected_message else None)
 
         self.commands.process(

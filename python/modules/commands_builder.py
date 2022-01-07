@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from modules.data_service import BetterBotBaseDataService
-from modules.data_builder import DataBuilder
+from typing import List, Optional
+
 from social_ethosa import BetterUser
-from typing import List
+
+from .data_service import BetterBotBaseDataService
+from .data_builder import DataBuilder
 
 
 class CommandsBuilder:
@@ -145,9 +147,9 @@ class CommandsBuilder:
         reverse: bool = False,
         has_karma: bool = True,
         maximum_users: int = -1
-    ) -> str:
+    ) -> Optional[str]:
         if not users:
-            return
+            return None
         if reverse:
             users = reversed(users)
         user_strings = [(f"{DataBuilder.build_karma(user, data) if has_karma else ''} "
@@ -163,7 +165,9 @@ class CommandsBuilder:
             else:
                 total_symbols += user_string_length + 2
                 i += 1
-        return "\n".join(user_strings[:maximum_users])
+        if maximum_users > 0:
+            return '\n'.join(user_strings[:maximum_users])
+        return '\n'.join(user_strings)
 
     @staticmethod
     def build_karma_change(
