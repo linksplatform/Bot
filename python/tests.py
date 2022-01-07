@@ -40,11 +40,14 @@ class Test1DataService(TestCase):
         assert user_1.uid == 1
 
         user_1.programming_languages = ['C#', 'C++', 'Java', 'Python']
+        user_1.github_profile = "Ethosa"
         user_2.programming_languages = []
 
         assert user_1.programming_languages == ['C#', 'C++', 'Java', 'Python']
 
         user_1.karma = 100
+        user_2.karma = 1
+        user_2.supporters = [1]
         self.db.save_user(user_1)
         self.db.save_user(user_2)
 
@@ -68,7 +71,7 @@ class Test1DataService(TestCase):
             sort_key=lambda x: x["karma"],
             reverse_sort=False
             )
-        assert users_sorted_by_karma_reversed[0] == {'karma': 0, 'uid': 2}
+        assert users_sorted_by_karma_reversed[0] == {'karma': 1, 'uid': 2}
 
 
 class Test2DataBuilder(TestCase):
@@ -91,7 +94,22 @@ class Test2DataBuilder(TestCase):
         )
         assert programming_languages == 'отсутствуют'
 
+    @ordered
+    def test_build_github_profile(
+        self
+    ) -> NoReturn:
+        user = self.db.get_user(1, None)
+        assert DataBuilder.build_github_profile(user, self.db) == f"github.com/{user.github_profile}"
 
+    @ordered
+    def test_build_karma(
+        self
+    ) -> NoReturn:
+        user_1 = self.db.get_or_create_user(1, None)
+        user_2 = self.db.get_or_create_user(2, None)
+
+        assert DataBuilder.build_karma(user_1, self.db) == f'[{user_1.karma}]'
+        assert DataBuilder.build_karma(user_2, self.db) == f'[{user_2.karma}][+0.5]'
 
 
 if __name__ == '__main__':

@@ -41,8 +41,8 @@ class DataBuilder:
         plus_string = ""
         minus_string = ""
         karma = data.get_user_property(user, "karma")
-        up_votes = len(data.get_user_property(user, "supporters"))/config.POSITIVE_VOTES_PER_KARMA
-        down_votes = len(data.get_user_property(user, "opponents"))/config.NEGATIVE_VOTES_PER_KARMA
+        up_votes = len(data.get_user_property(user, "supporters"))
+        down_votes = len(data.get_user_property(user, "opponents"))
         if up_votes > 0:
             plus_string = "+%.1f" % (up_votes / config.POSITIVE_VOTES_PER_KARMA)
         if down_votes > 0:

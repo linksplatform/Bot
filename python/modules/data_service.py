@@ -22,23 +22,26 @@ class BetterBotBaseDataService:
 
     def get_or_create_user(
         self,
-        user_id: int,
-        vk: Vk
+        uid: int,
+        vk: Optional[Vk] = None
     ) -> BetterUser:
         """Returns a user object. Automatically creates it, if need.
+
+        :param uid: user ID
+        :param vk: Vk instance
         """
-        if self.base.notInBD(user_id):
+        if self.base.notInBD(uid):
             if vk:
-                name = vk.users.get(user_ids=user_id)['response'][0]["first_name"]
+                name = vk.users.get(user_ids=uid)['response'][0]["first_name"]
             else:
                 name = "Пользователь"
-            return self.base.addNew(uid=user_id, name=name)
-        return self.base.load(user_id)
+            return self.base.addNew(uid=uid, name=name)
+        return self.base.load(uid)
 
     def get_user(
         self,
         uid: int,
-        vk: Vk
+        vk: Optional[Vk] = None
     ) -> BetterUser:
         """Alias for get_or_create_user.
         """
@@ -63,14 +66,14 @@ class BetterBotBaseDataService:
 
     @staticmethod
     def get_user_sorted_programming_languages(
-        user,
+        user: BetterUser,
         sort: bool = True,
         reverse_sort: bool = False
     ) -> List[str]:
         """Returns user's programming languages.
 
-        :param user: -- user object;
-        :param sort: -- return sorted list, if True;
+        :param user: -- user object
+        :param sort: -- return sorted list, if True
         :param reverse_sort: -- uses for {sort} arg.
         """
         languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
@@ -84,6 +87,10 @@ class BetterBotBaseDataService:
         user: Union[Dict[str, Any], BetterUser],
         property_name: str
     ) -> Any:
+        """
+        :param user: dict or BetterUser
+        :param property_name: needed property
+        """
         return user[property_name] if isinstance(user, dict) else eval(f"user.{property_name}")
 
     @staticmethod
@@ -92,6 +99,12 @@ class BetterBotBaseDataService:
         property_name: str,
         value: Any
     ) -> NoReturn:
+        """Changes user property
+
+        :param user: dict or BetterUser
+        :param property_name: needed property
+        :param value: new value
+        """
         if isinstance(user, dict):
             user[property_name] = value
         else:
