@@ -2,6 +2,7 @@
 from typing import List
 
 from social_ethosa import BetterUser
+from saya import Vk
 
 from .data_service import BetterBotBaseDataService
 import config
@@ -28,7 +29,7 @@ class DataBuilder:
     ) -> str:
         """Builds the user's github profile and returns its string representation.
         """
-        profile = data.get_user_property(user, "github_profile")
+        profile = user["github_profile"]
         return f"{prefix}github.com/{profile}" if profile else default
 
     @staticmethod
@@ -40,9 +41,9 @@ class DataBuilder:
         """
         plus_string = ""
         minus_string = ""
-        karma = data.get_user_property(user, "karma")
-        up_votes = len(data.get_user_property(user, "supporters"))
-        down_votes = len(data.get_user_property(user, "opponents"))
+        karma = user["karma"]
+        up_votes = len(user["supporters"])
+        down_votes = len(user["opponents"])
         if up_votes > 0:
             plus_string = "+%.1f" % (up_votes / config.POSITIVE_VOTES_PER_KARMA)
         if down_votes > 0:
@@ -54,7 +55,7 @@ class DataBuilder:
 
     @staticmethod
     def get_users_sorted_by_karma(
-        vk_instance,
+        vk_instance: Vk,
         data: BetterBotBaseDataService,
         peer_id: int,
         reverse_sort: bool = True
@@ -92,7 +93,7 @@ class DataBuilder:
         user: BetterUser,
         data: BetterBotBaseDataService
     ) -> int:
-        base_karma = data.get_user_property(user, "karma")
-        up_votes = len(data.get_user_property(user, "supporters"))/config.POSITIVE_VOTES_PER_KARMA
-        down_votes = len(data.get_user_property(user, "opponents"))/config.NEGATIVE_VOTES_PER_KARMA
+        base_karma = user["karma"]
+        up_votes = len(user["supporters"])/config.POSITIVE_VOTES_PER_KARMA
+        down_votes = len(user["opponents"])/config.NEGATIVE_VOTES_PER_KARMA
         return base_karma + up_votes - down_votes

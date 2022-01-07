@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Provides working with VK API as user.
 """
-from typing import NoReturn
+from typing import NoReturn, List, Dict, Any
 
 from exceptions import TooManyMessagesError
 from tokens import USER_TOKEN
@@ -16,8 +16,10 @@ class UserBot:
     token = USER_TOKEN
 
     @staticmethod
-    def delete_messages(conversation_message_ids: list,
-                        peer_id: int) -> NoReturn:
+    def delete_messages(
+        conversation_message_ids: List[int],
+        peer_id: int
+    ) -> NoReturn:
         """Deletes all conversations messages
         """
         if len(conversation_message_ids) <= 24:
@@ -44,7 +46,7 @@ class UserBot:
             'Maximum amount was reached (%d/24)' % len(conversation_message_ids))
 
     @staticmethod
-    def execute(data: str) -> dict:
+    def execute(data: str) -> Dict[str, Any]:
         """Executes VK Script.
         """
         return UserBot.session.post(UserBot.url + 'execute', data=data).json()

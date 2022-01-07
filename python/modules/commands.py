@@ -9,6 +9,13 @@ from saya import Vk
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
 from .data_builder import DataBuilder
+from .utils import (
+    get_default_programming_language,
+    contains_string,
+    contains_all_strings,
+    karma_limit,
+    is_available_ghpage
+)
 import config
 
 
@@ -62,7 +69,7 @@ class Commands:
         """Adds or removes a new programming language in user profile.
         """
         language = self.matched.group('language')
-        language = self.vk_instance.get_default_programming_language(language).replace('\\', '')
+        language = get_default_programming_language(language).replace('\\', '')
         if not language:
             return
         languages = self.current_user.programming_languages
@@ -75,7 +82,8 @@ class Commands:
             self.current_user.programming_languages = languages
             self.data_service.save_user(self.current_user)
         self.vk_instance.send_msg(
-            CommandsBuilder.build_change_programming_languages(self.current_user, self.data_service),
+            CommandsBuilder.build_change_programming_languages(
+                self.current_user, self.data_service),
             self.peer_id)
 
     def change_github_profile(
@@ -92,7 +100,7 @@ class Commands:
         if not is_add:
             profile = ""
         if condition:
-            if is_add and self.vk_instance.is_available_ghpage(profile):
+            if is_add and not is_available_ghpage(profile):
                 return
             self.current_user.github_profile = profile
             self.data_service.save_user(self.current_user)
@@ -145,7 +153,7 @@ class Commands:
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
                  ("programming_languages" in i and len(i["programming_languages"]) > 0) and
-                 self.vk_instance.contains_all_strings(i["programming_languages"], languages, True)]
+                 contains_all_strings(i["programming_languages"], languages, True)]
         builded = CommandsBuilder.build_top_users(
             users, self.data_service, reverse, self.karma_enabled)
         if builded:
@@ -191,7 +199,7 @@ class Commands:
                     float(self.current_user.last_collective_vote))
                 difference = utcnow - utclast
                 hours_difference = difference.total_seconds() / 3600
-                hours_limit = self.vk_instance.karma_limit(
+                hours_limit = karma_limit(
                     self.current_user.karma)
                 if hours_difference < hours_limit:
                     self.vk_instance.delete_message(self.peer_id, self.msg_id)
@@ -290,6 +298,12 @@ class Commands:
         user.karma = new_karma
         return (user.uid, user.name, initial_karma, new_karma)
 
+    def match_command(
+        self,
+        pattern: Pattern
+    ) -> NoReturn:
+        self.matched = match(pattern, self.msg)
+
     @staticmethod
     def register_cmd(
         cmd: Pattern,
@@ -357,7 +371,7 @@ class Commands:
             return
 
         for cmd, action in Commands.cmds.items():
-            self.matched: list = match(cmd, msg)
+            self.match_command(cmd)
             if self.matched:
                 action()
                 return
