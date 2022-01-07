@@ -4,11 +4,14 @@
 from datetime import datetime, timedelta
 from typing import NoReturn, List, Dict, Any
 
-from modules.data_service import BetterBotBaseDataService
-from modules.commands import Commands
+from saya import Vk
+import requests
+
+from modules import (
+    BetterBotBaseDataService, Commands
+)
 from tokens import BOT_TOKEN
 from userbot import UserBot
-from saya import Vk
 import patterns
 import config
 
@@ -229,6 +232,14 @@ class Bot(Vk):
                 if not limit_item["max_karma"] or karma < limit_item["max_karma"]:
                     return limit_item["limit"]
         return 168  # hours (a week)
+
+    @staticmethod
+    def is_available_ghpage(
+        profile: str
+    ) -> bool:
+        """Returns True if github profile is available.
+        """
+        return requests.get(f'https://github.com/{profile}').status_code == 200
 
 
 if __name__ == '__main__':

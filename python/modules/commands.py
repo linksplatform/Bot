@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
-from typing import NoReturn, Tuple, List, Dict, Any
+from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
 
 from regex import Pattern, split, match
 from social_ethosa import BetterUser
 from saya import Vk
-import requests
 
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
@@ -27,11 +26,11 @@ class Commands:
         self.user: BetterUser = None
         self.karma_enabled: bool = False
         self.is_bot_selected: bool = False
-        self.fwd_messages: List[dict] = []
-        self.selected_message: dict = {}
+        self.fwd_messages: List[Dict[str, Any]] = []
+        self.selected_message: Dict[str, Any] = {}
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
-        self.matched: list = []
+        self.matched: List[str] = []
 
     def help_message(self) -> NoReturn:
         """Sends help message
@@ -93,7 +92,7 @@ class Commands:
         if not is_add:
             profile = ""
         if condition:
-            if is_add and requests.get(f'https://github.com/{profile}').status_code != 200:
+            if is_add and self.vk_instance.is_available_ghpage(profile):
                 return
             self.current_user.github_profile = profile
             self.data_service.save_user(self.current_user)
@@ -255,18 +254,37 @@ class Commands:
         current_voters: str,
         number_of_voters: int,
         amount: int
-    ) -> tuple:
-        vote_applied = None
+    ) -> Tuple[
+        Optional[Tuple[int, str, int, int]],  # user ID, username, init karma, new karma
+        Optional[List[int]],  # voters
+        bool  # vote applied
+    ]:
+        """Applies collective vote
+
+        :param current_voters: must be 'opponents' or 'supporters'
+        :param number_of_voters: maximum voters for voters type.
+        :param amount: positive or negative number.
+        """
+        vote_applied = False
         if self.current_user.uid not in self.user[current_voters]:
             self.user[current_voters].append(self.current_user.uid)
             vote_applied = True
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
             self.user[current_voters] = []
-            return self.apply_user_karma(self.user, amount), voters, vote_applied
+            return (self.apply_user_karma(self.user, amount), voters, vote_applied)
         return (None, None, vote_applied)
 
-    def apply_user_karma(self, user: BetterUser, amount: int) -> Tuple[int, str, int, int]:
+    def apply_user_karma(
+        self,
+        user: BetterUser,
+        amount: int
+    ) -> Tuple[int, str, int, int]:
+        """Changes user karma
+
+        :param user: user object
+        :param amount: karma amount to change
+        """
         initial_karma = user.karma
         new_karma = initial_karma + amount
         user.karma = new_karma
@@ -275,7 +293,7 @@ class Commands:
     @staticmethod
     def register_cmd(
         cmd: Pattern,
-        action: callable
+        action: Callable[[], NoReturn]
     ) -> NoReturn:
         """Registers a new command.
         """
@@ -283,7 +301,7 @@ class Commands:
 
     @staticmethod
     def register_cmds(
-        *cmds: Tuple[Pattern, callable]
+        *cmds: Tuple[Pattern, Callable[[], NoReturn]]
     ) -> NoReturn:
         """Registers a new commands.
         """
@@ -294,7 +312,7 @@ class Commands:
     def _register_decorator(
         cmd: Pattern,
         args: list,
-        action: callable
+        action: Callable[[], NoReturn]
     ) -> NoReturn:
         Commands.cmds[cmd] = lambda: action(args)
 
@@ -302,7 +320,7 @@ class Commands:
     def register(
         cmd: Pattern,
         *args
-    ) -> callable:
+    ) -> Callable[[], NoReturn]:
         """Command register decorator.
         """
         return lambda action: Commands._register_decorator(cmd, args, action)
