@@ -32,7 +32,7 @@ class BetterBotBaseDataService:
                 name = vk.users.get(user_ids=user_id)['response'][0]["first_name"]
             else:
                 name = "Пользователь"
-            return self.base.addNew(uid=user_id, name=name, **kwargs)
+            return self.base.addNew(uid=user_id, name=name)
         return self.base.load(user_id)
 
     def get_user(
@@ -49,7 +49,7 @@ class BetterBotBaseDataService:
         other_keys: List[str],
         sort_key: Optional[Callable[[Any], Any]],
         reverse_sort: bool = True
-    ) -> List[BetterUser]:
+    ) -> List[Dict[str, Any]]:
         """Returns users and their key values.
 
         :param other_key: list of user keys
