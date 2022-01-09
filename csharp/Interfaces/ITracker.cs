@@ -20,7 +20,7 @@ namespace Interfaces
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
+        public GitHubStorage Storage { get; }
 
         /// <summary>
         /// <para>

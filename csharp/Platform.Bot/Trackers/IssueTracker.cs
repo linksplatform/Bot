@@ -20,7 +20,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
+        public GitHubStorage Storage { get; }
 
         /// <summary>
         /// <para>
@@ -46,7 +46,7 @@ namespace Platform.Bot.Trackers
         /// </param>
         public IssueTracker(List<ITrigger<Issue>> triggers, GitHubStorage gitHubApi)
         {
-            GitHubApi = gitHubApi;
+            Storage = gitHubApi;
             Triggers = triggers;
         }
 
@@ -64,7 +64,7 @@ namespace Platform.Bot.Trackers
         {
             foreach (var trigger in Triggers)
             {
-                foreach (var issue in GitHubApi.GetIssues())
+                foreach (var issue in Storage.GetIssues())
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {

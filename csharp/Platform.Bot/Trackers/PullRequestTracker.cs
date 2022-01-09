@@ -22,7 +22,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
+        public GitHubStorage Storage { get; }
 
         /// <summary>
         /// <para>
@@ -42,13 +42,13 @@ namespace Platform.Bot.Trackers
         /// <para>A triggers.</para>
         /// <para></para>
         /// </param>
-        /// <param name="gitHubApi">
+        /// <param name="storage">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public PullRequestTracker(List<ITrigger<TContext>> triggers, GitHubStorage gitHubApi)
+        public PullRequestTracker(List<ITrigger<TContext>> triggers, GitHubStorage storage)
         {
-            GitHubApi = gitHubApi;
+            Storage = storage;
             Triggers = triggers;
         }
 
@@ -66,9 +66,9 @@ namespace Platform.Bot.Trackers
         {
             foreach (var trigger in Triggers)
             {
-                foreach (var repository in GitHubApi.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
+                foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
                 {
-                    foreach (var pullRequest in GitHubApi.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
+                    foreach (var pullRequest in Storage.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
