@@ -78,12 +78,19 @@ namespace Platform.Bot.Trackers
             {
                 foreach (var trigger in Triggers)
                 {
-                    foreach (var issue in GitHubApi.GetIssues())
+                    try
                     {
-                        if (trigger.Condition(issue))
+                        foreach (var issue in GitHubApi.GetIssues())
                         {
-                            trigger.Action(issue);
+                            if (trigger.Condition(issue))
+                            {
+                                trigger.Action(issue);
+                            }
                         }
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.WriteLine(ex);
                     }
                 }
                 Thread.Sleep(MinimumInteractionInterval);

@@ -38,6 +38,7 @@ namespace Storage.Remote.GitHub
         /// <para></para>
         /// </summary>
         public TimeSpan MinimumInteractionInterval { get; }
+
         private DateTimeOffset lastIssue = DateTimeOffset.Now.Subtract(TimeSpan.FromDays(14));
 
         /// <summary>
