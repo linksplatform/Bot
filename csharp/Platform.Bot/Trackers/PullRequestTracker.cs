@@ -1,7 +1,6 @@
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using Platform.Threading;
@@ -23,16 +22,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
-
-
-        /// <summary>
-        /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
+        public GitHubStorage Storage { get; }
 
         /// <summary>
         /// <para>
@@ -52,17 +42,15 @@ namespace Platform.Bot.Trackers
         /// <para>A triggers.</para>
         /// <para></para>
         /// </param>
-        /// <param name="gitHubApi">
+        /// <param name="storage">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public PullRequestTracker(List<ITrigger<TContext>> triggers, GitHubStorage gitHubApi)
+        public PullRequestTracker(List<ITrigger<TContext>> triggers, GitHubStorage storage)
         {
-            GitHubApi = gitHubApi;
+            Storage = storage;
             Triggers = triggers;
-            MinimumInteractionInterval = gitHubApi.MinimumInteractionInterval;
         }
-
 
         /// <summary>
         /// <para>
@@ -76,22 +64,22 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            foreach (var trigger in Triggers)
             {
-                foreach (var trigger in Triggers)
+                foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
                 {
-                    foreach (var repository in GitHubApi.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
+                    foreach (var pullRequest in Storage.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
                     {
-                        foreach (var pullRequest in GitHubApi.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
+                        if (cancellationToken.IsCancellationRequested)
                         {
-                            if (trigger.Condition(pullRequest))
-                            {
-                                trigger.Action(pullRequest);
-                            }
+                            return;
+                        }
+                        if (trigger.Condition(pullRequest))
+                        {
+                            trigger.Action(pullRequest);
                         }
                     }
                 }
-                Thread.Sleep(MinimumInteractionInterval);
             }
         }
     }

@@ -20,15 +20,7 @@ namespace Interfaces
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
-
-        /// <summary>
-        /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
+        public GitHubStorage Storage { get; }
 
         /// <summary>
         /// <para>
