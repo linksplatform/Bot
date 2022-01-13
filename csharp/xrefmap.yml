@@ -278,40 +278,6 @@ references:
   fullName.vb: Interfaces.ITracker(Of TContext)
   nameWithType: ITracker<TContext>
   nameWithType.vb: ITracker(Of TContext)
-- uid: Interfaces.ITracker`1.GitHubApi
-  name: GitHubApi
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_GitHubApi
-  commentId: P:Interfaces.ITracker`1.GitHubApi
-  fullName: Interfaces.ITracker<TContext>.GitHubApi
-  fullName.vb: Interfaces.ITracker(Of TContext).GitHubApi
-  nameWithType: ITracker<TContext>.GitHubApi
-  nameWithType.vb: ITracker(Of TContext).GitHubApi
-- uid: Interfaces.ITracker`1.GitHubApi*
-  name: GitHubApi
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_GitHubApi_
-  commentId: Overload:Interfaces.ITracker`1.GitHubApi
-  isSpec: "True"
-  fullName: Interfaces.ITracker<TContext>.GitHubApi
-  fullName.vb: Interfaces.ITracker(Of TContext).GitHubApi
-  nameWithType: ITracker<TContext>.GitHubApi
-  nameWithType.vb: ITracker(Of TContext).GitHubApi
-- uid: Interfaces.ITracker`1.MinimumInteractionInterval
-  name: MinimumInteractionInterval
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_MinimumInteractionInterval
-  commentId: P:Interfaces.ITracker`1.MinimumInteractionInterval
-  fullName: Interfaces.ITracker<TContext>.MinimumInteractionInterval
-  fullName.vb: Interfaces.ITracker(Of TContext).MinimumInteractionInterval
-  nameWithType: ITracker<TContext>.MinimumInteractionInterval
-  nameWithType.vb: ITracker(Of TContext).MinimumInteractionInterval
-- uid: Interfaces.ITracker`1.MinimumInteractionInterval*
-  name: MinimumInteractionInterval
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_MinimumInteractionInterval_
-  commentId: Overload:Interfaces.ITracker`1.MinimumInteractionInterval
-  isSpec: "True"
-  fullName: Interfaces.ITracker<TContext>.MinimumInteractionInterval
-  fullName.vb: Interfaces.ITracker(Of TContext).MinimumInteractionInterval
-  nameWithType: ITracker<TContext>.MinimumInteractionInterval
-  nameWithType.vb: ITracker(Of TContext).MinimumInteractionInterval
 - uid: Interfaces.ITracker`1.Start(CancellationToken)
   name: Start(CancellationToken)
   href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Start_CancellationToken_
@@ -329,6 +295,23 @@ references:
   fullName.vb: Interfaces.ITracker(Of TContext).Start
   nameWithType: ITracker<TContext>.Start
   nameWithType.vb: ITracker(Of TContext).Start
+- uid: Interfaces.ITracker`1.Storage
+  name: Storage
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Storage
+  commentId: P:Interfaces.ITracker`1.Storage
+  fullName: Interfaces.ITracker<TContext>.Storage
+  fullName.vb: Interfaces.ITracker(Of TContext).Storage
+  nameWithType: ITracker<TContext>.Storage
+  nameWithType.vb: ITracker(Of TContext).Storage
+- uid: Interfaces.ITracker`1.Storage*
+  name: Storage
+  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Storage_
+  commentId: Overload:Interfaces.ITracker`1.Storage
+  isSpec: "True"
+  fullName: Interfaces.ITracker<TContext>.Storage
+  fullName.vb: Interfaces.ITracker(Of TContext).Storage
+  nameWithType: ITracker<TContext>.Storage
+  nameWithType.vb: ITracker(Of TContext).Storage
 - uid: Interfaces.ITracker`1.Triggers
   name: Triggers
   href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Triggers
@@ -417,32 +400,6 @@ references:
   isSpec: "True"
   fullName: Platform.Bot.Trackers.IssueTracker.IssueTracker
   nameWithType: IssueTracker.IssueTracker
-- uid: Platform.Bot.Trackers.IssueTracker.GitHubApi
-  name: GitHubApi
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_GitHubApi
-  commentId: P:Platform.Bot.Trackers.IssueTracker.GitHubApi
-  fullName: Platform.Bot.Trackers.IssueTracker.GitHubApi
-  nameWithType: IssueTracker.GitHubApi
-- uid: Platform.Bot.Trackers.IssueTracker.GitHubApi*
-  name: GitHubApi
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_GitHubApi_
-  commentId: Overload:Platform.Bot.Trackers.IssueTracker.GitHubApi
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.IssueTracker.GitHubApi
-  nameWithType: IssueTracker.GitHubApi
-- uid: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
-  name: MinimumInteractionInterval
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_MinimumInteractionInterval
-  commentId: P:Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
-  fullName: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
-  nameWithType: IssueTracker.MinimumInteractionInterval
-- uid: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval*
-  name: MinimumInteractionInterval
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_MinimumInteractionInterval_
-  commentId: Overload:Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.IssueTracker.MinimumInteractionInterval
-  nameWithType: IssueTracker.MinimumInteractionInterval
 - uid: Platform.Bot.Trackers.IssueTracker.Start(CancellationToken)
   name: Start(CancellationToken)
   href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Start_CancellationToken_
@@ -456,6 +413,19 @@ references:
   isSpec: "True"
   fullName: Platform.Bot.Trackers.IssueTracker.Start
   nameWithType: IssueTracker.Start
+- uid: Platform.Bot.Trackers.IssueTracker.Storage
+  name: Storage
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Storage
+  commentId: P:Platform.Bot.Trackers.IssueTracker.Storage
+  fullName: Platform.Bot.Trackers.IssueTracker.Storage
+  nameWithType: IssueTracker.Storage
+- uid: Platform.Bot.Trackers.IssueTracker.Storage*
+  name: Storage
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Storage_
+  commentId: Overload:Platform.Bot.Trackers.IssueTracker.Storage
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.IssueTracker.Storage
+  nameWithType: IssueTracker.Storage
 - uid: Platform.Bot.Trackers.IssueTracker.Triggers
   name: Triggers
   href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Triggers
@@ -491,32 +461,6 @@ references:
   isSpec: "True"
   fullName: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker
   nameWithType: PullRequestTracker.PullRequestTracker
-- uid: Platform.Bot.Trackers.PullRequestTracker.GitHubApi
-  name: GitHubApi
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_GitHubApi
-  commentId: P:Platform.Bot.Trackers.PullRequestTracker.GitHubApi
-  fullName: Platform.Bot.Trackers.PullRequestTracker.GitHubApi
-  nameWithType: PullRequestTracker.GitHubApi
-- uid: Platform.Bot.Trackers.PullRequestTracker.GitHubApi*
-  name: GitHubApi
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_GitHubApi_
-  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.GitHubApi
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.PullRequestTracker.GitHubApi
-  nameWithType: PullRequestTracker.GitHubApi
-- uid: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
-  name: MinimumInteractionInterval
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_MinimumInteractionInterval
-  commentId: P:Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
-  fullName: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
-  nameWithType: PullRequestTracker.MinimumInteractionInterval
-- uid: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval*
-  name: MinimumInteractionInterval
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_MinimumInteractionInterval_
-  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.PullRequestTracker.MinimumInteractionInterval
-  nameWithType: PullRequestTracker.MinimumInteractionInterval
 - uid: Platform.Bot.Trackers.PullRequestTracker.Start(CancellationToken)
   name: Start(CancellationToken)
   href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Start_CancellationToken_
@@ -530,6 +474,19 @@ references:
   isSpec: "True"
   fullName: Platform.Bot.Trackers.PullRequestTracker.Start
   nameWithType: PullRequestTracker.Start
+- uid: Platform.Bot.Trackers.PullRequestTracker.Storage
+  name: Storage
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Storage
+  commentId: P:Platform.Bot.Trackers.PullRequestTracker.Storage
+  fullName: Platform.Bot.Trackers.PullRequestTracker.Storage
+  nameWithType: PullRequestTracker.Storage
+- uid: Platform.Bot.Trackers.PullRequestTracker.Storage*
+  name: Storage
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Storage_
+  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.Storage
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.PullRequestTracker.Storage
+  nameWithType: PullRequestTracker.Storage
 - uid: Platform.Bot.Trackers.PullRequestTracker.Triggers
   name: Triggers
   href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Triggers
@@ -796,6 +753,19 @@ references:
   isSpec: "True"
   fullName: Storage.Local.FileStorage.Delete
   nameWithType: FileStorage.Delete
+- uid: Storage.Local.FileStorage.Dispose(System.Boolean,System.Boolean)
+  name: Dispose(Boolean, Boolean)
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_Dispose_System_Boolean_System_Boolean_
+  commentId: M:Storage.Local.FileStorage.Dispose(System.Boolean,System.Boolean)
+  fullName: Storage.Local.FileStorage.Dispose(System.Boolean, System.Boolean)
+  nameWithType: FileStorage.Dispose(Boolean, Boolean)
+- uid: Storage.Local.FileStorage.Dispose*
+  name: Dispose
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_Dispose_
+  commentId: Overload:Storage.Local.FileStorage.Dispose
+  isSpec: "True"
+  fullName: Storage.Local.FileStorage.Dispose
+  nameWithType: FileStorage.Dispose
 - uid: Storage.Local.FileStorage.GetAllFiles
   name: GetAllFiles()
   href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_GetAllFiles
