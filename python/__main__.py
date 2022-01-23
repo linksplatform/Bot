@@ -128,7 +128,9 @@ class Bot(Vk):
     ) -> Dict[str, Any]:
         """Returns all conversation members.
         """
-        return self.messages.getConversationMembers(peer_id=peer_id)
+        return self.call_method(
+            'messages.getConversationMembers',
+            dict(peer_id=peer_id))
 
     def get_members_ids(
         self,
@@ -152,10 +154,11 @@ class Bot(Vk):
         :param msg: message text
         :param peer_id: chat ID
         """
-        self.messages.send(
-            message=msg, peer_id=peer_id,
-            disable_mentions=1, random_id=0
-        )
+        self.call_method(
+            'messages.send',
+            dict(
+                message=msg, peer_id=peer_id,
+                disable_mentions=1, random_id=0))
 
     def get_user_name(
         self,
@@ -174,7 +177,9 @@ class Bot(Vk):
             • instrumental – ins,
             • prepositional – abl.
         """
-        return self.users.get(user_ids=uid, name_case=name_case)['response'][0]["first_name"]
+        return self.call_method(
+            'users.get', dict(user_ids=uid, name_case=name_case)
+        )['response'][0]["first_name"]
 
     @staticmethod
     def get_messages(
