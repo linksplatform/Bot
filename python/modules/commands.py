@@ -2,9 +2,10 @@
 from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
 
-from regex import Pattern, split, match
+from regex import Pattern, split, match, search, IGNORECASE
 from social_ethosa import BetterUser
 from saya import Vk
+import wikipedia
 
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
@@ -22,9 +23,9 @@ import config
 class Commands:
     cmds: Dict[Pattern, Any] = {}
     def __init__(
-        self,
-        vk_instance: Vk,
-        data_service: BetterBotBaseDataService
+            self,
+            vk_instance: Vk,
+            data_service: BetterBotBaseDataService
     ):
         self.msg: str = ""
         self.msg_id: int = 0
@@ -38,6 +39,7 @@ class Commands:
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
         self.matched: List[str] = []
+        wikipedia.set_lang('en')
 
     def help_message(self) -> NoReturn:
         """Sends help message
@@ -63,8 +65,8 @@ class Commands:
         self.info_message()
 
     def change_programming_language(
-        self,
-        is_add: bool
+            self,
+            is_add: bool
     ) -> NoReturn:
         """Adds or removes a new programming language in user profile.
         """
@@ -87,8 +89,8 @@ class Commands:
             self.peer_id)
 
     def change_github_profile(
-        self,
-        is_add: bool
+            self,
+            is_add: bool
     ) -> NoReturn:
         """Changes github profile.
         """
@@ -119,8 +121,8 @@ class Commands:
             self.peer_id)
 
     def top(
-        self,
-        reverse: bool = False
+            self,
+            reverse: bool = False
     ) -> NoReturn:
         """Sends users top.
         """
@@ -141,8 +143,8 @@ class Commands:
             self.peer_id)
 
     def top_langs(
-        self,
-        reverse: bool = False
+            self,
+            reverse: bool = False
     ) -> NoReturn:
         """Sends users top.
         """
@@ -227,10 +229,15 @@ class Commands:
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
     def apply_karma_change(
-        self,
-        operator: str,
-        amount: int
-    ) -> tuple:
+            self,
+            operator: str,
+            amount: int
+    ) -> Tuple[
+        Optional[Tuple[int, str, int, int]],  # current user karma changed
+        Optional[Tuple[int, str, int, int]],  # selected user karma changed
+        bool,  # collective vote applied
+        List[int]  # voters IDs list
+    ]:
         selected_user_karma_change = None
         user_karma_change = None
         collective_vote_applied = None
@@ -258,10 +265,10 @@ class Commands:
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
     def apply_collective_vote(
-        self,
-        current_voters: str,
-        number_of_voters: int,
-        amount: int
+            self,
+            current_voters: str,
+            number_of_voters: int,
+            amount: int
     ) -> Tuple[
         Optional[Tuple[int, str, int, int]],  # user ID, username, init karma, new karma
         Optional[List[int]],  # voters
@@ -284,9 +291,9 @@ class Commands:
         return (None, None, vote_applied)
 
     def apply_user_karma(
-        self,
-        user: BetterUser,
-        amount: int
+            self,
+            user: BetterUser,
+            amount: int
     ) -> Tuple[int, str, int, int]:
         """Changes user karma
 
@@ -298,16 +305,33 @@ class Commands:
         user.karma = new_karma
         return (user.uid, user.name, initial_karma, new_karma)
 
+    def what_is(self) -> NoReturn:
+        """Search on wikipedia and sends if available
+        """
+        question = self.matched.group('question')
+        if search(r'[а-я\s]+', question, IGNORECASE):
+            wikipedia.set_lang('ru')
+        else:
+            wikipedia.set_lang('en')
+        results = wikipedia.search(question)
+        if results:
+            try:
+                page = wikipedia.page(results[0])
+                self.vk_instance.send_msg(
+                    f'{page.summary[:256]}...\n\n{page.url}', self.peer_id)
+            except wikipedia.exceptions.DisambiguationError as e:
+                print('wiki error', e)
+
     def match_command(
-        self,
-        pattern: Pattern
+            self,
+            pattern: Pattern
     ) -> NoReturn:
         self.matched = match(pattern, self.msg)
 
     @staticmethod
     def register_cmd(
-        cmd: Pattern,
-        action: Callable[[], NoReturn]
+            cmd: Pattern,
+            action: Callable[[], NoReturn]
     ) -> NoReturn:
         """Registers a new command.
         """
@@ -315,46 +339,28 @@ class Commands:
 
     @staticmethod
     def register_cmds(
-        *cmds: Tuple[Pattern, Callable[[], NoReturn]]
+            *cmds: Tuple[Pattern, Callable[[], NoReturn]]
     ) -> NoReturn:
         """Registers a new commands.
         """
         for cmd, action in cmds:
             Commands.cmds[cmd] = action
 
-    @staticmethod
-    def _register_decorator(
-        cmd: Pattern,
-        args: list,
-        action: Callable[[], NoReturn]
-    ) -> NoReturn:
-        Commands.cmds[cmd] = lambda: action(args)
-
-    @staticmethod
-    def register(
-        cmd: Pattern,
-        *args
-    ) -> Callable[[], NoReturn]:
-        """Command register decorator.
-        """
-        return lambda action: Commands._register_decorator(cmd, args, action)
-
     def process(
-        self,
-        msg: str,
-        peer_id: int,
-        from_id: int,
-        fwd_messages: List[dict],
-        msg_id: int,
-        user: BetterUser,
-        selected_user: BetterUser
+            self,
+            msg: str,
+            peer_id: int,
+            from_id: int,
+            fwd_messages: List[dict],
+            msg_id: int,
+            user: BetterUser,
+            selected_user: BetterUser
     ) -> NoReturn:
         """Process commands
 
-        Arguments:
-        - {msg} - event message;
-        - {peer_id} - chat ID;
-        - {from_id} - user ID.
+        :param msg: event message
+        :param peer_id: chat ID
+        :param from_id: user ID
         """
         self.msg = msg
         self.msg_id = msg_id
