@@ -2,7 +2,7 @@
 from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
 
-from regex import Pattern, split, match, search, IGNORECASE
+from regex import Pattern, split, match, search, IGNORECASE, sub
 from social_ethosa import BetterUser
 from saya import Vk
 import wikipedia
@@ -308,8 +308,9 @@ class Commands:
     def what_is(self) -> NoReturn:
         """Search on wikipedia and sends if available
         """
-        question = self.matched.group('question')
-        if search(r'[а-я\s]+', question, IGNORECASE):
+        question = self.matched.groups()
+        question = question[1] if question[1] else question[2]
+        if search(r'[а-яё]+', question, IGNORECASE):
             wikipedia.set_lang('ru')
         else:
             wikipedia.set_lang('en')
@@ -318,7 +319,7 @@ class Commands:
             try:
                 page = wikipedia.page(results[0])
                 self.vk_instance.send_msg(
-                    f'{page.summary[:256]}...\n\n{page.url}', self.peer_id)
+                    sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url}', self.peer_id)
             except wikipedia.exceptions.DisambiguationError as e:
                 print('wiki error', e)
 

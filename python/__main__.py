@@ -57,6 +57,7 @@ class Bot(Vk):
             (patterns.BOTTOM_LANGUAGES,
              lambda: self.commands.top_langs(True)),
             (patterns.WHAT_IS, self.commands.what_is),
+            (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 

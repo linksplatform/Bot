@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 from social_ethosa import BetterUser
 
@@ -172,13 +172,16 @@ class CommandsBuilder:
 
     @staticmethod
     def build_karma_change(
-        user_karma_change,
-        selected_user_karma_change,
-        voters
-    ) -> str:
-        if selected_user_karma_change and user_karma_change:
-            return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
-                    (user_karma_change + selected_user_karma_change))
-        elif selected_user_karma_change:
+        user_karma_change: Optional[Tuple[int, str, int, int]],
+        selected_user_karma_change: Optional[Tuple[int, str, int, int]],
+        voters: List[int]
+    ) -> Optional[str]:
+        """Builds karma changing
+        """
+        if selected_user_karma_change:
+            if user_karma_change:
+                return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
+                        (user_karma_change + selected_user_karma_change))
             return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
                 (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
+        return None
