@@ -264,7 +264,7 @@ namespace Storage.Local
         /// <para></para>
         /// </returns>
         public TLinkAddress GetFileSet(string fileSetName) => _synchronizedLinks.SearchOrDefault(_setMarker, Convert(fileSetName));
-        private IList<IList<TLinkAddress>> GetFilesLinksFromSet(string set)
+        private IList<IList<TLinkAddress>?> GetFilesLinksFromSet(string set)
         {
             var fileSet = GetFileSet(set);
             var list = _synchronizedLinks.All(new Link<UInt64>(index: Any, source: fileSet, target: Any));
