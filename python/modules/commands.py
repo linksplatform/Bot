@@ -4,6 +4,7 @@ from datetime import datetime
 
 from regex import Pattern, split, match, search, IGNORECASE, sub
 from social_ethosa import BetterUser
+from search_engine_parser.core.engines.google import Search as GoogleSearch
 from saya import Vk
 import wikipedia
 
@@ -39,6 +40,7 @@ class Commands:
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
         self.matched: List[str] = []
+        self.gsearch = GoogleSearch()
         wikipedia.set_lang('en')
 
     def help_message(self) -> NoReturn:
@@ -59,10 +61,11 @@ class Commands:
     def update_command(self) -> NoReturn:
         """Updates user profile.
         """
-        name = self.vk_instance.get_user_name(self.from_id)
-        self.current_user.name = name
-        self.data_service.save_user(self.current_user)
-        self.info_message()
+        if self.from_id > 0:
+            name = self.vk_instance.get_user_name(self.from_id)
+            self.current_user.name = name
+            self.data_service.save_user(self.current_user)
+            self.info_message()
 
     def change_programming_language(
             self,
@@ -322,6 +325,21 @@ class Commands:
                     sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url}', self.peer_id)
             except wikipedia.exceptions.DisambiguationError as e:
                 print('wiki error', e)
+                self.google_search(question)
+        else:
+            self.google_search(question)
+
+    def google_search(
+            self,
+            question: str
+    ) -> NoReturn:
+        results = self.gsearch.search(question, num_results=3)
+        if results:
+            self.vk_instance.send_msg(
+                '\n'.join(
+                    [' -> '.join(result) for result in results]),
+                self.peer_id
+            )
 
     def match_command(
             self,
