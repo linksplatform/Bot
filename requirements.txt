@@ -1,6 +1,6 @@
 saya>=0.3.15
-wikipedia
 social_ethosa
-regex
+wikipedia
 requests
 datetime
+regex
