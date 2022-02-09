@@ -38,5 +38,5 @@ dotnet run MyNickname ghp_123 MyAppName db.links HelloWorldSet
 ## Quick run by using sh script `run.sh`:
 
 ```shell
-./run.sh TOKEN APP_NAME
+./run.sh NICKNAME TOKEN APP_NAME
 ```

@@ -10,4 +10,4 @@ sudo apt-get update; \
 
 # Run bot
 # $1 is token, $2 is app name
-dotnet run --project ./Platform.Bot/Platform.Bot.csproj konard $1 $2 db.links HelloWorldSet 60
+dotnet run --project ./Platform.Bot/Platform.Bot.csproj $1 $2 $3 db.links HelloWorldSet 60
