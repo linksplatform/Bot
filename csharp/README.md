@@ -17,7 +17,9 @@ For the bot to work, you need to get a token. You can do this here: https://gith
 
 ## Synopsis
 
+```sh
 dotnet run NICKNAME TOKEN APP_NAME [LINKS_DB] [FILE_SET_NAME] [MINIMUM_INTERACTION_INTERVAL]
+```
 
 ### Parameters
 
