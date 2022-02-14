@@ -30,7 +30,11 @@ class Bot(Vk):
     ):
         """Auth as VK group and register commands.
         """
-        Vk.__init__(self, token=token, group_id=group_id, debug=debug)
+        Vk.__init__(
+            self, token=token,
+            group_id=group_id, debug=debug,
+            api='5.131'
+        )
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
