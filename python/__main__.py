@@ -104,9 +104,12 @@ class Bot(Vk):
             self.data.get_user(selected_message['from_id'], self)
             if selected_message and selected_message['from_id'] > 0 else None)
 
-        self.commands.process(
-            msg, peer_id, from_id, messages, msg_id,
-            user, selected_user)
+        try:
+            self.commands.process(
+                msg, peer_id, from_id, messages, msg_id,
+                user, selected_user)
+        except Exception as e:
+            print(e)
 
 
     def delete_message(
