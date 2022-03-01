@@ -6,6 +6,7 @@ using Storage.Local;
 using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
@@ -38,14 +39,16 @@ namespace Platform.Bot
                 while (true)
                 {
                     var api = new GitHubStorage(username, token, appName);
-                    new IssueTracker(new List<ITrigger<Issue>>
-                    {
-                        new HelloWorldTrigger(api, dbContext, fileSetName),
-                        new OrganizationLastMonthActivityTrigger(api),
-                        new LastCommitActivityTrigger(api),
-                        new ProtectMainBranchTrigger(api),
-                    }, api).Start(cancellation.Token);
-                    new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start(cancellation.Token);
+                    var issueTracker = new IssueTracker(api,
+                            new HelloWorldTrigger(api, dbContext, fileSetName),
+                            new OrganizationLastMonthActivityTrigger(api),
+                            new LastCommitActivityTrigger(api),
+                            new ProtectMainBranchTrigger(api));
+                    var pullRequenstTracker = new PullRequestTracker(api, new MergeDependabotBumpsTrigger(api));
+                    var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Directory.GetCurrentDirectory()));
+                    issueTracker.Start(cancellation.Token);
+                    pullRequenstTracker.Start(cancellation.Token);
+                    timestampTracker.Start(cancellation.Token);
                     Thread.Sleep(minimumInteractionInterval);
                 }
             }
