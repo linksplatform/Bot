@@ -9,4 +9,8 @@
     <ProjectReference Include="..\Storage\Storage.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.0" />
+  </ItemGroup>
+
 </Project>
