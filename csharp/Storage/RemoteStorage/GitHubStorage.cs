@@ -263,10 +263,10 @@ namespace Storage.Remote.GitHub
             CreateMigration(organizationName, new ReadOnlyCollection<string>(repositoryNames));
         }
 
-        public Migration? CreateMigration(string organizationName, IReadOnlyList<string> repositoryNames)
+        public Task<Migration?> CreateMigration(string organizationName, IReadOnlyList<string> repositoryNames)
         {
             var startMigrationRequest = new StartMigrationRequest(repositoryNames); ;
-            return Client.Migration.Migrations.Start(organizationName, startMigrationRequest).AwaitResult();
+            return Client.Migration.Migrations.Start(organizationName, startMigrationRequest);
         }
 
         public Task SaveMigrationArchive(string organizationName, int migrationId, string filePath) => new Task(() =>
