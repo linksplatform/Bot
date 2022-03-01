@@ -45,7 +45,7 @@ namespace Platform.Bot
                             new LastCommitActivityTrigger(api),
                             new ProtectMainBranchTrigger(api));
                     var pullRequenstTracker = new PullRequestTracker(api, new MergeDependabotBumpsTrigger(api));
-                    var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Directory.GetCurrentDirectory()));
+                    var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                     issueTracker.Start(cancellation.Token);
                     pullRequenstTracker.Start(cancellation.Token);
                     timestampTracker.Start(cancellation.Token);

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -19,13 +20,13 @@ public class CreateAndSaveOrganizationRepositoriesMigrationTrigger : ITrigger<Da
 
     private readonly FileStorage _linksStorage;
 
-    private string _filePath;
+    private string _directoryPath;
 
-    public CreateAndSaveOrganizationRepositoriesMigrationTrigger(GitHubStorage githubStorage, FileStorage linksStorage, string filePath)
+    public CreateAndSaveOrganizationRepositoriesMigrationTrigger(GitHubStorage githubStorage, FileStorage linksStorage, string directoryPath)
     {
         _githubStorage = githubStorage;
         _linksStorage = linksStorage;
-        _filePath = filePath;
+        _directoryPath = directoryPath;
 
     }
     public bool Condition(DateTime? dateTime)
@@ -50,7 +51,8 @@ public class CreateAndSaveOrganizationRepositoriesMigrationTrigger : ITrigger<Da
             return;
         }
         Console.WriteLine($"Saving migration {createMigrationResult.Id}.");
-        await _githubStorage.SaveMigrationArchive("linksplatform", createMigrationResult.Id, _filePath);
+        var fileName = Path.Combine(_directoryPath, $"migration_{createMigrationResult.Id}");
+        await _githubStorage.SaveMigrationArchive("linksplatform", createMigrationResult.Id, fileName);
         Console.WriteLine($"Migration {createMigrationResult.Id} is saved.");
     }
 }
