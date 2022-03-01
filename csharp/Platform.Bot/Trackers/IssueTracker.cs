@@ -20,7 +20,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage Storage { get; }
+        private GitHubStorage _storage { get; }
 
         /// <summary>
         /// <para>
@@ -28,7 +28,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public List<ITrigger<Issue>> Triggers { get; }
+        private IList<ITrigger<Issue>> _triggers { get; }
 
         /// <summary>
         /// <para>
@@ -44,10 +44,10 @@ namespace Platform.Bot.Trackers
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public IssueTracker(List<ITrigger<Issue>> triggers, GitHubStorage gitHubApi)
+        public IssueTracker(GitHubStorage gitHubApi, params ITrigger<Issue>[] triggers)
         {
-            Storage = gitHubApi;
-            Triggers = triggers;
+            _storage = gitHubApi;
+            _triggers = triggers;
         }
 
         /// <summary>
@@ -62,9 +62,9 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
-            foreach (var trigger in Triggers)
+            foreach (var trigger in _triggers)
             {
-                foreach (var issue in Storage.GetIssues())
+                foreach (var issue in _storage.GetIssues())
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {
