@@ -13,7 +13,9 @@ using Platform.Memory;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
+using Platform.Data.Doublets.Numbers.Raw;
 using Platform.Disposables;
 using TLinkAddress = System.UInt64;
 
@@ -33,11 +35,16 @@ namespace Storage.Local
         private readonly RawNumberToAddressConverter<TLinkAddress> _numberToAddressConverter;
         private readonly IConverter<string, TLinkAddress> _stringToUnicodeSequenceConverter;
         private readonly IConverter<TLinkAddress, string> _unicodeSequenceToStringConverter;
+        private readonly IConverter<IList<TLinkAddress>, TLinkAddress> _listToSequenceConverter;
+        private readonly IConverter<BigInteger, TLinkAddress> _bigIntederToRawNumberConverter;
+        private readonly IConverter<TLinkAddress, BigInteger> _rawNumberToBigIntegerConverter;
+        private readonly TLinkAddress _negativeNumberIndex;
         private readonly UnitedMemoryLinks<TLinkAddress> _disposableLinks;
         private readonly SynchronizedLinks<TLinkAddress> _synchronizedLinks;
         private readonly TLinkAddress _unicodeSymbolMarker;
         private readonly TLinkAddress _setMarker;
         private readonly TLinkAddress _fileMarker;
+        private readonly TLinkAddress _gitHubLastMigrationTimestampMarker;
         private readonly TLinkAddress Any;
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => _synchronizedLinks.Exists(currentMappingIndex) ? currentMappingIndex : _synchronizedLinks.CreateAndUpdate(_meaningRoot, _synchronizedLinks.Constants.Itself);
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => _synchronizedLinks.Exists(meaningRootIndex) ? meaningRootIndex : _synchronizedLinks.CreatePoint();
@@ -65,8 +72,10 @@ namespace Storage.Local
             _meaningRoot = GetOrCreateMeaningRoot(currentMappingLinkIndex++);
             _unicodeSymbolMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _unicodeSequenceMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _negativeNumberIndex = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _gitHubLastMigrationTimestampMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
             var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
@@ -77,6 +86,9 @@ namespace Storage.Local
             var sequenceWalker = new RightSequenceWalker<TLinkAddress>(_synchronizedLinks, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
             _stringToUnicodeSequenceConverter = new CachingConverterDecorator<string, TLinkAddress>(new StringToUnicodeSequenceConverter<TLinkAddress>(_synchronizedLinks, charToUnicodeSymbolConverter, balancedVariantConverter, _unicodeSequenceMarker));
             _unicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(new UnicodeSequenceToStringConverter<TLinkAddress>(_synchronizedLinks, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter));
+            _listToSequenceConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
+            _bigIntederToRawNumberConverter = new BigIntegerToRawNumberSequenceConverter<TLinkAddress>(_synchronizedLinks, _addressToNumberConverter, _listToSequenceConverter, _negativeNumberIndex);
+            _rawNumberToBigIntegerConverter = new RawNumberSequenceToBigIntegerConverter<TLinkAddress>(_synchronizedLinks, _numberToAddressConverter, _negativeNumberIndex);
         }
 
         /// <summary>
@@ -93,7 +105,7 @@ namespace Storage.Local
         /// <para>The link address</para>
         /// <para></para>
         /// </returns>
-        public TLinkAddress Convert(string str) => _stringToUnicodeSequenceConverter.Convert(str);
+        public TLinkAddress CreateString(string str) => _stringToUnicodeSequenceConverter.Convert(str);
 
         /// <summary>
         /// <para>
@@ -109,7 +121,21 @@ namespace Storage.Local
         /// <para>The string</para>
         /// <para></para>
         /// </returns>
-        public string Convert(TLinkAddress address) => _unicodeSequenceToStringConverter.Convert(address);
+        public string GetString(TLinkAddress address) => _unicodeSequenceToStringConverter.Convert(address);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="bigInteger"></param>
+        /// <returns></returns>
+        public TLinkAddress CreateBigInteger(BigInteger bigInteger) => _bigIntederToRawNumberConverter.Convert(bigInteger);
+
+        /// <summary>
+        ///
+        /// </summary>
+        /// <param name="address"></param>
+        /// <returns></returns>
+        public BigInteger GetBigInteger(TLinkAddress address) => _rawNumberToBigIntegerConverter.Convert(address);
 
         /// <summary>
         /// <para>
@@ -134,7 +160,7 @@ namespace Storage.Local
             var link = _synchronizedLinks.GetLink(address);
             if (_synchronizedLinks.GetSource(link) == _fileMarker)
             {
-                return Convert(_synchronizedLinks.GetTarget(link));
+                return GetString(_synchronizedLinks.GetTarget(link));
             }
             throw new InvalidOperationException("Link is not a file.");
         }
@@ -166,7 +192,7 @@ namespace Storage.Local
             List<File> files = new() { };
             foreach (var file in _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _fileMarker, target: Any)))
             {
-                files.Add(new File { Path = file.ToString(), Content = Convert(_synchronizedLinks.GetTarget(file)) });
+                files.Add(new File { Path = file.ToString(), Content = GetString(_synchronizedLinks.GetTarget(file)) });
             }
             return files;
         }
@@ -223,7 +249,7 @@ namespace Storage.Local
         /// <para>The link address</para>
         /// <para></para>
         /// </returns>
-        public TLinkAddress CreateFileSet(string fileSetName) => _synchronizedLinks.GetOrCreate(_setMarker, Convert(fileSetName));
+        public TLinkAddress CreateFileSet(string fileSetName) => _synchronizedLinks.GetOrCreate(_setMarker, CreateString(fileSetName));
 
         /// <summary>
         /// <para>
@@ -247,7 +273,7 @@ namespace Storage.Local
         /// <para>The link address</para>
         /// <para></para>
         /// </returns>
-        public TLinkAddress AddFileToSet(TLinkAddress set, TLinkAddress file, string path) => _synchronizedLinks.GetOrCreate(set, _synchronizedLinks.GetOrCreate(Convert(path), file));
+        public TLinkAddress AddFileToSet(TLinkAddress set, TLinkAddress file, string path) => _synchronizedLinks.GetOrCreate(set, _synchronizedLinks.GetOrCreate(CreateString(path), file));
 
         /// <summary>
         /// <para>
@@ -263,7 +289,7 @@ namespace Storage.Local
         /// <para>The link address</para>
         /// <para></para>
         /// </returns>
-        public TLinkAddress GetFileSet(string fileSetName) => _synchronizedLinks.SearchOrDefault(_setMarker, Convert(fileSetName));
+        public TLinkAddress GetFileSet(string fileSetName) => _synchronizedLinks.SearchOrDefault(_setMarker, CreateString(fileSetName));
         private IList<IList<TLinkAddress>?> GetFilesLinksFromSet(string set)
         {
             var fileSet = GetFileSet(set);
@@ -293,12 +319,14 @@ namespace Storage.Local
                 var pathAndFile = _synchronizedLinks.GetTarget(file);
                 files.Add(new File()
                 {
-                    Path = Convert(_synchronizedLinks.GetSource(pathAndFile)),
+                    Path = GetString(_synchronizedLinks.GetSource(pathAndFile)),
                     Content = GetFileContent(_synchronizedLinks.GetTarget(pathAndFile))
                 });
             }
             return files;
         }
+
+        // public void SetLastGithubMigrationTimeStamp()
 
         protected override void Dispose(bool manual, bool wasDisposed)
         {
