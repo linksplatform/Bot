@@ -9,7 +9,7 @@
   <ItemGroup>
     <PackageReference Include="Octokit" Version="0.50.0" />
     <PackageReference Include="Platform.Communication.Protocol.Lino" Version="0.4.0" />
-    <PackageReference Include="Platform.Data.Doublets" Version="0.6.7" />
+    <PackageReference Include="Platform.Data.Doublets" Version="0.13.2" />
     <PackageReference Include="Platform.Threading" Version="0.3.0" />
   </ItemGroup>
 
