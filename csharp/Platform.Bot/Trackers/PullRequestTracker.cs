@@ -3,18 +3,18 @@ using Octokit;
 using Storage.Remote.GitHub;
 using System.Collections.Generic;
 using System.Threading;
+using Platform.Collections.Lists;
 using Platform.Threading;
 
 namespace Platform.Bot.Trackers
 {
-    using TContext = PullRequest;
     /// <summary>
     /// <para>
     /// Represents the programmer role.
     /// </para>
     /// <para></para>
     /// </summary>
-    public class PullRequestTracker : ITracker<TContext>
+    public class PullRequestTracker : ITracker<PullRequest>
     {
         /// <summary>
         /// <para>
@@ -22,7 +22,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage Storage { get; }
+        private GitHubStorage _storage;
 
         /// <summary>
         /// <para>
@@ -30,7 +30,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public List<ITrigger<TContext>> Triggers { get; }
+        private IList<ITrigger<PullRequest>> _triggers;
 
         /// <summary>
         /// <para>
@@ -46,10 +46,10 @@ namespace Platform.Bot.Trackers
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public PullRequestTracker(List<ITrigger<TContext>> triggers, GitHubStorage storage)
+        public PullRequestTracker(GitHubStorage storage, params ITrigger<PullRequest>[] triggers)
         {
-            Storage = storage;
-            Triggers = triggers;
+            _storage = storage;
+            _triggers = triggers;
         }
 
         /// <summary>
@@ -64,19 +64,20 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
-            foreach (var trigger in Triggers)
+            foreach (var trigger in _triggers)
             {
-                foreach (var repository in Storage.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
+                foreach (var repository in _storage.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
                 {
-                    foreach (var pullRequest in Storage.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
+                    foreach (var pullRequest in _storage.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
                     {
                         if (cancellationToken.IsCancellationRequested)
                         {
                             return;
                         }
-                        if (trigger.Condition(pullRequest))
+                        var detailedPullRequest = _storage.Client.PullRequest.Get(repository.Id, pullRequest.Number).AwaitResult();
+                        if (trigger.Condition(detailedPullRequest))
                         {
-                            trigger.Action(pullRequest);
+                            trigger.Action(detailedPullRequest);
                         }
                     }
                 }
