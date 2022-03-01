@@ -3,7 +3,10 @@ using Platform.Exceptions;
 using Storage.Local;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading.Tasks;
+using Platform.Threading;
 
 namespace Storage.Remote.GitHub
 {
@@ -142,7 +145,8 @@ namespace Storage.Remote.GitHub
         /// <para>A read only list of pull request</para>
         /// <para></para>
         /// </returns>
-        public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) => Client.PullRequest.GetAllForRepository(owner, reposiroty).Result;
+        public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) => Client.PullRequest.GetAllForRepository(owner, reposiroty).AwaitResult();
+        public PullRequest GetPullRequest(int repositoryId, int number) => Client.PullRequest.Get(repositoryId, number).AwaitResult();
 
         /// <summary>
         /// <para>
@@ -232,5 +236,46 @@ namespace Storage.Remote.GitHub
             };
             Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, issueUpdate);
         }
+
+        #region Repositories
+
+        public IReadOnlyList<Repository> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName).AwaitResult();
+
+        public IReadOnlyList<string> GetAllRepositoryNames(string ownerName)
+        {
+            var repositoryNames = new List<string>();
+            var allRepositories = GetAllRepositories(ownerName);
+            foreach (var repository in allRepositories)
+            {
+                repositoryNames.Add(repository.Name);
+            }
+            return repositoryNames;
+        }
+
+        #endregion
+
+        #region Migrations
+
+        public IReadOnlyList<Migration> GetAllMigrations(string organizationName) => Client.Migration.Migrations.GetAll(organizationName).AwaitResult();
+
+        public void CreateMigration(string organizationName, params string[] repositoryNames)
+        {
+            CreateMigration(organizationName, new ReadOnlyCollection<string>(repositoryNames));
+        }
+
+        public Migration? CreateMigration(string organizationName, IReadOnlyList<string> repositoryNames)
+        {
+            var startMigrationRequest = new StartMigrationRequest(repositoryNames); ;
+            return Client.Migration.Migrations.Start(organizationName, startMigrationRequest).AwaitResult();
+        }
+
+        public Task SaveMigrationArchive(string organizationName, int migrationId, string filePath) => new Task(() =>
+        {
+            var migrationArchive = Client.Migration.Migrations.GetArchive(organizationName, migrationId).AwaitResult();
+            System.IO.File.WriteAllBytes(filePath, migrationArchive);
+        });
+
+        #endregion
+
     }
 }
