@@ -108,13 +108,13 @@ Represents the programmer role.
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_IssueTracker__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.IssueTracker.%23ctor(List%7BInterfaces.ITrigger%7BIssue%7D%7D%2CStorage.Remote.GitHub.GitHubStorage)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_IssueTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_Issue____.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.IssueTracker.%23ctor(Storage.Remote.GitHub.GitHubStorage%2CInterfaces.ITrigger%7BIssue%7D%5B%5D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L47">View Source</a>
+    <a href="https://github.com/linksplatform/Bot/blob/754cf6bc700f49e786a19e96d34c5228008f9b11/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L47">View Source</a>
   </span>
   <a id="Platform_Bot_Trackers_IssueTracker__ctor_" data-uid="Platform.Bot.Trackers.IssueTracker.#ctor*"></a>
-  <h4 id="Platform_Bot_Trackers_IssueTracker__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_" data-uid="Platform.Bot.Trackers.IssueTracker.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)">IssueTracker(List&lt;ITrigger&lt;Issue&gt;&gt;, GitHubStorage)</h4>
+  <h4 id="Platform_Bot_Trackers_IssueTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_Issue____" data-uid="Platform.Bot.Trackers.IssueTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{Issue}[])">IssueTracker(GitHubStorage, ITrigger&lt;Issue&gt;[])</h4>
   <div class="markdown level1 summary"><p>
 Initializes a new <a class="xref" href="Platform.Bot.Trackers.IssueTracker.html">IssueTracker</a> instance.
 </p>
@@ -123,7 +123,7 @@ Initializes a new <a class="xref" href="Platform.Bot.Trackers.IssueTracker.html"
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public IssueTracker(List&lt;ITrigger&lt;Issue&gt;&gt; triggers, GitHubStorage gitHubApi)</code></pre>
+    <pre><code class="lang-csharp hljs">public IssueTracker(GitHubStorage gitHubApi, params ITrigger&lt;Issue&gt;[] triggers)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -136,88 +136,18 @@ Initializes a new <a class="xref" href="Platform.Bot.Trackers.IssueTracker.html"
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">List</span>&lt;<a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;<span class="xref">Issue</span>&gt;&gt;</td>
-        <td><span class="parametername">triggers</span></td>
-        <td><p>A triggers.</p>
-<p>
-</td>
-      </tr>
-      <tr>
         <td><a class="xref" href="Storage.Remote.GitHub.GitHubStorage.html">GitHubStorage</a></td>
         <td><span class="parametername">gitHubApi</span></td>
         <td><p>A git hub api.</p>
 <p>
 </td>
       </tr>
-    </tbody>
-  </table>
-  <h3 id="properties">Properties
-  </h3>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_IssueTracker_Storage.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.IssueTracker.Storage%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L23">View Source</a>
-  </span>
-  <a id="Platform_Bot_Trackers_IssueTracker_Storage_" data-uid="Platform.Bot.Trackers.IssueTracker.Storage*"></a>
-  <h4 id="Platform_Bot_Trackers_IssueTracker_Storage" data-uid="Platform.Bot.Trackers.IssueTracker.Storage">Storage</h4>
-  <div class="markdown level1 summary"><p>
-The git hub api.
-</p>
+      <tr>
+        <td><a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;<span class="xref">Issue</span>&gt;[]</td>
+        <td><span class="parametername">triggers</span></td>
+        <td><p>A triggers.</p>
 <p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public GitHubStorage Storage { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="Storage.Remote.GitHub.GitHubStorage.html">GitHubStorage</a></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_IssueTracker_Triggers.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.IssueTracker.Triggers%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L31">View Source</a>
-  </span>
-  <a id="Platform_Bot_Trackers_IssueTracker_Triggers_" data-uid="Platform.Bot.Trackers.IssueTracker.Triggers*"></a>
-  <h4 id="Platform_Bot_Trackers_IssueTracker_Triggers" data-uid="Platform.Bot.Trackers.IssueTracker.Triggers">Triggers</h4>
-  <div class="markdown level1 summary"><p>
-The triggers.
-</p>
-<p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public List&lt;ITrigger&lt;Issue&gt;&gt; Triggers { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">List</span>&lt;<a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;<span class="xref">Issue</span>&gt;&gt;</td>
-        <td></td>
+</td>
       </tr>
     </tbody>
   </table>
@@ -228,7 +158,7 @@ The triggers.
     <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_IssueTracker_Start_CancellationToken_.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.IssueTracker.Start(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L63">View Source</a>
+    <a href="https://github.com/linksplatform/Bot/blob/754cf6bc700f49e786a19e96d34c5228008f9b11/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L63">View Source</a>
   </span>
   <a id="Platform_Bot_Trackers_IssueTracker_Start_" data-uid="Platform.Bot.Trackers.IssueTracker.Start*"></a>
   <h4 id="Platform_Bot_Trackers_IssueTracker_Start_CancellationToken_" data-uid="Platform.Bot.Trackers.IssueTracker.Start(CancellationToken)">Start(CancellationToken)</h4>
@@ -276,7 +206,7 @@ Starts the cancellation token.
                     <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_IssueTracker.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.IssueTracker%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L15" class="contribution-link">View Source</a>
+                    <a href="https://github.com/linksplatform/Bot/blob/754cf6bc700f49e786a19e96d34c5228008f9b11/csharp/Platform.Bot/Trackers/IssueTracker.cs/#L15" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>

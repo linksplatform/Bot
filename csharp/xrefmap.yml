@@ -295,40 +295,6 @@ references:
   fullName.vb: Interfaces.ITracker(Of TContext).Start
   nameWithType: ITracker<TContext>.Start
   nameWithType.vb: ITracker(Of TContext).Start
-- uid: Interfaces.ITracker`1.Storage
-  name: Storage
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Storage
-  commentId: P:Interfaces.ITracker`1.Storage
-  fullName: Interfaces.ITracker<TContext>.Storage
-  fullName.vb: Interfaces.ITracker(Of TContext).Storage
-  nameWithType: ITracker<TContext>.Storage
-  nameWithType.vb: ITracker(Of TContext).Storage
-- uid: Interfaces.ITracker`1.Storage*
-  name: Storage
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Storage_
-  commentId: Overload:Interfaces.ITracker`1.Storage
-  isSpec: "True"
-  fullName: Interfaces.ITracker<TContext>.Storage
-  fullName.vb: Interfaces.ITracker(Of TContext).Storage
-  nameWithType: ITracker<TContext>.Storage
-  nameWithType.vb: ITracker(Of TContext).Storage
-- uid: Interfaces.ITracker`1.Triggers
-  name: Triggers
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Triggers
-  commentId: P:Interfaces.ITracker`1.Triggers
-  fullName: Interfaces.ITracker<TContext>.Triggers
-  fullName.vb: Interfaces.ITracker(Of TContext).Triggers
-  nameWithType: ITracker<TContext>.Triggers
-  nameWithType.vb: ITracker(Of TContext).Triggers
-- uid: Interfaces.ITracker`1.Triggers*
-  name: Triggers
-  href: api/Interfaces.ITracker-1.html#Interfaces_ITracker_1_Triggers_
-  commentId: Overload:Interfaces.ITracker`1.Triggers
-  isSpec: "True"
-  fullName: Interfaces.ITracker<TContext>.Triggers
-  fullName.vb: Interfaces.ITracker(Of TContext).Triggers
-  nameWithType: ITracker<TContext>.Triggers
-  nameWithType.vb: ITracker(Of TContext).Triggers
 - uid: Interfaces.ITrigger`1
   name: ITrigger<TContext>
   href: api/Interfaces.ITrigger-1.html
@@ -378,21 +344,56 @@ references:
   commentId: N:Platform.Bot.Trackers
   fullName: Platform.Bot.Trackers
   nameWithType: Platform.Bot.Trackers
+- uid: Platform.Bot.Trackers.DateTimeTracker
+  name: DateTimeTracker
+  href: api/Platform.Bot.Trackers.DateTimeTracker.html
+  commentId: T:Platform.Bot.Trackers.DateTimeTracker
+  fullName: Platform.Bot.Trackers.DateTimeTracker
+  nameWithType: DateTimeTracker
+- uid: Platform.Bot.Trackers.DateTimeTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{System.Nullable{DateTime}}[])
+  name: DateTimeTracker(GitHubStorage, ITrigger<Nullable<DateTime>>[])
+  href: api/Platform.Bot.Trackers.DateTimeTracker.html#Platform_Bot_Trackers_DateTimeTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_System_Nullable_DateTime_____
+  commentId: M:Platform.Bot.Trackers.DateTimeTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{System.Nullable{DateTime}}[])
+  name.vb: DateTimeTracker(GitHubStorage, ITrigger(Of Nullable(Of DateTime))())
+  fullName: Platform.Bot.Trackers.DateTimeTracker.DateTimeTracker(Storage.Remote.GitHub.GitHubStorage, Interfaces.ITrigger<System.Nullable<DateTime>>[])
+  fullName.vb: Platform.Bot.Trackers.DateTimeTracker.DateTimeTracker(Storage.Remote.GitHub.GitHubStorage, Interfaces.ITrigger(Of System.Nullable(Of DateTime))())
+  nameWithType: DateTimeTracker.DateTimeTracker(GitHubStorage, ITrigger<Nullable<DateTime>>[])
+  nameWithType.vb: DateTimeTracker.DateTimeTracker(GitHubStorage, ITrigger(Of Nullable(Of DateTime))())
+- uid: Platform.Bot.Trackers.DateTimeTracker.#ctor*
+  name: DateTimeTracker
+  href: api/Platform.Bot.Trackers.DateTimeTracker.html#Platform_Bot_Trackers_DateTimeTracker__ctor_
+  commentId: Overload:Platform.Bot.Trackers.DateTimeTracker.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.DateTimeTracker.DateTimeTracker
+  nameWithType: DateTimeTracker.DateTimeTracker
+- uid: Platform.Bot.Trackers.DateTimeTracker.Start(CancellationToken)
+  name: Start(CancellationToken)
+  href: api/Platform.Bot.Trackers.DateTimeTracker.html#Platform_Bot_Trackers_DateTimeTracker_Start_CancellationToken_
+  commentId: M:Platform.Bot.Trackers.DateTimeTracker.Start(CancellationToken)
+  fullName: Platform.Bot.Trackers.DateTimeTracker.Start(CancellationToken)
+  nameWithType: DateTimeTracker.Start(CancellationToken)
+- uid: Platform.Bot.Trackers.DateTimeTracker.Start*
+  name: Start
+  href: api/Platform.Bot.Trackers.DateTimeTracker.html#Platform_Bot_Trackers_DateTimeTracker_Start_
+  commentId: Overload:Platform.Bot.Trackers.DateTimeTracker.Start
+  isSpec: "True"
+  fullName: Platform.Bot.Trackers.DateTimeTracker.Start
+  nameWithType: DateTimeTracker.Start
 - uid: Platform.Bot.Trackers.IssueTracker
   name: IssueTracker
   href: api/Platform.Bot.Trackers.IssueTracker.html
   commentId: T:Platform.Bot.Trackers.IssueTracker
   fullName: Platform.Bot.Trackers.IssueTracker
   nameWithType: IssueTracker
-- uid: Platform.Bot.Trackers.IssueTracker.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
-  name: IssueTracker(List<ITrigger<Issue>>, GitHubStorage)
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker__ctor_List_Interfaces_ITrigger_Issue___Storage_Remote_GitHub_GitHubStorage_
-  commentId: M:Platform.Bot.Trackers.IssueTracker.#ctor(List{Interfaces.ITrigger{Issue}},Storage.Remote.GitHub.GitHubStorage)
-  name.vb: IssueTracker(List(Of ITrigger(Of Issue)), GitHubStorage)
-  fullName: Platform.Bot.Trackers.IssueTracker.IssueTracker(List<Interfaces.ITrigger<Issue>>, Storage.Remote.GitHub.GitHubStorage)
-  fullName.vb: Platform.Bot.Trackers.IssueTracker.IssueTracker(List(Of Interfaces.ITrigger(Of Issue)), Storage.Remote.GitHub.GitHubStorage)
-  nameWithType: IssueTracker.IssueTracker(List<ITrigger<Issue>>, GitHubStorage)
-  nameWithType.vb: IssueTracker.IssueTracker(List(Of ITrigger(Of Issue)), GitHubStorage)
+- uid: Platform.Bot.Trackers.IssueTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{Issue}[])
+  name: IssueTracker(GitHubStorage, ITrigger<Issue>[])
+  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_Issue____
+  commentId: M:Platform.Bot.Trackers.IssueTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{Issue}[])
+  name.vb: IssueTracker(GitHubStorage, ITrigger(Of Issue)())
+  fullName: Platform.Bot.Trackers.IssueTracker.IssueTracker(Storage.Remote.GitHub.GitHubStorage, Interfaces.ITrigger<Issue>[])
+  fullName.vb: Platform.Bot.Trackers.IssueTracker.IssueTracker(Storage.Remote.GitHub.GitHubStorage, Interfaces.ITrigger(Of Issue)())
+  nameWithType: IssueTracker.IssueTracker(GitHubStorage, ITrigger<Issue>[])
+  nameWithType.vb: IssueTracker.IssueTracker(GitHubStorage, ITrigger(Of Issue)())
 - uid: Platform.Bot.Trackers.IssueTracker.#ctor*
   name: IssueTracker
   href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker__ctor_
@@ -413,47 +414,21 @@ references:
   isSpec: "True"
   fullName: Platform.Bot.Trackers.IssueTracker.Start
   nameWithType: IssueTracker.Start
-- uid: Platform.Bot.Trackers.IssueTracker.Storage
-  name: Storage
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Storage
-  commentId: P:Platform.Bot.Trackers.IssueTracker.Storage
-  fullName: Platform.Bot.Trackers.IssueTracker.Storage
-  nameWithType: IssueTracker.Storage
-- uid: Platform.Bot.Trackers.IssueTracker.Storage*
-  name: Storage
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Storage_
-  commentId: Overload:Platform.Bot.Trackers.IssueTracker.Storage
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.IssueTracker.Storage
-  nameWithType: IssueTracker.Storage
-- uid: Platform.Bot.Trackers.IssueTracker.Triggers
-  name: Triggers
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Triggers
-  commentId: P:Platform.Bot.Trackers.IssueTracker.Triggers
-  fullName: Platform.Bot.Trackers.IssueTracker.Triggers
-  nameWithType: IssueTracker.Triggers
-- uid: Platform.Bot.Trackers.IssueTracker.Triggers*
-  name: Triggers
-  href: api/Platform.Bot.Trackers.IssueTracker.html#Platform_Bot_Trackers_IssueTracker_Triggers_
-  commentId: Overload:Platform.Bot.Trackers.IssueTracker.Triggers
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.IssueTracker.Triggers
-  nameWithType: IssueTracker.Triggers
 - uid: Platform.Bot.Trackers.PullRequestTracker
   name: PullRequestTracker
   href: api/Platform.Bot.Trackers.PullRequestTracker.html
   commentId: T:Platform.Bot.Trackers.PullRequestTracker
   fullName: Platform.Bot.Trackers.PullRequestTracker
   nameWithType: PullRequestTracker
-- uid: Platform.Bot.Trackers.PullRequestTracker.#ctor(List{Interfaces.ITrigger{PullRequest}},Storage.Remote.GitHub.GitHubStorage)
-  name: PullRequestTracker(List<ITrigger<PullRequest>>, GitHubStorage)
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker__ctor_List_Interfaces_ITrigger_PullRequest___Storage_Remote_GitHub_GitHubStorage_
-  commentId: M:Platform.Bot.Trackers.PullRequestTracker.#ctor(List{Interfaces.ITrigger{PullRequest}},Storage.Remote.GitHub.GitHubStorage)
-  name.vb: PullRequestTracker(List(Of ITrigger(Of PullRequest)), GitHubStorage)
-  fullName: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker(List<Interfaces.ITrigger<PullRequest>>, Storage.Remote.GitHub.GitHubStorage)
-  fullName.vb: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker(List(Of Interfaces.ITrigger(Of PullRequest)), Storage.Remote.GitHub.GitHubStorage)
-  nameWithType: PullRequestTracker.PullRequestTracker(List<ITrigger<PullRequest>>, GitHubStorage)
-  nameWithType.vb: PullRequestTracker.PullRequestTracker(List(Of ITrigger(Of PullRequest)), GitHubStorage)
+- uid: Platform.Bot.Trackers.PullRequestTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{PullRequest}[])
+  name: PullRequestTracker(GitHubStorage, ITrigger<PullRequest>[])
+  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_PullRequest____
+  commentId: M:Platform.Bot.Trackers.PullRequestTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{PullRequest}[])
+  name.vb: PullRequestTracker(GitHubStorage, ITrigger(Of PullRequest)())
+  fullName: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker(Storage.Remote.GitHub.GitHubStorage, Interfaces.ITrigger<PullRequest>[])
+  fullName.vb: Platform.Bot.Trackers.PullRequestTracker.PullRequestTracker(Storage.Remote.GitHub.GitHubStorage, Interfaces.ITrigger(Of PullRequest)())
+  nameWithType: PullRequestTracker.PullRequestTracker(GitHubStorage, ITrigger<PullRequest>[])
+  nameWithType.vb: PullRequestTracker.PullRequestTracker(GitHubStorage, ITrigger(Of PullRequest)())
 - uid: Platform.Bot.Trackers.PullRequestTracker.#ctor*
   name: PullRequestTracker
   href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker__ctor_
@@ -474,38 +449,63 @@ references:
   isSpec: "True"
   fullName: Platform.Bot.Trackers.PullRequestTracker.Start
   nameWithType: PullRequestTracker.Start
-- uid: Platform.Bot.Trackers.PullRequestTracker.Storage
-  name: Storage
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Storage
-  commentId: P:Platform.Bot.Trackers.PullRequestTracker.Storage
-  fullName: Platform.Bot.Trackers.PullRequestTracker.Storage
-  nameWithType: PullRequestTracker.Storage
-- uid: Platform.Bot.Trackers.PullRequestTracker.Storage*
-  name: Storage
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Storage_
-  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.Storage
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.PullRequestTracker.Storage
-  nameWithType: PullRequestTracker.Storage
-- uid: Platform.Bot.Trackers.PullRequestTracker.Triggers
-  name: Triggers
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Triggers
-  commentId: P:Platform.Bot.Trackers.PullRequestTracker.Triggers
-  fullName: Platform.Bot.Trackers.PullRequestTracker.Triggers
-  nameWithType: PullRequestTracker.Triggers
-- uid: Platform.Bot.Trackers.PullRequestTracker.Triggers*
-  name: Triggers
-  href: api/Platform.Bot.Trackers.PullRequestTracker.html#Platform_Bot_Trackers_PullRequestTracker_Triggers_
-  commentId: Overload:Platform.Bot.Trackers.PullRequestTracker.Triggers
-  isSpec: "True"
-  fullName: Platform.Bot.Trackers.PullRequestTracker.Triggers
-  nameWithType: PullRequestTracker.Triggers
 - uid: Platform.Bot.Triggers
   name: Platform.Bot.Triggers
   href: api/Platform.Bot.Triggers.html
   commentId: N:Platform.Bot.Triggers
   fullName: Platform.Bot.Triggers
   nameWithType: Platform.Bot.Triggers
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger
+  name: CreateAndSaveOrganizationRepositoriesMigrationTrigger
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html
+  commentId: T:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage,Storage.Local.FileStorage,System.String)
+  name: CreateAndSaveOrganizationRepositoriesMigrationTrigger(GitHubStorage, FileStorage, String)
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html#Platform_Bot_Triggers_CreateAndSaveOrganizationRepositoriesMigrationTrigger__ctor_Storage_Remote_GitHub_GitHubStorage_Storage_Local_FileStorage_System_String_
+  commentId: M:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage,Storage.Local.FileStorage,System.String)
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.CreateAndSaveOrganizationRepositoriesMigrationTrigger(Storage.Remote.GitHub.GitHubStorage, Storage.Local.FileStorage, System.String)
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger.CreateAndSaveOrganizationRepositoriesMigrationTrigger(GitHubStorage, FileStorage, String)
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.#ctor*
+  name: CreateAndSaveOrganizationRepositoriesMigrationTrigger
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html#Platform_Bot_Triggers_CreateAndSaveOrganizationRepositoriesMigrationTrigger__ctor_
+  commentId: Overload:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.CreateAndSaveOrganizationRepositoriesMigrationTrigger
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger.CreateAndSaveOrganizationRepositoriesMigrationTrigger
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action(System.Nullable{DateTime})
+  name: Action(Nullable<DateTime>)
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html#Platform_Bot_Triggers_CreateAndSaveOrganizationRepositoriesMigrationTrigger_Action_System_Nullable_DateTime__
+  commentId: M:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action(System.Nullable{DateTime})
+  name.vb: Action(Nullable(Of DateTime))
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action(System.Nullable<DateTime>)
+  fullName.vb: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action(System.Nullable(Of DateTime))
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action(Nullable<DateTime>)
+  nameWithType.vb: CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action(Nullable(Of DateTime))
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action*
+  name: Action
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html#Platform_Bot_Triggers_CreateAndSaveOrganizationRepositoriesMigrationTrigger_Action_
+  commentId: Overload:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger.Action
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition(System.Nullable{DateTime})
+  name: Condition(Nullable<DateTime>)
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html#Platform_Bot_Triggers_CreateAndSaveOrganizationRepositoriesMigrationTrigger_Condition_System_Nullable_DateTime__
+  commentId: M:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition(System.Nullable{DateTime})
+  name.vb: Condition(Nullable(Of DateTime))
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition(System.Nullable<DateTime>)
+  fullName.vb: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition(System.Nullable(Of DateTime))
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition(Nullable<DateTime>)
+  nameWithType.vb: CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition(Nullable(Of DateTime))
+- uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition*
+  name: Condition
+  href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html#Platform_Bot_Triggers_CreateAndSaveOrganizationRepositoriesMigrationTrigger_Condition_
+  commentId: Overload:Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition
+  nameWithType: CreateAndSaveOrganizationRepositoriesMigrationTrigger.Condition
 - uid: Platform.Bot.Triggers.MergeDependabotBumpsTrigger
   name: MergeDependabotBumpsTrigger
   href: api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html
@@ -708,25 +708,19 @@ references:
   isSpec: "True"
   fullName: Storage.Local.FileStorage.AllLinksToString
   nameWithType: FileStorage.AllLinksToString
-- uid: Storage.Local.FileStorage.Convert(System.String)
-  name: Convert(String)
-  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_Convert_System_String_
-  commentId: M:Storage.Local.FileStorage.Convert(System.String)
-  fullName: Storage.Local.FileStorage.Convert(System.String)
-  nameWithType: FileStorage.Convert(String)
-- uid: Storage.Local.FileStorage.Convert(System.UInt64)
-  name: Convert(System.UInt64)
-  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_Convert_System_UInt64_
-  commentId: M:Storage.Local.FileStorage.Convert(System.UInt64)
-  fullName: Storage.Local.FileStorage.Convert(System.UInt64)
-  nameWithType: FileStorage.Convert(System.UInt64)
-- uid: Storage.Local.FileStorage.Convert*
-  name: Convert
-  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_Convert_
-  commentId: Overload:Storage.Local.FileStorage.Convert
+- uid: Storage.Local.FileStorage.CreateBigInteger(BigInteger)
+  name: CreateBigInteger(BigInteger)
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_CreateBigInteger_BigInteger_
+  commentId: M:Storage.Local.FileStorage.CreateBigInteger(BigInteger)
+  fullName: Storage.Local.FileStorage.CreateBigInteger(BigInteger)
+  nameWithType: FileStorage.CreateBigInteger(BigInteger)
+- uid: Storage.Local.FileStorage.CreateBigInteger*
+  name: CreateBigInteger
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_CreateBigInteger_
+  commentId: Overload:Storage.Local.FileStorage.CreateBigInteger
   isSpec: "True"
-  fullName: Storage.Local.FileStorage.Convert
-  nameWithType: FileStorage.Convert
+  fullName: Storage.Local.FileStorage.CreateBigInteger
+  nameWithType: FileStorage.CreateBigInteger
 - uid: Storage.Local.FileStorage.CreateFileSet(System.String)
   name: CreateFileSet(String)
   href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_CreateFileSet_System_String_
@@ -740,6 +734,19 @@ references:
   isSpec: "True"
   fullName: Storage.Local.FileStorage.CreateFileSet
   nameWithType: FileStorage.CreateFileSet
+- uid: Storage.Local.FileStorage.CreateString(System.String)
+  name: CreateString(String)
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_CreateString_System_String_
+  commentId: M:Storage.Local.FileStorage.CreateString(System.String)
+  fullName: Storage.Local.FileStorage.CreateString(System.String)
+  nameWithType: FileStorage.CreateString(String)
+- uid: Storage.Local.FileStorage.CreateString*
+  name: CreateString
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_CreateString_
+  commentId: Overload:Storage.Local.FileStorage.CreateString
+  isSpec: "True"
+  fullName: Storage.Local.FileStorage.CreateString
+  nameWithType: FileStorage.CreateString
 - uid: Storage.Local.FileStorage.Delete(System.UInt64)
   name: Delete(System.UInt64)
   href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_Delete_System_UInt64_
@@ -779,6 +786,19 @@ references:
   isSpec: "True"
   fullName: Storage.Local.FileStorage.GetAllFiles
   nameWithType: FileStorage.GetAllFiles
+- uid: Storage.Local.FileStorage.GetBigInteger(System.UInt64)
+  name: GetBigInteger(System.UInt64)
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_GetBigInteger_System_UInt64_
+  commentId: M:Storage.Local.FileStorage.GetBigInteger(System.UInt64)
+  fullName: Storage.Local.FileStorage.GetBigInteger(System.UInt64)
+  nameWithType: FileStorage.GetBigInteger(System.UInt64)
+- uid: Storage.Local.FileStorage.GetBigInteger*
+  name: GetBigInteger
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_GetBigInteger_
+  commentId: Overload:Storage.Local.FileStorage.GetBigInteger
+  isSpec: "True"
+  fullName: Storage.Local.FileStorage.GetBigInteger
+  nameWithType: FileStorage.GetBigInteger
 - uid: Storage.Local.FileStorage.GetFileContent(System.UInt64)
   name: GetFileContent(System.UInt64)
   href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_GetFileContent_System_UInt64_
@@ -818,6 +838,19 @@ references:
   isSpec: "True"
   fullName: Storage.Local.FileStorage.GetFilesFromSet
   nameWithType: FileStorage.GetFilesFromSet
+- uid: Storage.Local.FileStorage.GetString(System.UInt64)
+  name: GetString(System.UInt64)
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_GetString_System_UInt64_
+  commentId: M:Storage.Local.FileStorage.GetString(System.UInt64)
+  fullName: Storage.Local.FileStorage.GetString(System.UInt64)
+  nameWithType: FileStorage.GetString(System.UInt64)
+- uid: Storage.Local.FileStorage.GetString*
+  name: GetString
+  href: api/Storage.Local.FileStorage.html#Storage_Local_FileStorage_GetString_
+  commentId: Overload:Storage.Local.FileStorage.GetString
+  isSpec: "True"
+  fullName: Storage.Local.FileStorage.GetString
+  nameWithType: FileStorage.GetString
 - uid: Storage.Remote.GitHub
   name: Storage.Remote.GitHub
   href: api/Storage.Remote.GitHub.html
@@ -862,6 +895,31 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.CloseIssue
   nameWithType: GitHubStorage.CloseIssue
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String,IReadOnlyList{System.String})
+  name: CreateMigration(String, IReadOnlyList<String>)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateMigration_System_String_IReadOnlyList_System_String__
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String,IReadOnlyList{System.String})
+  name.vb: CreateMigration(String, IReadOnlyList(Of String))
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String, IReadOnlyList<System.String>)
+  fullName.vb: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String, IReadOnlyList(Of System.String))
+  nameWithType: GitHubStorage.CreateMigration(String, IReadOnlyList<String>)
+  nameWithType.vb: GitHubStorage.CreateMigration(String, IReadOnlyList(Of String))
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String,System.String[])
+  name: CreateMigration(String, String[])
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateMigration_System_String_System_String___
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String,System.String[])
+  name.vb: CreateMigration(String, String())
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String, System.String[])
+  fullName.vb: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String, System.String())
+  nameWithType: GitHubStorage.CreateMigration(String, String[])
+  nameWithType.vb: GitHubStorage.CreateMigration(String, String())
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateMigration*
+  name: CreateMigration
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateMigration_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.CreateMigration
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateMigration
+  nameWithType: GitHubStorage.CreateMigration
 - uid: Storage.Remote.GitHub.GitHubStorage.CreateOrUpdateFile(System.String,System.String,Storage.Local.File)
   name: CreateOrUpdateFile(String, String, File)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateOrUpdateFile_System_String_System_String_Storage_Local_File_
@@ -875,6 +933,45 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.CreateOrUpdateFile
   nameWithType: GitHubStorage.CreateOrUpdateFile
+- uid: Storage.Remote.GitHub.GitHubStorage.GetAllMigrations(System.String)
+  name: GetAllMigrations(String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllMigrations_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetAllMigrations(System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllMigrations(System.String)
+  nameWithType: GitHubStorage.GetAllMigrations(String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetAllMigrations*
+  name: GetAllMigrations
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllMigrations_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetAllMigrations
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllMigrations
+  nameWithType: GitHubStorage.GetAllMigrations
+- uid: Storage.Remote.GitHub.GitHubStorage.GetAllRepositories(System.String)
+  name: GetAllRepositories(String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllRepositories_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetAllRepositories(System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositories(System.String)
+  nameWithType: GitHubStorage.GetAllRepositories(String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetAllRepositories*
+  name: GetAllRepositories
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllRepositories_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetAllRepositories
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositories
+  nameWithType: GitHubStorage.GetAllRepositories
+- uid: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames(System.String)
+  name: GetAllRepositoryNames(String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllRepositoryNames_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames(System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames(System.String)
+  nameWithType: GitHubStorage.GetAllRepositoryNames(String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames*
+  name: GetAllRepositoryNames
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllRepositoryNames_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames
+  nameWithType: GitHubStorage.GetAllRepositoryNames
 - uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String)
   name: GetCommits(String, String)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_String_System_String_
@@ -913,6 +1010,19 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.GetIssues
   nameWithType: GitHubStorage.GetIssues
+- uid: Storage.Remote.GitHub.GitHubStorage.GetPullRequest(System.Int32,System.Int32)
+  name: GetPullRequest(Int32, Int32)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetPullRequest_System_Int32_System_Int32_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetPullRequest(System.Int32,System.Int32)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetPullRequest(System.Int32, System.Int32)
+  nameWithType: GitHubStorage.GetPullRequest(Int32, Int32)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetPullRequest*
+  name: GetPullRequest
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetPullRequest_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetPullRequest
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetPullRequest
+  nameWithType: GitHubStorage.GetPullRequest
 - uid: Storage.Remote.GitHub.GitHubStorage.GetPullRequests(System.String,System.String)
   name: GetPullRequests(String, String)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetPullRequests_System_String_System_String_
@@ -945,3 +1055,16 @@ references:
   commentId: F:Storage.Remote.GitHub.GitHubStorage.Owner
   fullName: Storage.Remote.GitHub.GitHubStorage.Owner
   nameWithType: GitHubStorage.Owner
+- uid: Storage.Remote.GitHub.GitHubStorage.SaveMigrationArchive(System.String,System.Int32,System.String)
+  name: SaveMigrationArchive(String, Int32, String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_SaveMigrationArchive_System_String_System_Int32_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.SaveMigrationArchive(System.String,System.Int32,System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.SaveMigrationArchive(System.String, System.Int32, System.String)
+  nameWithType: GitHubStorage.SaveMigrationArchive(String, Int32, String)
+- uid: Storage.Remote.GitHub.GitHubStorage.SaveMigrationArchive*
+  name: SaveMigrationArchive
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_SaveMigrationArchive_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.SaveMigrationArchive
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.SaveMigrationArchive
+  nameWithType: GitHubStorage.SaveMigrationArchive

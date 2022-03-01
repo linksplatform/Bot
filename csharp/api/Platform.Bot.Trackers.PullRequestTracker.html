@@ -108,13 +108,13 @@ Represents the programmer role.
   </h3>
   <span class="small pull-right mobile-hide">
     <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_PullRequestTracker__ctor_List_Interfaces_ITrigger_PullRequest___Storage_Remote_GitHub_GitHubStorage_.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.PullRequestTracker.%23ctor(List%7BInterfaces.ITrigger%7BPullRequest%7D%7D%2CStorage.Remote.GitHub.GitHubStorage)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
+    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_PullRequestTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_PullRequest____.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.PullRequestTracker.%23ctor(Storage.Remote.GitHub.GitHubStorage%2CInterfaces.ITrigger%7BPullRequest%7D%5B%5D)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L49">View Source</a>
+    <a href="https://github.com/linksplatform/Bot/blob/754cf6bc700f49e786a19e96d34c5228008f9b11/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L49">View Source</a>
   </span>
   <a id="Platform_Bot_Trackers_PullRequestTracker__ctor_" data-uid="Platform.Bot.Trackers.PullRequestTracker.#ctor*"></a>
-  <h4 id="Platform_Bot_Trackers_PullRequestTracker__ctor_List_Interfaces_ITrigger_PullRequest___Storage_Remote_GitHub_GitHubStorage_" data-uid="Platform.Bot.Trackers.PullRequestTracker.#ctor(List{Interfaces.ITrigger{PullRequest}},Storage.Remote.GitHub.GitHubStorage)">PullRequestTracker(List&lt;ITrigger&lt;PullRequest&gt;&gt;, GitHubStorage)</h4>
+  <h4 id="Platform_Bot_Trackers_PullRequestTracker__ctor_Storage_Remote_GitHub_GitHubStorage_Interfaces_ITrigger_PullRequest____" data-uid="Platform.Bot.Trackers.PullRequestTracker.#ctor(Storage.Remote.GitHub.GitHubStorage,Interfaces.ITrigger{PullRequest}[])">PullRequestTracker(GitHubStorage, ITrigger&lt;PullRequest&gt;[])</h4>
   <div class="markdown level1 summary"><p>
 Initializes a new <a class="xref" href="Platform.Bot.Trackers.IssueTracker.html">IssueTracker</a> instance.
 </p>
@@ -123,7 +123,7 @@ Initializes a new <a class="xref" href="Platform.Bot.Trackers.IssueTracker.html"
   <div class="markdown level1 conceptual"></div>
   <h5 class="decalaration">Declaration</h5>
   <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public PullRequestTracker(List&lt;ITrigger&lt;PullRequest&gt;&gt; triggers, GitHubStorage storage)</code></pre>
+    <pre><code class="lang-csharp hljs">public PullRequestTracker(GitHubStorage storage, params ITrigger&lt;PullRequest&gt;[] triggers)</code></pre>
   </div>
   <h5 class="parameters">Parameters</h5>
   <table class="table table-bordered table-striped table-condensed">
@@ -136,88 +136,18 @@ Initializes a new <a class="xref" href="Platform.Bot.Trackers.IssueTracker.html"
     </thead>
     <tbody>
       <tr>
-        <td><span class="xref">List</span>&lt;<a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;<span class="xref">PullRequest</span>&gt;&gt;</td>
-        <td><span class="parametername">triggers</span></td>
-        <td><p>A triggers.</p>
-<p>
-</td>
-      </tr>
-      <tr>
         <td><a class="xref" href="Storage.Remote.GitHub.GitHubStorage.html">GitHubStorage</a></td>
         <td><span class="parametername">storage</span></td>
         <td><p>A git hub api.</p>
 <p>
 </td>
       </tr>
-    </tbody>
-  </table>
-  <h3 id="properties">Properties
-  </h3>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_PullRequestTracker_Storage.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.PullRequestTracker.Storage%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L25">View Source</a>
-  </span>
-  <a id="Platform_Bot_Trackers_PullRequestTracker_Storage_" data-uid="Platform.Bot.Trackers.PullRequestTracker.Storage*"></a>
-  <h4 id="Platform_Bot_Trackers_PullRequestTracker_Storage" data-uid="Platform.Bot.Trackers.PullRequestTracker.Storage">Storage</h4>
-  <div class="markdown level1 summary"><p>
-The git hub api.
-</p>
+      <tr>
+        <td><a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;<span class="xref">PullRequest</span>&gt;[]</td>
+        <td><span class="parametername">triggers</span></td>
+        <td><p>A triggers.</p>
 <p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public GitHubStorage Storage { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><a class="xref" href="Storage.Remote.GitHub.GitHubStorage.html">GitHubStorage</a></td>
-        <td></td>
-      </tr>
-    </tbody>
-  </table>
-  <span class="small pull-right mobile-hide">
-    <span class="divider">|</span>
-    <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_PullRequestTracker_Triggers.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.PullRequestTracker.Triggers%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
-  </span>
-  <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L33">View Source</a>
-  </span>
-  <a id="Platform_Bot_Trackers_PullRequestTracker_Triggers_" data-uid="Platform.Bot.Trackers.PullRequestTracker.Triggers*"></a>
-  <h4 id="Platform_Bot_Trackers_PullRequestTracker_Triggers" data-uid="Platform.Bot.Trackers.PullRequestTracker.Triggers">Triggers</h4>
-  <div class="markdown level1 summary"><p>
-The triggers.
-</p>
-<p>
-</div>
-  <div class="markdown level1 conceptual"></div>
-  <h5 class="decalaration">Declaration</h5>
-  <div class="codewrapper">
-    <pre><code class="lang-csharp hljs">public List&lt;ITrigger&lt;PullRequest&gt;&gt; Triggers { get; }</code></pre>
-  </div>
-  <h5 class="propertyValue">Property Value</h5>
-  <table class="table table-bordered table-striped table-condensed">
-    <thead>
-      <tr>
-        <th>Type</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td><span class="xref">List</span>&lt;<a class="xref" href="Interfaces.ITrigger-1.html">ITrigger</a>&lt;<span class="xref">PullRequest</span>&gt;&gt;</td>
-        <td></td>
+</td>
       </tr>
     </tbody>
   </table>
@@ -228,7 +158,7 @@ The triggers.
     <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_PullRequestTracker_Start_CancellationToken_.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.PullRequestTracker.Start(CancellationToken)%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A">Improve this Doc</a>
   </span>
   <span class="small pull-right mobile-hide">
-    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L65">View Source</a>
+    <a href="https://github.com/linksplatform/Bot/blob/754cf6bc700f49e786a19e96d34c5228008f9b11/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L65">View Source</a>
   </span>
   <a id="Platform_Bot_Trackers_PullRequestTracker_Start_" data-uid="Platform.Bot.Trackers.PullRequestTracker.Start*"></a>
   <h4 id="Platform_Bot_Trackers_PullRequestTracker_Start_CancellationToken_" data-uid="Platform.Bot.Trackers.PullRequestTracker.Start(CancellationToken)">Start(CancellationToken)</h4>
@@ -276,7 +206,7 @@ Starts the cancellation token.
                     <a href="https://github.com/linksplatform/Bot/new/master/apiSpec/new?filename=Platform_Bot_Trackers_PullRequestTracker.md&amp;value=---%0Auid%3A%20Platform.Bot.Trackers.PullRequestTracker%0Asummary%3A%20'*You%20can%20override%20summary%20for%20the%20API%20here%20using%20*MARKDOWN*%20syntax'%0A---%0A%0A*Please%20type%20below%20more%20information%20about%20this%20API%3A*%0A%0A" class="contribution-link">Improve this Doc</a>
                   </li>
                   <li>
-                    <a href="https://github.com/linksplatform/Bot/blob/fb19e3b6b715dc05a4a7cd95c920735a7910de4f/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L17" class="contribution-link">View Source</a>
+                    <a href="https://github.com/linksplatform/Bot/blob/754cf6bc700f49e786a19e96d34c5228008f9b11/csharp/Platform.Bot/Trackers/PullRequestTracker.cs/#L17" class="contribution-link">View Source</a>
                   </li>
                 </ul>
               </div>
