@@ -22,18 +22,23 @@ namespace Platform.Bot.Triggers
             {
                 return false;
             }
-            var isTestAndDeployCompleted = false;
+            var isDeployCheckCompleted = false;
+            var hasDeployCheck = false;
             var repositoryId = pullRequest.Base.Repository.Id;
             var checks = _githubStorage.Client.Check.Run.GetAllForReference(repositoryId, pullRequest.Head.Sha).AwaitResult();
             foreach (var checkRun in checks.CheckRuns)
             {
-                if (checkRun.Name is "testAndDeploy" or "deploy" && checkRun.Status.Value == CheckStatus.Completed)
+                if (checkRun.Name is "testAndDeploy" or "deploy")
                 {
-                    isTestAndDeployCompleted = true;
+                    hasDeployCheck = true;
+                    if(CheckStatus.Completed == checkRun.Status.Value)
+                    {
+                        isDeployCheckCompleted = true;
+                    }
                 }
             }
             var isMergable = pullRequest.Mergeable ?? false;
-            return isTestAndDeployCompleted && isMergable;
+            return (isDeployCheckCompleted || !hasDeployCheck) && isMergable;
         }
 
         public void Action(PullRequest pullRequest)
