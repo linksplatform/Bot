@@ -62,17 +62,26 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
-            foreach (var trigger in _triggers)
+            Console.WriteLine("issue Trecker has been started");
+            while (!cancellationToken.IsCancellationRequested)
+
             {
                 foreach (var issue in _storage.GetIssues())
                 {
-                    if (cancellationToken.IsCancellationRequested)
+                    try
                     {
-                        return;
+                        foreach (var issue in GitHubApi.GetIssues())
+                        {
+                            if (trigger.Condition(issue))
+                            {
+                                trigger.Action(issue);
+                            }
+                        }
+
                     }
-                    if (trigger.Condition(issue))
+                    catch (Exception ex)
                     {
-                        trigger.Action(issue);
+                        Console.WriteLine(ex);
                     }
                 }
             }

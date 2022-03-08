@@ -10,6 +10,7 @@ using System.IO;
 using System.Threading;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
+using System.Threading.Tasks;
 
 namespace Platform.Bot
 {
@@ -29,28 +30,21 @@ namespace Platform.Bot
             var token = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Token", args);
             var appName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "App Name", args);
             var databaseFileName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Database file name", args);
-            var fileSetName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "File set name", args);
-            var minimumInteractionIntervalStringInputInSeconds = ConsoleHelpers.GetOrReadArgument(argumentIndex, "Minimum interaction interval in seconds", args);
-            var minimumInteractionInterval = TimeSpan.FromSeconds(Int32.Parse(minimumInteractionIntervalStringInputInSeconds));
+            var fileSetName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "File set name ", args);
+            var discordToken = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Token for discord bot", args);
+            var OrgName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Name of the organization",args);
+
             var dbContext = new FileStorage(databaseFileName);
             Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
+            new LinksPlatformDiscordBot.BotStartup(discordToken, dbContext).StartupAsync();
             try
             {
-                while (true)
-                {
-                    var api = new GitHubStorage(username, token, appName);
-                    var issueTracker = new IssueTracker(api,
-                            new HelloWorldTrigger(api, dbContext, fileSetName),
-                            new OrganizationLastMonthActivityTrigger(api),
-                            new LastCommitActivityTrigger(api),
-                            new ProtectMainBranchTrigger(api));
-                    var pullRequenstTracker = new PullRequestTracker(api, new MergeDependabotBumpsTrigger(api));
-                    var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
-                    issueTracker.Start(cancellation.Token);
-                    pullRequenstTracker.Start(cancellation.Token);
-                    timestampTracker.Start(cancellation.Token);
-                    Thread.Sleep(minimumInteractionInterval);
-                }
+                var api = new GitHubStorage(username, token, appName);
+                Task.Run(() => new InviteToOrgTracker(OrgName, 1000, dbContext, api).Start(cancellation.Token));
+
+                new InviteToOrgTracker("LinksPlatfrom", 1200, dbContext, api).Start(cancellation.Token);
+                new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start(cancellation.Token);
+
             }
             catch (Exception ex)
             {

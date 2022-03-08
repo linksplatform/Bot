@@ -5,14 +5,15 @@
     <TargetFramework>net6</TargetFramework>
     <Nullable>enable</Nullable>
   </PropertyGroup>
-
   <ItemGroup>
+    <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
     <PackageReference Include="Octokit" Version="0.50.0" />
     <PackageReference Include="Platform.Communication.Protocol.Lino" Version="0.4.0" />
     <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.0" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\DiscordBot\DiscordBot.csproj" />
     <ProjectReference Include="..\Interfaces\Interfaces.csproj" />
     <ProjectReference Include="..\Storage\Storage.csproj" />
   </ItemGroup>
