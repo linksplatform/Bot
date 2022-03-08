@@ -1,7 +1,6 @@
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
-using System;
 using System.Collections.Generic;
 using System.Threading;
 
@@ -21,15 +20,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
-
-        /// <summary>
-        /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
+        private GitHubStorage _storage { get; }
 
         /// <summary>
         /// <para>
@@ -37,7 +28,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public List<ITrigger<Issue>> Triggers { get; }
+        private IList<ITrigger<Issue>> _triggers { get; }
 
         /// <summary>
         /// <para>
@@ -49,17 +40,15 @@ namespace Platform.Bot.Trackers
         /// <para>A triggers.</para>
         /// <para></para>
         /// </param>
-        /// <param name="gitHubAPI">
+        /// <param name="gitHubApi">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public IssueTracker(List<ITrigger<Issue>> triggers, GitHubStorage gitHubApi)
+        public IssueTracker(GitHubStorage gitHubApi, params ITrigger<Issue>[] triggers)
         {
-            GitHubApi = gitHubApi;
-            Triggers = triggers;
-            MinimumInteractionInterval = gitHubApi.MinimumInteractionInterval;
+            _storage = gitHubApi;
+            _triggers = triggers;
         }
-
 
         /// <summary>
         /// <para>
@@ -75,8 +64,9 @@ namespace Platform.Bot.Trackers
         {
             Console.WriteLine("issue Trecker has been started");
             while (!cancellationToken.IsCancellationRequested)
+
             {
-                foreach (var trigger in Triggers)
+                foreach (var issue in _storage.GetIssues())
                 {
                     try
                     {
@@ -87,13 +77,13 @@ namespace Platform.Bot.Trackers
                                 trigger.Action(issue);
                             }
                         }
+
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine(ex);
                     }
                 }
-                Thread.Sleep(MinimumInteractionInterval);
             }
         }
     }

@@ -4,11 +4,14 @@
 from datetime import datetime, timedelta
 from typing import NoReturn, List, Dict, Any
 
-from modules.data_service import BetterBotBaseDataService
-from modules.commands import Commands
+from saya import Vk
+import requests
+
+from modules import (
+    BetterBotBaseDataService, Commands
+)
 from tokens import BOT_TOKEN
 from userbot import UserBot
-from saya import Vk
 import patterns
 import config
 
@@ -27,7 +30,11 @@ class Bot(Vk):
     ):
         """Auth as VK group and register commands.
         """
-        Vk.__init__(self, token=token, group_id=group_id, debug=debug)
+        Vk.__init__(
+            self, token=token,
+            group_id=group_id, debug=debug,
+            api='5.131'
+        )
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
@@ -53,6 +60,8 @@ class Bot(Vk):
             (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
             (patterns.BOTTOM_LANGUAGES,
              lambda: self.commands.top_langs(True)),
+            (patterns.WHAT_IS, self.commands.what_is),
+            (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
         )
 
@@ -87,17 +96,20 @@ class Bot(Vk):
             if ids:
                 self.userbot.delete_messages(ids, peer)
 
-        user = self.data.get_or_create_user(from_id, self) if from_id > 0 else None
+        user = self.data.get_user(from_id, self) if from_id > 0 else None
 
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
         selected_user = (
-            self.data.get_or_create_user(selected_message["from_id"], self)
-            if selected_message else None)
+            self.data.get_user(selected_message['from_id'], self)
+            if selected_message and selected_message['from_id'] > 0 else None)
 
-        self.commands.process(
-            msg, peer_id, from_id, messages, msg_id,
-            user, selected_user)
+        try:
+            self.commands.process(
+                msg, peer_id, from_id, messages, msg_id,
+                user, selected_user)
+        except Exception as e:
+            print(e)
 
 
     def delete_message(
@@ -117,12 +129,20 @@ class Bot(Vk):
             }
             self.messages_to_delete[peer_id].append(data)
 
-    def get_members(self, peer_id: int):
+    def get_members(
+        self,
+        peer_id: int
+    ) -> Dict[str, Any]:
         """Returns all conversation members.
         """
-        return self.messages.getConversationMembers(peer_id=peer_id)
+        return self.call_method(
+            'messages.getConversationMembers',
+            dict(peer_id=peer_id))
 
-    def get_members_ids(self, peer_id: int):
+    def get_members_ids(
+        self,
+        peer_id: int
+    ) -> List[int]:
         """Returns all conversation member's IDs
         """
         members = self.get_members(peer_id)
@@ -138,22 +158,23 @@ class Bot(Vk):
     ) -> NoReturn:
         """Sends message to chat with {peer_id}.
 
-        Arguments:
-        - {msg} -- message text;
-        - {peer_id} -- chat ID.
+        :param msg: message text
+        :param peer_id: chat ID
         """
-        self.messages.send(
-            message=msg, peer_id=peer_id,
-            disable_mentions=1, random_id=0
-        )
+        self.call_method(
+            'messages.send',
+            dict(
+                message=msg, peer_id=peer_id,
+                disable_mentions=1, random_id=0))
 
     def get_user_name(
         self,
-        user_id: int,
+        uid: int,
         name_case: str = "nom"
     ) -> str:
         """Returns user firstname.
 
+        :param uid: user ID
         :param name_case: The declension case for the user's first and last name.
             Possible values:
             • Nominative – nom,
@@ -163,72 +184,18 @@ class Bot(Vk):
             • instrumental – ins,
             • prepositional – abl.
         """
-        return self.users.get(user_ids=user_id, name_case=name_case)['response'][0]["first_name"]
-
+        return self.call_method(
+            'users.get', dict(user_ids=uid, name_case=name_case)
+        )['response'][0]["first_name"]
 
     @staticmethod
-    def get_messages(event):
+    def get_messages(
+        event: Dict[str, Any]
+    ) -> List[Dict[str, Any]]:
         """Returns forward messages or reply message if available.
         """
         reply_message = event.get("reply_message", {})
         return [reply_message] if reply_message else event.get("fwd_messages", [])
-
-    @staticmethod
-    def get_default_programming_language(
-        language: str
-    ) -> str:
-        """Returns default appearance of language
-        """
-        language = language.lower()
-        for lang in config.DEFAULT_PROGRAMMING_LANGUAGES:
-            if lang.replace('\\', '').lower() == language:
-                return lang
-        return ""
-
-    @staticmethod
-    def contains_string(
-        strings: List[str],
-        matched_string: List[str],
-        ignore_case: bool
-    ) -> bool:
-        """Returns True if `matched_string` in `strings`.
-        """
-        if ignore_case:
-            matched_string = matched_string.lower()
-            for string in strings:
-                if string.lower() == matched_string:
-                    return True
-        else:
-            for string in strings:
-                if string == matched_string:
-                    return True
-        return False
-
-    @staticmethod
-    def contains_all_strings(
-        strings: List[str],
-        matched_strings: List[str],
-        ignore_case: bool
-    ) -> bool:
-        """Returns True if `strings` in `matched_strings`.
-        """
-        matched_strings_count = len(matched_strings)
-        for string in strings:
-            if Bot.contains_string(matched_strings, string, ignore_case):
-                matched_strings_count -= 1
-                if matched_strings_count == 0:
-                    return True
-        return False
-
-    @staticmethod
-    def karma_limit(karma: int) -> int:
-        """Returns karma hours limit.
-        """
-        for limit_item in config.KARMA_LIMIT_HOURS:
-            if not limit_item["min_karma"] or karma >= limit_item["min_karma"]:
-                if not limit_item["max_karma"] or karma < limit_item["max_karma"]:
-                    return limit_item["limit"]
-        return 168  # hours (a week)
 
 
 if __name__ == '__main__':

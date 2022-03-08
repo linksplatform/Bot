@@ -16,30 +16,6 @@ namespace Interfaces
     {
         /// <summary>
         /// <para>
-        /// The git hub api.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public GitHubStorage GitHubApi { get; }
-
-        /// <summary>
-        /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
-
-        /// <summary>
-        /// <para>
-        /// The triggers.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public List<ITrigger<TContext>> Triggers { get; }
-
-        /// <summary>
-        /// <para>
         /// Starts the cancellation token.
         /// </para>
         /// <para></para>

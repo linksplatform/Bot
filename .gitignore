@@ -478,6 +478,10 @@ dmypy.json
 users/*
 python/users/*
 
+# unittests
+test_db/*
+python/test_db/*
+
 # Visual Studio
 .vs
 

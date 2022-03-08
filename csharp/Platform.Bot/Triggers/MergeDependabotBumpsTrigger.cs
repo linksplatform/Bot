@@ -6,37 +6,46 @@ using Storage.Remote.GitHub;
 
 namespace Platform.Bot.Triggers
 {
-    using TContext = PullRequest;
-    public class MergeDependabotBumpsTrigger : ITrigger<TContext>
+    public class MergeDependabotBumpsTrigger : ITrigger<PullRequest>
     {
-        private readonly int _dependaBotId = 49699333;
-        private readonly GitHubStorage Storage;
+        private const int DependabotId = 49699333;
+        private readonly GitHubStorage _githubStorage;
         public MergeDependabotBumpsTrigger(GitHubStorage storage)
         {
-            Storage = storage;
+            _githubStorage = storage;
         }
 
-        public bool Condition(TContext context)
+        public bool Condition(PullRequest pullRequest)
         {
-            var isDependabotAuthor = _dependaBotId == context.User.Id;
-            var isTestAndDeployCompleted = false;
-            var repositoryId = context.Base.Repository.Id;
-            var checks = Storage.Client.Check.Run.GetAllForReference(repositoryId, context.Head.Sha).AwaitResult();
+            var isDependabotAuthor = DependabotId == pullRequest.User.Id;
+            if (!isDependabotAuthor)
+            {
+                return false;
+            }
+            var isDeployCheckCompleted = false;
+            var hasDeployCheck = false;
+            var repositoryId = pullRequest.Base.Repository.Id;
+            var checks = _githubStorage.Client.Check.Run.GetAllForReference(repositoryId, pullRequest.Head.Sha).AwaitResult();
             foreach (var checkRun in checks.CheckRuns)
             {
-                if (checkRun.Name == "testAndDeploy" && checkRun.Status.Value == CheckStatus.Completed)
+                if (checkRun.Name is "testAndDeploy" or "deploy")
                 {
-                    isTestAndDeployCompleted = true;
+                    hasDeployCheck = true;
+                    if(CheckStatus.Completed == checkRun.Status.Value)
+                    {
+                        isDeployCheckCompleted = true;
+                    }
                 }
             }
-            return isDependabotAuthor && isTestAndDeployCompleted;
+            var isMergable = pullRequest.Mergeable ?? false;
+            return (isDeployCheckCompleted || !hasDeployCheck) && isMergable;
         }
 
-        public void Action(TContext context)
+        public void Action(PullRequest pullRequest)
         {
-            var repositoryId = context.Base.Repository.Id;
-            var prMerge = Storage.Client.PullRequest.Merge(repositoryId, context.Number, new MergePullRequest()).AwaitResult();
-            Console.WriteLine($"{context.HtmlUrl} is {(prMerge.Merged ? "successfully":"not successfully")} merged.");
+            var repositoryId = pullRequest.Base.Repository.Id;
+            var prMerge = _githubStorage.Client.PullRequest.Merge(repositoryId, pullRequest.Number, new MergePullRequest()).AwaitResult();
+            Console.WriteLine($"{pullRequest.HtmlUrl} is {(prMerge.Merged ? "successfully":"not successfully")} merged.");
         }
     }
 }

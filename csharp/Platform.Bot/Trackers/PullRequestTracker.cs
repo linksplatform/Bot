@@ -1,21 +1,20 @@
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
-using System;
 using System.Collections.Generic;
 using System.Threading;
+using Platform.Collections.Lists;
 using Platform.Threading;
 
 namespace Platform.Bot.Trackers
 {
-    using TContext = PullRequest;
     /// <summary>
     /// <para>
     /// Represents the programmer role.
     /// </para>
     /// <para></para>
     /// </summary>
-    public class PullRequestTracker : ITracker<TContext>
+    public class PullRequestTracker : ITracker<PullRequest>
     {
         /// <summary>
         /// <para>
@@ -23,16 +22,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public GitHubStorage GitHubApi { get; }
-
-
-        /// <summary>
-        /// <para>
-        /// The minimum interaction interval.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        public TimeSpan MinimumInteractionInterval { get; }
+        private GitHubStorage _storage;
 
         /// <summary>
         /// <para>
@@ -40,7 +30,7 @@ namespace Platform.Bot.Trackers
         /// </para>
         /// <para></para>
         /// </summary>
-        public List<ITrigger<TContext>> Triggers { get; }
+        private IList<ITrigger<PullRequest>> _triggers;
 
         /// <summary>
         /// <para>
@@ -52,17 +42,15 @@ namespace Platform.Bot.Trackers
         /// <para>A triggers.</para>
         /// <para></para>
         /// </param>
-        /// <param name="gitHubApi">
+        /// <param name="storage">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
-        public PullRequestTracker(List<ITrigger<TContext>> triggers, GitHubStorage gitHubApi)
+        public PullRequestTracker(GitHubStorage storage, params ITrigger<PullRequest>[] triggers)
         {
-            GitHubApi = gitHubApi;
-            Triggers = triggers;
-            MinimumInteractionInterval = gitHubApi.MinimumInteractionInterval;
+            _storage = storage;
+            _triggers = triggers;
         }
-
 
         /// <summary>
         /// <para>
@@ -76,22 +64,23 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
-            while (!cancellationToken.IsCancellationRequested)
+            foreach (var trigger in _triggers)
             {
-                foreach (var trigger in Triggers)
+                foreach (var repository in _storage.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
                 {
-                    foreach (var repository in GitHubApi.Client.Repository.GetAllForOrg("linksplatform").AwaitResult())
+                    foreach (var pullRequest in _storage.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
                     {
-                        foreach (var pullRequest in GitHubApi.Client.PullRequest.GetAllForRepository(repository.Id).AwaitResult())
+                        if (cancellationToken.IsCancellationRequested)
                         {
-                            if (trigger.Condition(pullRequest))
-                            {
-                                trigger.Action(pullRequest);
-                            }
+                            return;
+                        }
+                        var detailedPullRequest = _storage.Client.PullRequest.Get(repository.Id, pullRequest.Number).AwaitResult();
+                        if (trigger.Condition(detailedPullRequest))
+                        {
+                            trigger.Action(detailedPullRequest);
                         }
                     }
                 }
-                Thread.Sleep(MinimumInteractionInterval);
             }
         }
     }

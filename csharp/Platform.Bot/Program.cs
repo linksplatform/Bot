@@ -6,6 +6,8 @@ using Storage.Local;
 using Storage.Remote.GitHub;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
 using System.Threading.Tasks;
@@ -31,6 +33,7 @@ namespace Platform.Bot
             var fileSetName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "File set name ", args);
             var discordToken = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Token for discord bot", args);
             var OrgName = ConsoleHelpers.GetOrReadArgument(argumentIndex++, "Name of the organization",args);
+
             var dbContext = new FileStorage(databaseFileName);
             Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
             new LinksPlatformDiscordBot.BotStartup(discordToken, dbContext).StartupAsync();
@@ -41,6 +44,7 @@ namespace Platform.Bot
 
                 new InviteToOrgTracker("LinksPlatfrom", 1200, dbContext, api).Start(cancellation.Token);
                 new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start(cancellation.Token);
+
             }
             catch (Exception ex)
             {

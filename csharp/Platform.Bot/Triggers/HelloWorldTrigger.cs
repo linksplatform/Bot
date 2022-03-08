@@ -15,9 +15,9 @@ namespace Platform.Bot.Triggers
     /// <seealso cref="ITrigger{TContext}"/>
     internal class HelloWorldTrigger : ITrigger<TContext>
     {
-        private readonly GitHubStorage gitHubApi;
-        private readonly FileStorage fileStorage;
-        private readonly string fileSetName;
+        private readonly GitHubStorage _storage;
+        private readonly FileStorage _fileStorage;
+        private readonly string _fileSetName;
 
         /// <summary>
         /// <para>
@@ -25,7 +25,7 @@ namespace Platform.Bot.Triggers
         /// </para>
         /// <para></para>
         /// </summary>
-        /// <param name="gitHubApi">
+        /// <param name="storage">
         /// <para>A git hub api.</para>
         /// <para></para>
         /// </param>
@@ -37,11 +37,11 @@ namespace Platform.Bot.Triggers
         /// <para>A file set name.</para>
         /// <para></para>
         /// </param>
-        public HelloWorldTrigger(GitHubStorage gitHubApi, FileStorage fileStorage, string fileSetName)
+        public HelloWorldTrigger(GitHubStorage storage, FileStorage fileStorage, string fileSetName)
         {
-            this.gitHubApi = gitHubApi;
-            this.fileStorage = fileStorage;
-            this.fileSetName = fileSetName;
+            this._storage = storage;
+            this._fileStorage = fileStorage;
+            this._fileSetName = fileSetName;
         }
 
 
@@ -58,11 +58,11 @@ namespace Platform.Bot.Triggers
 
         public void Action(TContext context)
         {
-            foreach (var file in fileStorage.GetFilesFromSet(fileSetName))
+            foreach (var file in _fileStorage.GetFilesFromSet(_fileSetName))
             {
-                gitHubApi.CreateOrUpdateFile(context.Repository.Name, context.Repository.DefaultBranch, file);
+                _storage.CreateOrUpdateFile(context.Repository.Name, context.Repository.DefaultBranch, file);
             }
-            gitHubApi.CloseIssue(context);
+            _storage.CloseIssue(context);
         }
 
 

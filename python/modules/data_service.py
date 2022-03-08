@@ -1,16 +1,18 @@
 # -*- coding: utf-8 -*-
-from typing import Optional, List, Dict, Any, NoReturn, Union
+from typing import (
+    Optional, List, Dict, Any,
+    NoReturn, Union, Callable
+)
 
 from social_ethosa import BetterBotBase, BetterUser
 from saya import Vk
 
 
 class BetterBotBaseDataService:
+    """Class for interacting with the database.
     """
-    Class for interacting with the database.
-    """
-    def __init__(self):
-        self.base = BetterBotBase("users", "dat")
+    def __init__(self, db_name: str = "users"):
+        self.base = BetterBotBase(db_name, "dat")
         self.base.addPattern("programming_languages", [])
         self.base.addPattern("last_collective_vote", 0)
         self.base.addPattern("github_profile", "")
@@ -20,24 +22,42 @@ class BetterBotBaseDataService:
 
     def get_or_create_user(
         self,
-        user_id: int,
-        vk: Vk
-    ):
+        uid: int,
+        vk: Optional[Vk] = None
+    ) -> BetterUser:
         """Returns a user object. Automatically creates it, if need.
+
+        :param uid: user ID
+        :param vk: Vk instance
         """
-        return self.base.autoInstall(user_id, vk)
+        if self.base.notInBD(uid):
+            if vk:
+                name = vk.users.get(user_ids=uid)['response'][0]["first_name"]
+            else:
+                name = "Пользователь"
+            return self.base.addNew(uid=uid, name=name)
+        return self.base.load(uid)
+
+    def get_user(
+        self,
+        uid: int,
+        vk: Optional[Vk] = None
+    ) -> BetterUser:
+        """Alias for get_or_create_user.
+        """
+        return self.get_or_create_user(uid, vk)
 
     def get_users(
         self,
         other_keys: List[str],
-        sort_key: Optional[str],
+        sort_key: Optional[Callable[[Any], Any]],
         reverse_sort: bool = True
-    ) -> List[BetterUser]:
+    ) -> List[Dict[str, Any]]:
         """Returns users and their key values.
 
-        Arguments:
-        - {other_keys} -- list of user keys;
-        - {sort_key} -- base key;
+        :param other_key: list of user keys
+        :param sort_key: base key
+        :param reverse_sort: if True returns reversed list.
         """
         users = self.base.getByKeys(*other_keys)
         if sort_key:
@@ -46,14 +66,14 @@ class BetterBotBaseDataService:
 
     @staticmethod
     def get_user_sorted_programming_languages(
-        user,
+        user: BetterUser,
         sort: bool = True,
         reverse_sort: bool = False
     ) -> List[str]:
         """Returns user's programming languages.
 
-        :param user: -- user object;
-        :param sort: -- return sorted list, if True;
+        :param user: -- user object
+        :param sort: -- return sorted list, if True
         :param reverse_sort: -- uses for {sort} arg.
         """
         languages = BetterBotBaseDataService.get_user_property(user, "programming_languages")
@@ -67,6 +87,10 @@ class BetterBotBaseDataService:
         user: Union[Dict[str, Any], BetterUser],
         property_name: str
     ) -> Any:
+        """
+        :param user: dict or BetterUser
+        :param property_name: needed property
+        """
         return user[property_name] if isinstance(user, dict) else eval(f"user.{property_name}")
 
     @staticmethod
@@ -75,6 +99,12 @@ class BetterBotBaseDataService:
         property_name: str,
         value: Any
     ) -> NoReturn:
+        """Changes user property
+
+        :param user: dict or BetterUser
+        :param property_name: needed property
+        :param value: new value
+        """
         if isinstance(user, dict):
             user[property_name] = value
         else:
@@ -83,5 +113,5 @@ class BetterBotBaseDataService:
     def save_user(
         self,
         user: BetterUser
-    ):
+    ) -> NoReturn:
         self.base.save(user)

@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
-from modules.data_service import BetterBotBaseDataService
-from modules.data_builder import DataBuilder
+from typing import List, Optional, Tuple
+
 from social_ethosa import BetterUser
-from typing import List
+
+from .data_service import BetterBotBaseDataService
+from .data_builder import DataBuilder
 
 
 class CommandsBuilder:
@@ -17,16 +19,17 @@ class CommandsBuilder:
         - {peer_id} - chat ID;
         - {karma} - is karma enabled in chat.
         """
+        documentation_link = "vk.cc/c9TNs3"
         if 0 < peer_id < 2e9:
             return ("Вы находитесь в личных сообщениях бота.\n"
-                    "Документация — vk.cc/auqYdx")
+                    f"Документация — {documentation_link}")
         elif peer_id > 2e9:
             if karma:
                 return ("Вы находитесь в беседе с включённой кармой.\n"
-                        "Документация — vk.cc/auqYdx")
+                        f"Документация — {documentation_link}")
             else:
                 return (f"Вы находитесь в беседе (#{peer_id}) с выключенной кармой.\n"
-                        "Документация — vk.cc/auqYdx")
+                        f"Документация — {documentation_link}")
 
     @staticmethod
     def build_info_message(
@@ -145,9 +148,9 @@ class CommandsBuilder:
         reverse: bool = False,
         has_karma: bool = True,
         maximum_users: int = -1
-    ) -> str:
+    ) -> Optional[str]:
         if not users:
-            return
+            return None
         if reverse:
             users = reversed(users)
         user_strings = [(f"{DataBuilder.build_karma(user, data) if has_karma else ''} "
@@ -163,17 +166,22 @@ class CommandsBuilder:
             else:
                 total_symbols += user_string_length + 2
                 i += 1
-        return "\n".join(user_strings[:maximum_users])
+        if maximum_users > 0:
+            return '\n'.join(user_strings[:maximum_users])
+        return '\n'.join(user_strings)
 
     @staticmethod
     def build_karma_change(
-        user_karma_change,
-        selected_user_karma_change,
-        voters
-    ) -> str:
-        if selected_user_karma_change and user_karma_change:
-            return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
-                    (user_karma_change + selected_user_karma_change))
-        elif selected_user_karma_change:
+        user_karma_change: Optional[Tuple[int, str, int, int]],
+        selected_user_karma_change: Optional[Tuple[int, str, int, int]],
+        voters: List[int]
+    ) -> Optional[str]:
+        """Builds karma changing
+        """
+        if selected_user_karma_change:
+            if user_karma_change:
+                return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
+                        (user_karma_change + selected_user_karma_change))
             return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
                 (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
+        return None

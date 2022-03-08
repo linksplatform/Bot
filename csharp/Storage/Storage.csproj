@@ -1,12 +1,13 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
+    <TargetFramework>net6</TargetFramework>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Octokit" Version="0.50.0" />
-    <PackageReference Include="Platform.Data.Doublets" Version="0.6.7" />
+    <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.0" />
     <PackageReference Include="Platform.Exceptions" Version="0.4.0" />
   </ItemGroup>
 

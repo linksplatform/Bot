@@ -1,22 +1,31 @@
 # -*- coding: utf-8 -*-
-from modules.commands_builder import CommandsBuilder
-from modules.data_service import BetterBotBaseDataService
-from modules.data_builder import DataBuilder
-from typing import NoReturn, Tuple, List
+from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
+
+from regex import Pattern, split, match, search, IGNORECASE, sub
 from social_ethosa import BetterUser
-from regex import Pattern, split, match
 from saya import Vk
-import requests
+import wikipedia
+
+from .commands_builder import CommandsBuilder
+from .data_service import BetterBotBaseDataService
+from .data_builder import DataBuilder
+from .utils import (
+    get_default_programming_language,
+    contains_string,
+    contains_all_strings,
+    karma_limit,
+    is_available_ghpage
+)
 import config
 
 
 class Commands:
-    cmds: dict = {}
+    cmds: Dict[Pattern, Any] = {}
     def __init__(
-        self,
-        vk_instance: Vk,
-        data_service: BetterBotBaseDataService
+            self,
+            vk_instance: Vk,
+            data_service: BetterBotBaseDataService
     ):
         self.msg: str = ""
         self.msg_id: int = 0
@@ -25,11 +34,12 @@ class Commands:
         self.user: BetterUser = None
         self.karma_enabled: bool = False
         self.is_bot_selected: bool = False
-        self.fwd_messages: List[dict] = []
-        self.selected_message: dict = {}
+        self.fwd_messages: List[Dict[str, Any]] = []
+        self.selected_message: Dict[str, Any] = {}
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
-        self.matched: list = []
+        self.matched: List[str] = []
+        wikipedia.set_lang('en')
 
     def help_message(self) -> NoReturn:
         """Sends help message
@@ -49,51 +59,53 @@ class Commands:
     def update_command(self) -> NoReturn:
         """Updates user profile.
         """
-        name = self.vk_instance.get_user_name(self.from_id)
-        self.data_service.set_user_property(self.current_user, "name", name)
-        self.data_service.save_user(self.current_user)
-        self.info_message()
+        if self.from_id > 0:
+            name = self.vk_instance.get_user_name(self.from_id)
+            self.current_user.name = name
+            self.data_service.save_user(self.current_user)
+            self.info_message()
 
     def change_programming_language(
-        self,
-        is_add: bool
+            self,
+            is_add: bool
     ) -> NoReturn:
         """Adds or removes a new programming language in user profile.
         """
         language = self.matched.group('language')
-        language = self.vk_instance.get_default_programming_language(language).replace('\\', '')
+        language = get_default_programming_language(language).replace('\\', '')
         if not language:
             return
-        languages = self.data_service.get_user_property(self.current_user, "programming_languages")
+        languages = self.current_user.programming_languages
         condition = language not in languages if is_add else language in languages
         if condition:
             if is_add:
                 languages.append(language)
             else:
                 languages.remove(language)
-            self.data_service.set_user_property(self.current_user, "programming_languages", languages)
+            self.current_user.programming_languages = languages
             self.data_service.save_user(self.current_user)
         self.vk_instance.send_msg(
-            CommandsBuilder.build_change_programming_languages(self.current_user, self.data_service),
+            CommandsBuilder.build_change_programming_languages(
+                self.current_user, self.data_service),
             self.peer_id)
 
     def change_github_profile(
-        self,
-        is_add: bool
+            self,
+            is_add: bool
     ) -> NoReturn:
         """Changes github profile.
         """
         profile = self.matched.group('profile')
         if not profile:
             return
-        user_profile = self.data_service.get_user_property(self.current_user, "github_profile")
+        user_profile = self.current_user.github_profile
         condition = profile != user_profile if is_add else profile == user_profile
         if not is_add:
             profile = ""
         if condition:
-            if is_add and requests.get(f'https://github.com/{profile}').status_code != 200:
+            if is_add and not is_available_ghpage(profile):
                 return
-            self.data_service.set_user_property(self.current_user, "github_profile", profile)
+            self.current_user.github_profile = profile
             self.data_service.save_user(self.current_user)
         self.vk_instance.send_msg(
             CommandsBuilder.build_github_profile(self.current_user, self.data_service),
@@ -104,14 +116,14 @@ class Commands:
         """
         if self.peer_id < 2e9 and not self.karma_enabled:
             return
-        is_self = self.data_service.get_user_property(self.user, 'uid') == self.from_id
+        is_self = self.user.uid == self.from_id
         self.vk_instance.send_msg(
             CommandsBuilder.build_karma(self.user, self.data_service, is_self),
             self.peer_id)
 
     def top(
-        self,
-        reverse: bool = False
+            self,
+            reverse: bool = False
     ) -> NoReturn:
         """Sends users top.
         """
@@ -122,14 +134,18 @@ class Commands:
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
-                 (i["karma"] != 0) or ("programming_languages" in i and len(i["programming_languages"]) > 0)]
+                 (i["karma"] != 0) or
+                 ("programming_languages" in i and len(i["programming_languages"]) > 0)
+                ]
         self.vk_instance.send_msg(
-            CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled, maximum_users),
+            CommandsBuilder.build_top_users(
+                users, self.data_service, reverse,
+                self.karma_enabled, maximum_users),
             self.peer_id)
 
     def top_langs(
-        self,
-        reverse: bool = False
+            self,
+            reverse: bool = False
     ) -> NoReturn:
         """Sends users top.
         """
@@ -140,10 +156,12 @@ class Commands:
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
                  ("programming_languages" in i and len(i["programming_languages"]) > 0) and
-                 self.vk_instance.contains_all_strings(i["programming_languages"], languages, True)]
-        self.vk_instance.send_msg(
-            CommandsBuilder.build_top_users(users, self.data_service, reverse, self.karma_enabled),
-            self.peer_id)
+                 contains_all_strings(i["programming_languages"], languages, True)]
+        builded = CommandsBuilder.build_top_users(
+            users, self.data_service, reverse, self.karma_enabled)
+        if builded:
+            self.vk_instance.send_msg(builded, self.peer_id)
+            return
 
     def apply_karma(self) -> NoReturn:
         """Changes user karma.
@@ -153,9 +171,9 @@ class Commands:
         if not self.user:
             selected_user_id = self.matched.group("selectedUserId")
             if selected_user_id:
-                self.user = self.data_service.get_or_create_user(int(selected_user_id), self)
+                self.user = self.data_service.get_user(int(selected_user_id), self)
 
-        if self.user and (self.data_service.get_user_property(self.user, "uid") != self.from_id):
+        if self.user and (self.user.uid != self.from_id):
             operator = self.matched.group("operator")[0]
             amount = self.matched.group("amount")
             amount = int(amount) if amount else 0
@@ -163,7 +181,7 @@ class Commands:
             utcnow = datetime.utcnow()
 
             # Downvotes disabled for users with negative karma
-            if (operator == "-") and (self.data_service.get_user_property(self.current_user, "karma") < 0):
+            if operator == "-" and self.current_user.karma < 0:
                 self.vk_instance.delete_message(self.peer_id, self.msg_id)
                 self.vk_instance.send_msg(
                     CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
@@ -181,13 +199,11 @@ class Commands:
                     )
                     return
                 utclast = datetime.fromtimestamp(
-                    float(self.data_service.get_user_property(
-                        self.current_user, "last_collective_vote")
-                ))
+                    float(self.current_user.last_collective_vote))
                 difference = utcnow - utclast
                 hours_difference = difference.total_seconds() / 3600
-                hours_limit = self.vk_instance.karma_limit(
-                    self.data_service.get_user_property(self.current_user, "karma"))
+                hours_limit = karma_limit(
+                    self.current_user.karma)
                 if hours_difference < hours_limit:
                     self.vk_instance.delete_message(self.peer_id, self.msg_id)
                     self.vk_instance.send_msg(
@@ -200,7 +216,7 @@ class Commands:
             user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(operator, amount)
 
             if collective_vote_applied:
-                self.data_service.set_user_property(self.current_user, "last_collective_vote", int(utcnow.timestamp()))
+                self.current_user.last_collective_vote = int(utcnow.timestamp())
                 self.data_service.save_user(self.user)
 
             self.data_service.save_user(self.current_user)
@@ -214,10 +230,15 @@ class Commands:
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
     def apply_karma_change(
-        self,
-        operator: str,
-        amount: int
-    ) -> tuple:
+            self,
+            operator: str,
+            amount: int
+    ) -> Tuple[
+        Optional[Tuple[int, str, int, int]],  # current user karma changed
+        Optional[Tuple[int, str, int, int]],  # selected user karma changed
+        bool,  # collective vote applied
+        List[int]  # voters IDs list
+    ]:
         selected_user_karma_change = None
         user_karma_change = None
         collective_vote_applied = None
@@ -225,7 +246,7 @@ class Commands:
 
         # Personal karma transfer
         if amount > 0:
-            if self.data_service.get_user_property(self.current_user, "karma") < amount:
+            if self.current_user.karma < amount:
                 self.vk_instance.send_msg(
                     CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
                     self.peer_id)
@@ -245,34 +266,74 @@ class Commands:
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
     def apply_collective_vote(
-        self,
-        current_voters: str,
-        number_of_voters: int,
-        amount: int
-    ) -> tuple:
-        vote_applied = None
+            self,
+            current_voters: str,
+            number_of_voters: int,
+            amount: int
+    ) -> Tuple[
+        Optional[Tuple[int, str, int, int]],  # user ID, username, init karma, new karma
+        Optional[List[int]],  # voters
+        bool  # vote applied
+    ]:
+        """Applies collective vote
+
+        :param current_voters: must be 'opponents' or 'supporters'
+        :param number_of_voters: maximum voters for voters type.
+        :param amount: positive or negative number.
+        """
+        vote_applied = False
         if self.current_user.uid not in self.user[current_voters]:
             self.user[current_voters].append(self.current_user.uid)
             vote_applied = True
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
             self.user[current_voters] = []
-            return self.apply_user_karma(self.user, amount), voters, vote_applied
+            return (self.apply_user_karma(self.user, amount), voters, vote_applied)
         return (None, None, vote_applied)
 
-    def apply_user_karma(self, user: BetterUser, amount: int) -> Tuple[int, str, int, int]:
-        initial_karma = self.data_service.get_user_property(user, "karma")
+    def apply_user_karma(
+            self,
+            user: BetterUser,
+            amount: int
+    ) -> Tuple[int, str, int, int]:
+        """Changes user karma
+
+        :param user: user object
+        :param amount: karma amount to change
+        """
+        initial_karma = user.karma
         new_karma = initial_karma + amount
-        self.data_service.set_user_property(user, "karma", new_karma)
-        return (user.uid,
-                self.data_service.get_user_property(user, "name"),
-                initial_karma,
-                new_karma)
+        user.karma = new_karma
+        return (user.uid, user.name, initial_karma, new_karma)
+
+    def what_is(self) -> NoReturn:
+        """Search on wikipedia and sends if available
+        """
+        question = self.matched.groups()
+        question = question[1] if question[1] else question[2]
+        if search(r'[а-яё]+', question, IGNORECASE):
+            wikipedia.set_lang('ru')
+        else:
+            wikipedia.set_lang('en')
+        results = wikipedia.search(question)
+        if results:
+            try:
+                page = wikipedia.page(results[0])
+                self.vk_instance.send_msg(
+                    sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url}', self.peer_id)
+            except wikipedia.exceptions.DisambiguationError as e:
+                print('wiki error', e)
+
+    def match_command(
+            self,
+            pattern: Pattern
+    ) -> NoReturn:
+        self.matched = match(pattern, self.msg)
 
     @staticmethod
     def register_cmd(
-        cmd: Pattern,
-        action: callable
+            cmd: Pattern,
+            action: Callable[[], NoReturn]
     ) -> NoReturn:
         """Registers a new command.
         """
@@ -280,46 +341,28 @@ class Commands:
 
     @staticmethod
     def register_cmds(
-        *cmds: Tuple[Pattern, callable]
+            *cmds: Tuple[Pattern, Callable[[], NoReturn]]
     ) -> NoReturn:
         """Registers a new commands.
         """
         for cmd, action in cmds:
             Commands.cmds[cmd] = action
 
-    @staticmethod
-    def _register_decorator(
-        cmd: Pattern,
-        args: list,
-        action: callable
-    ) -> NoReturn:
-        Commands.cmds[cmd] = lambda: action(args)
-
-    @staticmethod
-    def register(
-        cmd: Pattern,
-        *args
-    ) -> callable:
-        """Command register decorator.
-        """
-        return lambda action: Commands._register_decorator(cmd, args, action)
-
     def process(
-        self,
-        msg: str,
-        peer_id: int,
-        from_id: int,
-        fwd_messages: List[dict],
-        msg_id: int,
-        user: BetterUser,
-        selected_user: BetterUser
+            self,
+            msg: str,
+            peer_id: int,
+            from_id: int,
+            fwd_messages: List[dict],
+            msg_id: int,
+            user: BetterUser,
+            selected_user: BetterUser
     ) -> NoReturn:
         """Process commands
 
-        Arguments:
-        - {msg} - event message;
-        - {peer_id} - chat ID;
-        - {from_id} - user ID.
+        :param msg: event message
+        :param peer_id: chat ID
+        :param from_id: user ID
         """
         self.msg = msg
         self.msg_id = msg_id
@@ -336,7 +379,7 @@ class Commands:
             return
 
         for cmd, action in Commands.cmds.items():
-            self.matched: list = match(cmd, msg)
+            self.match_command(cmd)
             if self.matched:
                 action()
                 return
