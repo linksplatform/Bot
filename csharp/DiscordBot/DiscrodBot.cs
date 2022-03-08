@@ -42,7 +42,7 @@ namespace LinksPlatformDiscordBot
                 {
                     if (message.Author.Username == "Konstantin Dyachenko" || message.Author.Username == "konard" || message.Author.Username == "FirstAfterGod")
                     {
-                        string link = message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result.Content;
+                       string link = message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result.Content;
                         LinksStorage.AddLinkToIvite(link);
                         await message.Channel.SendMessageAsync("<@" + message.Channel.GetMessageAsync(message.Reference.MessageId.Value).Result.Author.Id + "> please accept invitation to our organization either by going to http://github.com/linksplatform or via email that was sent to you from GitHub.");
                         foreach (var a in LinksStorage.GetLinksToInvite())

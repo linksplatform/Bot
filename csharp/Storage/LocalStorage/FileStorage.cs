@@ -95,6 +95,11 @@ namespace Storage.Local
             return links;
         }
 
+        public IList<IList<ulong>> GetLink(TLinkAddress adr)
+        {
+            return Links.All();
+        }
+
         /// <summary>
         /// <para>
         /// Converts the str.

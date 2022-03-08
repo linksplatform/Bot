@@ -39,15 +39,7 @@ namespace Platform.Bot
                 var api = new GitHubStorage(username, token, appName);
                 Task.Run(() => new InviteToOrgTracker(OrgName, 1000, dbContext, api).Start(cancellation.Token));
 
-                new IssueTracker(
-                    new List<ITrigger<Issue>> {
-                        new HelloWorldTrigger(api, dbContext, fileSetName),
-                        new OrganizationLastMonthActivityTrigger(api),
-                        new LastCommitActivityTrigger(api),
-                        new ProtectMainBranchTrigger(api),
-                    },
-                    api
-                ).Start(cancellation.Token);
+                new InviteToOrgTracker("LinksPlatfrom", 1200, dbContext, api).Start(cancellation.Token);
                 new PullRequestTracker(new List<ITrigger<PullRequest>> { new MergeDependabotBumpsTrigger(api) }, api).Start(cancellation.Token);
             }
             catch (Exception ex)
