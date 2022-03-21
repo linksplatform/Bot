@@ -8,7 +8,6 @@ namespace Platform.Bot.Triggers
 {
     public class MergeDependabotBumpsTrigger : ITrigger<PullRequest>
     {
-        private const int DependabotId = 49699333;
         private readonly GitHubStorage _githubStorage;
         public MergeDependabotBumpsTrigger(GitHubStorage storage)
         {
@@ -17,7 +16,7 @@ namespace Platform.Bot.Triggers
 
         public bool Condition(PullRequest pullRequest)
         {
-            var isDependabotAuthor = DependabotId == pullRequest.User.Id;
+            var isDependabotAuthor = GitHubStorage.DependabotId == pullRequest.User.Id;
             if (!isDependabotAuthor)
             {
                 return false;
