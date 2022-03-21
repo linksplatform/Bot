@@ -6,84 +6,80 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Platform.Bot.Triggers
 {
     using TContext = Issue;
     internal class LastCommitActivityTrigger : ITrigger<TContext>
     {
-        private readonly GitHubStorage _storage;
+        private readonly GitHubStorage _githubStorage;
 
-        private readonly Parser _parser = new();
+        public LastCommitActivityTrigger(GitHubStorage storage) => _githubStorage = storage;
 
-        public LastCommitActivityTrigger(GitHubStorage storage) => _storage = storage;
+        public bool Condition(TContext issue) => "last 3 months commit activity" == issue.Title.ToLower();
 
-        public bool Condition(TContext context) => context.Title.ToLower() == "last 3 months commit activity";
-
-        public void Action(TContext context)
+        public void Action(TContext issue)
         {
-            var issueService = _storage.Client.Issue;
-            var owner = context.Repository.Owner.Login;
-            var ignoredRepositories =
-                context.Body != null ? GetIgnoredRepositories(_parser.Parse(context.Body)) : default;
-            var users = GetActivities(owner, ignoredRepositories);
-            StringBuilder sb = new();
-            foreach (var user in users)
+            var issueService = _githubStorage.Client.Issue;
+            var organizationName = issue.Repository.Owner.Login;
+            var allMembers = _githubStorage.GetOrganizationMembers(organizationName);
+            var usersAndRepisitoriesTheyCommited = new Dictionary<User, List<Repository>>();
+            var allRepositorens = _githubStorage.GetAllRepositories(organizationName);
+            var allTasks = new List<Task>();
+            foreach (var member in allMembers)
             {
-                sb.AppendLine($"- **{user.Url.Replace("api.", "").Replace("users/", "")}**");
-                // Break line
-                sb.AppendLine("------------------");
-            }
-            var result = sb.ToString();
-            var comment = issueService.Comment.Create(owner, context.Repository.Name, context.Number, result);
-            comment.Wait();
-            Console.WriteLine($"Last commit activity comment is added: {comment.Result.HtmlUrl}");
-            _storage.CloseIssue(context);
-        }
-
-        public HashSet<string> GetIgnoredRepositories(IList<Link> links)
-        {
-            HashSet<string> ignoredRepos = new() { };
-            foreach (var link in links)
-            {
-                var values = link.Values;
-                if (values != null && values.Count == 3 && string.Equals(values.First().Id, "ignore", StringComparison.OrdinalIgnoreCase) && string.Equals(values.Last().Id.Trim('.'), "repository", StringComparison.OrdinalIgnoreCase))
+                usersAndRepisitoriesTheyCommited.Add(member, new List<Repository>());
+                foreach (var repository in allRepositorens)
                 {
-                    ignoredRepos.Add(values[1].Id);
-                }
-            }
-            return ignoredRepos;
-        }
-
-        public HashSet<Activity> GetActivities(string owner, HashSet<string> ignoredRepositories = default)
-        {
-            HashSet<Activity> activeUsers = new();
-            foreach (var repository in _storage.Client.Repository.GetAllForOrg(owner).Result)
-            {
-                if (ignoredRepositories?.Contains(repository.Name) ?? false)
-                {
-                    continue;
-                }
-                foreach (var commit in _storage.GetCommits(repository.Owner.Login, repository.Name, DateTime.Today.AddMonths(-3)))
-                {
-                    if (!_storage.Client.Organization.Member.CheckMember(owner, commit.Author.Login).Result)
+                    var memberCommitsToRepositoryTask = _githubStorage.GetCommits(organizationName, repository.Name, DateTime.Now.AddMonths(-3), member.Login);
+                    memberCommitsToRepositoryTask.ContinueWith(task =>
                     {
-                        continue;
-                    }
-                    if (!activeUsers.Any(x => x.Url == commit.Author.Url))
-                    {
-                        activeUsers.Add(new Activity() { Url = commit.Author.Url, Repositories = new List<string> { repository.Url } });
-                    }
-                    else
-                    {
-                        if (!activeUsers.Any(x => x.Repositories.Any(y => y == repository.Url) == true))
+                        if (task.Result.Count != 0)
                         {
-                            activeUsers.FirstOrDefault(x => x.Url == commit.Author.Url).Repositories.Add(repository.Url);
+                            usersAndRepisitoriesTheyCommited[member].Add(repository);
                         }
-                    }
+                    });
+                    allTasks.Add(memberCommitsToRepositoryTask);
                 }
             }
-            return activeUsers;
+            Task.WaitAll(allTasks.ToArray());
+            StringBuilder messageSb = new();
+            AddTldrMessageToSb(usersAndRepisitoriesTheyCommited, messageSb);
+            AddUsersAndRepositoriesTheyCommitedToSb(usersAndRepisitoriesTheyCommited, messageSb);
+            var message = messageSb.ToString();
+            var comment = issueService.Comment.Create(organizationName, issue.Repository.Name, issue.Number, message);
+            comment.Wait();
+            Console.WriteLine($"Issue {issue.Title} is processed: {issue.Url}");
+            _githubStorage.CloseIssue(issue);
+        }
+
+        private void AddTldrMessageToSb(Dictionary<User, List<Repository>> usersAndRepositoriesCommited, StringBuilder sb)
+        {
+            sb.AppendLine("TLDR:");
+            usersAndRepositoriesCommited.Keys.All(user =>
+            {
+                sb.AppendLine($"({user.Name})[{user.Url}]");
+                return true;
+            });
+            sb.AppendLine();
+            sb.AppendLine("---");
+            sb.AppendLine();
+        }
+
+        private void AddUsersAndRepositoriesTheyCommitedToSb(Dictionary<User, List<Repository>> usersAndRepositoriesCommited, StringBuilder sb)
+        {
+            foreach (var userAndCommitedRepositories in usersAndRepositoriesCommited)
+            {
+                var user = userAndCommitedRepositories.Key;
+                var repositoriesThatUserCommited = userAndCommitedRepositories.Value;
+                sb.AppendLine($"**({user.Login})[{user.Url}]**");
+                repositoriesThatUserCommited.All(repository => {
+                    sb.AppendLine($"- ({repository.Name})[{repository.Url}]");
+                    return true;
+                });
+                sb.AppendLine("---");
+            }
         }
     }
 }
