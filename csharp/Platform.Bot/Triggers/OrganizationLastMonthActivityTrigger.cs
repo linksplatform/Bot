@@ -124,11 +124,11 @@ namespace Platform.Bot.Triggers
                 {
                     continue;
                 }
-                foreach (var commit in _storage.GetCommits(repository.Owner.Login, repository.Name))
+                var commits = _storage.GetCommits(repository.Id, new CommitRequest { Since = date }).Result;
+                foreach (var commit in commits)
                 {
 
                     activeUsers.Add(commit.Author.Login);
-
                 }
                 foreach (var pullRequest in _storage.GetPullRequests(repository.Owner.Login, repository.Name))
                 {
