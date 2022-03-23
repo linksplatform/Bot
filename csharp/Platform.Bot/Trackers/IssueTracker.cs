@@ -62,9 +62,10 @@ namespace Platform.Bot.Trackers
         /// </param>
         public void Start(CancellationToken cancellationToken)
         {
-            foreach (var trigger in _triggers)
+            var allIssues = _storage.GetIssues();
+            foreach (var issue in allIssues)
             {
-                foreach (var issue in _storage.GetIssues())
+                foreach (var trigger in _triggers)
                 {
                     if (cancellationToken.IsCancellationRequested)
                     {

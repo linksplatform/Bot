@@ -34,6 +34,9 @@ namespace Storage.Remote.GitHub
         /// </summary>
         public readonly string Owner;
 
+        public const int DependabotId = 49699333;
+
+
         /// <summary>
         /// <para>
         /// Gets the minimum interaction interval value.
@@ -125,6 +128,16 @@ namespace Storage.Remote.GitHub
         public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty, DateTime date)
         {
             return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
+        }
+
+        public Task<IReadOnlyList<GitHubCommit>> GetCommits(string owner, string reposiroty, DateTime date, string authorLoginOrEmail)
+        {
+            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date, Author = authorLoginOrEmail});
+        }
+
+        public IReadOnlyList<User> GetOrganizationMembers(string organization)
+        {
+            return Client.Organization.Member.GetAll(organization).Result;
         }
 
         /// <summary>
