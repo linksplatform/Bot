@@ -35,7 +35,7 @@ namespace Platform.Bot.Triggers
             var allTasks = new Queue<Task>();
             foreach (var repository in allRepositories)
             {
-                var repositoryCommitsTask = _githubStorage.Client.Repository.Commit.GetAll(repository.Id, new CommitRequest(){Since = DateTime.Now.AddMonths(-3)});
+                var repositoryCommitsTask = _githubStorage.GetCommits(repository.Id, new CommitRequest{Since = DateTime.Now.AddMonths(-3)});
                 repositoryCommitsTask.ContinueWith(task =>
                 {
                     task.Result.All(commit =>
