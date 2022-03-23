@@ -978,24 +978,12 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames
   nameWithType: GitHubStorage.GetAllRepositoryNames
-- uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String)
-  name: GetCommits(String, String)
-  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_String_System_String_
-  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String)
-  fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String)
-  nameWithType: GitHubStorage.GetCommits(String, String)
-- uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime)
-  name: GetCommits(String, String, DateTime)
-  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_String_System_String_DateTime_
-  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime)
-  fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String, DateTime)
-  nameWithType: GitHubStorage.GetCommits(String, String, DateTime)
-- uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime,System.String)
-  name: GetCommits(String, String, DateTime, String)
-  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_String_System_String_DateTime_System_String_
-  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime,System.String)
-  fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String, DateTime, System.String)
-  nameWithType: GitHubStorage.GetCommits(String, String, DateTime, String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.Int64,CommitRequest)
+  name: GetCommits(Int64, CommitRequest)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_Int64_CommitRequest_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.Int64,CommitRequest)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.Int64, CommitRequest)
+  nameWithType: GitHubStorage.GetCommits(Int64, CommitRequest)
 - uid: Storage.Remote.GitHub.GitHubStorage.GetCommits*
   name: GetCommits
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_
