@@ -3,6 +3,7 @@ using Octokit;
 using Platform.Communication.Protocol.Lino;
 using Storage.Remote.GitHub;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -24,29 +25,39 @@ namespace Platform.Bot.Triggers
             var issueService = _githubStorage.Client.Issue;
             var organizationName = issue.Repository.Owner.Login;
             var allMembers = _githubStorage.GetOrganizationMembers(organizationName);
-            var usersAndRepisitoriesTheyCommited = new Dictionary<User, List<Repository>>();
-            var allRepositorens = _githubStorage.GetAllRepositories(organizationName);
-            var allTasks = new List<Task>();
-            foreach (var member in allMembers)
+            var usersAndRepositoriesTheyCommited = new ConcurrentDictionary<User, HashSet<Repository>>();
+            allMembers.All(user =>
             {
-                usersAndRepisitoriesTheyCommited.Add(member, new List<Repository>());
-                foreach (var repository in allRepositorens)
+                usersAndRepositoriesTheyCommited.TryAdd(user, new HashSet<Repository>());
+                return true;
+            });
+            var allRepositories = _githubStorage.GetAllRepositories(organizationName);
+            var allTasks = new Queue<Task>();
+            foreach (var repository in allRepositories)
+            {
+                var repositoryCommitsTask = _githubStorage.Client.Repository.Commit.GetAll(repository.Id, new CommitRequest(){Since = DateTime.Now.AddMonths(-3)});
+                repositoryCommitsTask.ContinueWith(task =>
                 {
-                    var memberCommitsToRepositoryTask = _githubStorage.GetCommits(organizationName, repository.Name, DateTime.Now.AddMonths(-3), member.Login);
-                    memberCommitsToRepositoryTask.ContinueWith(task =>
+                    task.Result.All(commit =>
                     {
-                        if (task.Result.Count != 0)
+                        allMembers.All(user =>
                         {
-                            usersAndRepisitoriesTheyCommited[member].Add(repository);
-                        }
+                            if (commit.Author?.Id == user.Id)
+                            {
+                                usersAndRepositoriesTheyCommited[user].Add(repository);
+                            }
+                            return true;
+                        });
+                        return true;
                     });
-                    allTasks.Add(memberCommitsToRepositoryTask);
-                }
+                });
+                allTasks.Enqueue(repositoryCommitsTask);
             }
             Task.WaitAll(allTasks.ToArray());
+            var activeUsersAndRepositoriesTheyCommited = usersAndRepositoriesTheyCommited.Where(userAndRepositoriesCommited => userAndRepositoriesCommited.Value.Count > 0).ToDictionary(pair => pair.Key, pair => pair.Value);
             StringBuilder messageSb = new();
-            AddTldrMessageToSb(usersAndRepisitoriesTheyCommited, messageSb);
-            AddUsersAndRepositoriesTheyCommitedToSb(usersAndRepisitoriesTheyCommited, messageSb);
+            AddTldrMessageToSb(activeUsersAndRepositoriesTheyCommited, messageSb);
+            AddUsersAndRepositoriesTheyCommitedToSb(activeUsersAndRepositoriesTheyCommited, messageSb);
             var message = messageSb.ToString();
             var comment = issueService.Comment.Create(organizationName, issue.Repository.Name, issue.Number, message);
             comment.Wait();
@@ -54,12 +65,12 @@ namespace Platform.Bot.Triggers
             _githubStorage.CloseIssue(issue);
         }
 
-        private void AddTldrMessageToSb(Dictionary<User, List<Repository>> usersAndRepositoriesCommited, StringBuilder sb)
+        private void AddTldrMessageToSb(IDictionary<User, HashSet<Repository>> usersAndRepositoriesCommited, StringBuilder sb)
         {
-            sb.AppendLine("TLDR:");
+            sb.AppendLine("## TLDR:");
             usersAndRepositoriesCommited.Keys.All(user =>
             {
-                sb.AppendLine($"({user.Name})[{user.Url}]");
+                sb.AppendLine($"[{user.Login}]({user.Url})");
                 return true;
             });
             sb.AppendLine();
@@ -67,15 +78,15 @@ namespace Platform.Bot.Triggers
             sb.AppendLine();
         }
 
-        private void AddUsersAndRepositoriesTheyCommitedToSb(Dictionary<User, List<Repository>> usersAndRepositoriesCommited, StringBuilder sb)
+        private void AddUsersAndRepositoriesTheyCommitedToSb(IDictionary<User, HashSet<Repository>> usersAndRepositoriesCommited, StringBuilder sb)
         {
             foreach (var userAndCommitedRepositories in usersAndRepositoriesCommited)
             {
                 var user = userAndCommitedRepositories.Key;
-                var repositoriesThatUserCommited = userAndCommitedRepositories.Value;
-                sb.AppendLine($"**({user.Login})[{user.Url}]**");
-                repositoriesThatUserCommited.All(repository => {
-                    sb.AppendLine($"- ({repository.Name})[{repository.Url}]");
+                var repositoriesUserCommited = userAndCommitedRepositories.Value;
+                sb.AppendLine($"**[{user.Login}]({user.Url})**");
+                repositoriesUserCommited.All(repository => {
+                    sb.AppendLine($"- [{repository.Name}]({repository.Url})");
                     return true;
                 });
                 sb.AppendLine("---");
