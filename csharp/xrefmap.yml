@@ -933,6 +933,12 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.CreateOrUpdateFile
   nameWithType: GitHubStorage.CreateOrUpdateFile
+- uid: Storage.Remote.GitHub.GitHubStorage.DependabotId
+  name: DependabotId
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_DependabotId
+  commentId: F:Storage.Remote.GitHub.GitHubStorage.DependabotId
+  fullName: Storage.Remote.GitHub.GitHubStorage.DependabotId
+  nameWithType: GitHubStorage.DependabotId
 - uid: Storage.Remote.GitHub.GitHubStorage.GetAllMigrations(System.String)
   name: GetAllMigrations(String)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllMigrations_System_String_
@@ -984,6 +990,12 @@ references:
   commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime)
   fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String, DateTime)
   nameWithType: GitHubStorage.GetCommits(String, String, DateTime)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime,System.String)
+  name: GetCommits(String, String, DateTime, String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_String_System_String_DateTime_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String,System.String,DateTime,System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.String, System.String, DateTime, System.String)
+  nameWithType: GitHubStorage.GetCommits(String, String, DateTime, String)
 - uid: Storage.Remote.GitHub.GitHubStorage.GetCommits*
   name: GetCommits
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_
@@ -1010,6 +1022,19 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.GetIssues
   nameWithType: GitHubStorage.GetIssues
+- uid: Storage.Remote.GitHub.GitHubStorage.GetOrganizationMembers(System.String)
+  name: GetOrganizationMembers(String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetOrganizationMembers_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetOrganizationMembers(System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetOrganizationMembers(System.String)
+  nameWithType: GitHubStorage.GetOrganizationMembers(String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetOrganizationMembers*
+  name: GetOrganizationMembers
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetOrganizationMembers_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetOrganizationMembers
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetOrganizationMembers
+  nameWithType: GitHubStorage.GetOrganizationMembers
 - uid: Storage.Remote.GitHub.GitHubStorage.GetPullRequest(System.Int32,System.Int32)
   name: GetPullRequest(Int32, Int32)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetPullRequest_System_Int32_System_Int32_
