@@ -101,39 +101,7 @@ namespace Storage.Remote.GitHub
             return new List<Issue>();
         }
 
-        /// <summary>
-        /// <para>
-        /// Gets the commits using the specified owner.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        /// <param name="owner">
-        /// <para>The owner.</para>
-        /// <para></para>
-        /// </param>
-        /// <param name="reposiroty">
-        /// <para>The reposiroty.</para>
-        /// <para></para>
-        /// </param>
-        /// <returns>
-        /// <para>A read only list of git hub commit</para>
-        /// <para></para>
-        /// </returns>
-        public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty)
-        {
-            var date = DateTime.Today.AddMonths(-1);
-            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
-        }
-
-        public IReadOnlyList<GitHubCommit> GetCommits(string owner, string reposiroty, DateTime date)
-        {
-            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date }).Result;
-        }
-
-        public Task<IReadOnlyList<GitHubCommit>> GetCommits(string owner, string reposiroty, DateTime date, string authorLoginOrEmail)
-        {
-            return Client.Repository.Commit.GetAll(owner, reposiroty, new CommitRequest() { Since = date, Author = authorLoginOrEmail});
-        }
+        public Task<IReadOnlyList<GitHubCommit>> GetCommits(long repositoryId, CommitRequest commitRequest) => Client.Repository.Commit.GetAll(repositoryId, commitRequest);
 
         public IReadOnlyList<User> GetOrganizationMembers(string organization)
         {
