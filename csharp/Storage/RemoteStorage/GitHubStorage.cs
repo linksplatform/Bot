@@ -127,6 +127,11 @@ namespace Storage.Remote.GitHub
         /// <para></para>
         /// </returns>
         public IReadOnlyList<PullRequest> GetPullRequests(string owner, string reposiroty) => Client.PullRequest.GetAllForRepository(owner, reposiroty).AwaitResult();
+
+        public Task<IReadOnlyList<PullRequest>> GetPullRequests(long repositoryId) => Client.PullRequest.GetAllForRepository(repositoryId);
+
+        public Task<IReadOnlyList<PullRequest>> GetPullRequests(long repositoryId, ApiOptions apiOptions) => Client.PullRequest.GetAllForRepository(repositoryId, apiOptions);
+
         public PullRequest GetPullRequest(int repositoryId, int number) => Client.PullRequest.Get(repositoryId, number).AwaitResult();
 
         /// <summary>
