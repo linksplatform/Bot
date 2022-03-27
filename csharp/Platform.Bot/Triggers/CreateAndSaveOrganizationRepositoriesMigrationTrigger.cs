@@ -43,7 +43,7 @@ public class CreateAndSaveOrganizationRepositoriesMigrationTrigger : ITrigger<Da
 
     public async void Action(DateTime? dateTime)
     {
-        var repositoryNames = _githubStorage.GetAllRepositoryNames("linksplatform");
+        var repositoryNames = _githubStorage.GetAllRepositories("linksplatform").Result.Select(repository => repository.Name).ToList();
         var createMigrationResult = await _githubStorage.CreateMigration("linksplatform", repositoryNames);
         if (null == createMigrationResult || createMigrationResult.State.Value == Migration.MigrationState.Failed)
         {
