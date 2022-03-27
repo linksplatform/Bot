@@ -43,7 +43,7 @@ namespace Platform.Bot
                         new HelloWorldTrigger(api, dbContext, fileSetName),
                         new OrganizationLastMonthActivityTrigger(api),
                         new LastCommitActivityTrigger(api),
-                        new ProtectMainBranchTrigger(api));
+                        new ProtectMainBranchTrigger(api),
                         new ChangeOrganizationRepositoriesDefaultBranchTrigger(api, dbContext));
                     var pullRequenstTracker = new PullRequestTracker(api, new MergeDependabotBumpsTrigger(api));
                     var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
