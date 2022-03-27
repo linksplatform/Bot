@@ -22,7 +22,6 @@ namespace Platform.Bot.Triggers
 
         public void Action(TContext issue)
         {
-            var issueService = _githubStorage.Client.Issue;
             var organizationName = issue.Repository.Owner.Login;
             var allMembers = _githubStorage.GetOrganizationMembers(organizationName);
             var usersAndRepositoriesTheyCommited = new ConcurrentDictionary<User, HashSet<Repository>>();
@@ -31,7 +30,7 @@ namespace Platform.Bot.Triggers
                 usersAndRepositoriesTheyCommited.TryAdd(user, new HashSet<Repository>());
                 return true;
             });
-            var allRepositories = _githubStorage.GetAllRepositories(organizationName);
+            var allRepositories = _githubStorage.GetAllRepositories(organizationName).Result;
             var allTasks = new Queue<Task>();
             foreach (var repository in allRepositories)
             {
@@ -59,7 +58,7 @@ namespace Platform.Bot.Triggers
             AddTldrMessageToSb(activeUsersAndRepositoriesTheyCommited, messageSb);
             AddUsersAndRepositoriesTheyCommitedToSb(activeUsersAndRepositoriesTheyCommited, messageSb);
             var message = messageSb.ToString();
-            var comment = issueService.Comment.Create(organizationName, issue.Repository.Name, issue.Number, message);
+            var comment = _githubStorage.CreateIssueComment(issue.Repository.Id, issue.Number, message);
             comment.Wait();
             Console.WriteLine($"Issue {issue.Title} is processed: {issue.Url}");
             _githubStorage.CloseIssue(issue);
