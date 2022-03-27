@@ -10,6 +10,7 @@ using System.IO;
 using System.Threading;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
+using Platform.Bot.Triggers.Decorators;
 
 namespace Platform.Bot
 {
@@ -43,9 +44,9 @@ namespace Platform.Bot
                         new HelloWorldTrigger(api, dbContext, fileSetName),
                         new OrganizationLastMonthActivityTrigger(api),
                         new LastCommitActivityTrigger(api),
-                        new ProtectMainBranchTrigger(api),
-                        new ChangeOrganizationRepositoriesDefaultBranchTrigger(api, dbContext),
-                        new ChangeOrganizationPullRequestsBaseBranch(api, dbContext));
+                        new AdminAuthorIssueTriggerDecorator(new ProtectMainBranchTrigger(api)),
+                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(api, dbContext)),
+                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranch(api, dbContext)));
                     var pullRequenstTracker = new PullRequestTracker(api, new MergeDependabotBumpsTrigger(api));
                     var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                     issueTracker.Start(cancellation.Token);
