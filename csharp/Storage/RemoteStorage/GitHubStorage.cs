@@ -247,5 +247,32 @@ namespace Storage.Remote.GitHub
 
         #endregion
 
+        #region Reference
+
+        public Task<Reference> CreateReference(long repositoryId, NewReference reference)
+        {
+            return Client.Git.Reference.Create(repositoryId, reference);
+        }
+
+        #endregion
+
+        #region Issue
+
+        public Task<IssueComment> CreateIssueComment(long repositoryId, int issueNumber, string message)
+        {
+            return Client.Issue.Comment.Create(repositoryId, issueNumber, message);
+        }
+
+        #endregion
+
+        #region Branch
+
+        public Task<Branch> GetBranch(long repositoryId, string branchName)
+        {
+            return Client.Repository.Branch.Get(repositoryId, branchName);
+        }
+
+        #endregion
+
     }
 }
