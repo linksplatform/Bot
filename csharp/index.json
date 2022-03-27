@@ -79,6 +79,11 @@
     "title": "Class PullRequestTracker | LinksPlatform's Platform.Bot Library",
     "keywords": "Class PullRequestTracker Represents the programmer role. Inheritance Object PullRequestTracker Implements ITracker < PullRequest > Namespace : Platform.Bot.Trackers Assembly : Platform.Bot.dll Syntax public class PullRequestTracker : object, ITracker<PullRequest> Constructors | Improve this Doc View Source PullRequestTracker(GitHubStorage, ITrigger<PullRequest>[]) Initializes a new IssueTracker instance. Declaration public PullRequestTracker(GitHubStorage storage, params ITrigger<PullRequest>[] triggers) Parameters Type Name Description GitHubStorage storage A git hub api. ITrigger < PullRequest >[] triggers A triggers. Methods | Improve this Doc View Source Start(CancellationToken) Starts the cancellation token. Declaration public void Start(CancellationToken cancellationToken) Parameters Type Name Description CancellationToken cancellationToken The cancellation token. Implements ITracker<TContext>"
   },
+  "api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html": {
+    "href": "api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html",
+    "title": "Class ChangeOrganizationRepositoriesDefaultBranchTrigger | LinksPlatform's Platform.Bot Library",
+    "keywords": "Class ChangeOrganizationRepositoriesDefaultBranchTrigger Inheritance Object ChangeOrganizationRepositoriesDefaultBranchTrigger Implements ITrigger < Issue > Namespace : Platform.Bot.Triggers Assembly : Platform.Bot.dll Syntax public class ChangeOrganizationRepositoriesDefaultBranchTrigger : object, ITrigger<Issue> Constructors | Improve this Doc View Source ChangeOrganizationRepositoriesDefaultBranchTrigger(GitHubStorage, FileStorage) Declaration public ChangeOrganizationRepositoriesDefaultBranchTrigger(GitHubStorage githubStorage, FileStorage linksStorage) Parameters Type Name Description GitHubStorage githubStorage FileStorage linksStorage Methods | Improve this Doc View Source Action(Issue) Declaration public void Action(Issue context) Parameters Type Name Description Issue context | Improve this Doc View Source Condition(Issue) Declaration public bool Condition(Issue issue) Parameters Type Name Description Issue issue Returns Type Description Boolean Implements ITrigger<TContext>"
+  },
   "api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html": {
     "href": "api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html",
     "title": "Class CreateAndSaveOrganizationRepositoriesMigrationTrigger | LinksPlatform's Platform.Bot Library",
@@ -87,7 +92,7 @@
   "api/Platform.Bot.Triggers.html": {
     "href": "api/Platform.Bot.Triggers.html",
     "title": "Namespace Platform.Bot.Triggers | LinksPlatform's Platform.Bot Library",
-    "keywords": "Namespace Platform.Bot.Triggers Classes CreateAndSaveOrganizationRepositoriesMigrationTrigger MergeDependabotBumpsTrigger ProtectMainBranchTrigger"
+    "keywords": "Namespace Platform.Bot.Triggers Classes ChangeOrganizationRepositoriesDefaultBranchTrigger CreateAndSaveOrganizationRepositoriesMigrationTrigger MergeDependabotBumpsTrigger ProtectMainBranchTrigger"
   },
   "api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html": {
     "href": "api/Platform.Bot.Triggers.MergeDependabotBumpsTrigger.html",

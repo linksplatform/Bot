@@ -455,6 +455,51 @@ references:
   commentId: N:Platform.Bot.Triggers
   fullName: Platform.Bot.Triggers
   nameWithType: Platform.Bot.Triggers
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger
+  name: ChangeOrganizationRepositoriesDefaultBranchTrigger
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html
+  commentId: T:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage,Storage.Local.FileStorage)
+  name: ChangeOrganizationRepositoriesDefaultBranchTrigger(GitHubStorage, FileStorage)
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html#Platform_Bot_Triggers_ChangeOrganizationRepositoriesDefaultBranchTrigger__ctor_Storage_Remote_GitHub_GitHubStorage_Storage_Local_FileStorage_
+  commentId: M:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.#ctor(Storage.Remote.GitHub.GitHubStorage,Storage.Local.FileStorage)
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.ChangeOrganizationRepositoriesDefaultBranchTrigger(Storage.Remote.GitHub.GitHubStorage, Storage.Local.FileStorage)
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger.ChangeOrganizationRepositoriesDefaultBranchTrigger(GitHubStorage, FileStorage)
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.#ctor*
+  name: ChangeOrganizationRepositoriesDefaultBranchTrigger
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html#Platform_Bot_Triggers_ChangeOrganizationRepositoriesDefaultBranchTrigger__ctor_
+  commentId: Overload:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.#ctor
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.ChangeOrganizationRepositoriesDefaultBranchTrigger
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger.ChangeOrganizationRepositoriesDefaultBranchTrigger
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Action(Issue)
+  name: Action(Issue)
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html#Platform_Bot_Triggers_ChangeOrganizationRepositoriesDefaultBranchTrigger_Action_Issue_
+  commentId: M:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Action(Issue)
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Action(Issue)
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger.Action(Issue)
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Action*
+  name: Action
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html#Platform_Bot_Triggers_ChangeOrganizationRepositoriesDefaultBranchTrigger_Action_
+  commentId: Overload:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Action
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Action
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger.Action
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition(Issue)
+  name: Condition(Issue)
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html#Platform_Bot_Triggers_ChangeOrganizationRepositoriesDefaultBranchTrigger_Condition_Issue_
+  commentId: M:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition(Issue)
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition(Issue)
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition(Issue)
+- uid: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition*
+  name: Condition
+  href: api/Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.html#Platform_Bot_Triggers_ChangeOrganizationRepositoriesDefaultBranchTrigger_Condition_
+  commentId: Overload:Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition
+  isSpec: "True"
+  fullName: Platform.Bot.Triggers.ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition
+  nameWithType: ChangeOrganizationRepositoriesDefaultBranchTrigger.Condition
 - uid: Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger
   name: CreateAndSaveOrganizationRepositoriesMigrationTrigger
   href: api/Platform.Bot.Triggers.CreateAndSaveOrganizationRepositoriesMigrationTrigger.html
