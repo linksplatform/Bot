@@ -220,18 +220,7 @@ namespace Storage.Remote.GitHub
 
         #region Repositories
 
-        public IReadOnlyList<Repository> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName).AwaitResult();
-
-        public IReadOnlyList<string> GetAllRepositoryNames(string ownerName)
-        {
-            var repositoryNames = new List<string>();
-            var allRepositories = GetAllRepositories(ownerName);
-            foreach (var repository in allRepositories)
-            {
-                repositoryNames.Add(repository.Name);
-            }
-            return repositoryNames;
-        }
+        public Task<IReadOnlyList<Repository>> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName);
 
         #endregion
 
