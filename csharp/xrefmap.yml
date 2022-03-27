@@ -895,6 +895,19 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.CloseIssue
   nameWithType: GitHubStorage.CloseIssue
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateIssueComment(System.Int64,System.Int32,System.String)
+  name: CreateIssueComment(Int64, Int32, String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateIssueComment_System_Int64_System_Int32_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.CreateIssueComment(System.Int64,System.Int32,System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateIssueComment(System.Int64, System.Int32, System.String)
+  nameWithType: GitHubStorage.CreateIssueComment(Int64, Int32, String)
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateIssueComment*
+  name: CreateIssueComment
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateIssueComment_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.CreateIssueComment
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateIssueComment
+  nameWithType: GitHubStorage.CreateIssueComment
 - uid: Storage.Remote.GitHub.GitHubStorage.CreateMigration(System.String,IReadOnlyList{System.String})
   name: CreateMigration(String, IReadOnlyList<String>)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateMigration_System_String_IReadOnlyList_System_String__
@@ -933,6 +946,19 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.CreateOrUpdateFile
   nameWithType: GitHubStorage.CreateOrUpdateFile
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateReference(System.Int64,NewReference)
+  name: CreateReference(Int64, NewReference)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateReference_System_Int64_NewReference_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.CreateReference(System.Int64,NewReference)
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateReference(System.Int64, NewReference)
+  nameWithType: GitHubStorage.CreateReference(Int64, NewReference)
+- uid: Storage.Remote.GitHub.GitHubStorage.CreateReference*
+  name: CreateReference
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_CreateReference_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.CreateReference
+  isSpec: "True"
+  fullName: Storage.Remote.GitHub.GitHubStorage.CreateReference
+  nameWithType: GitHubStorage.CreateReference
 - uid: Storage.Remote.GitHub.GitHubStorage.DependabotId
   name: DependabotId
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_DependabotId
@@ -965,19 +991,19 @@ references:
   isSpec: "True"
   fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositories
   nameWithType: GitHubStorage.GetAllRepositories
-- uid: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames(System.String)
-  name: GetAllRepositoryNames(String)
-  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllRepositoryNames_System_String_
-  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames(System.String)
-  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames(System.String)
-  nameWithType: GitHubStorage.GetAllRepositoryNames(String)
-- uid: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames*
-  name: GetAllRepositoryNames
-  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetAllRepositoryNames_
-  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames
+- uid: Storage.Remote.GitHub.GitHubStorage.GetBranch(System.Int64,System.String)
+  name: GetBranch(Int64, String)
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetBranch_System_Int64_System_String_
+  commentId: M:Storage.Remote.GitHub.GitHubStorage.GetBranch(System.Int64,System.String)
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetBranch(System.Int64, System.String)
+  nameWithType: GitHubStorage.GetBranch(Int64, String)
+- uid: Storage.Remote.GitHub.GitHubStorage.GetBranch*
+  name: GetBranch
+  href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetBranch_
+  commentId: Overload:Storage.Remote.GitHub.GitHubStorage.GetBranch
   isSpec: "True"
-  fullName: Storage.Remote.GitHub.GitHubStorage.GetAllRepositoryNames
-  nameWithType: GitHubStorage.GetAllRepositoryNames
+  fullName: Storage.Remote.GitHub.GitHubStorage.GetBranch
+  nameWithType: GitHubStorage.GetBranch
 - uid: Storage.Remote.GitHub.GitHubStorage.GetCommits(System.Int64,CommitRequest)
   name: GetCommits(Int64, CommitRequest)
   href: api/Storage.Remote.GitHub.GitHubStorage.html#Storage_Remote_GitHub_GitHubStorage_GetCommits_System_Int64_CommitRequest_
