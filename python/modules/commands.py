@@ -12,7 +12,6 @@ from .data_service import BetterBotBaseDataService
 from .data_builder import DataBuilder
 from .utils import (
     get_default_programming_language,
-    contains_string,
     contains_all_strings,
     karma_limit,
     is_available_ghpage
@@ -22,6 +21,7 @@ import config
 
 class Commands:
     cmds: Dict[Pattern, Any] = {}
+
     def __init__(
             self,
             vk_instance: Vk,
@@ -136,7 +136,7 @@ class Commands:
         users = [i for i in users if
                  (i["karma"] != 0) or
                  ("programming_languages" in i and len(i["programming_languages"]) > 0)
-                ]
+                 ]
         self.vk_instance.send_msg(
             CommandsBuilder.build_top_users(
                 users, self.data_service, reverse,
@@ -213,7 +213,8 @@ class Commands:
                         self.peer_id)
                     return
 
-            user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(operator, amount)
+            user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(
+                operator, amount)
 
             if collective_vote_applied:
                 self.current_user.last_collective_vote = int(utcnow.timestamp())
@@ -259,9 +260,13 @@ class Commands:
         # Collective vote
         elif amount == 0:
             if operator == "+":
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("supporters", config.POSITIVE_VOTES_PER_KARMA, +1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("supporters",
+                                                                                                         config.POSITIVE_VOTES_PER_KARMA,
+                                                                                                         +1)
             else:
-                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("opponents", config.NEGATIVE_VOTES_PER_KARMA, -1)
+                selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("opponents",
+                                                                                                         config.NEGATIVE_VOTES_PER_KARMA,
+                                                                                                         -1)
 
         return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
 
@@ -307,8 +312,7 @@ class Commands:
         return (user.uid, user.name, initial_karma, new_karma)
 
     def what_is(self) -> NoReturn:
-        """Search on wikipedia and sends if available
-        """
+        """Search on wikipedia and sends if available"""
         question = self.matched.groups()
         question = question[1] if question[1] else question[2]
         if search(r'[а-яё]+', question, IGNORECASE):
@@ -320,9 +324,13 @@ class Commands:
             try:
                 page = wikipedia.page(results[0])
                 self.vk_instance.send_msg(
-                    sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url}', self.peer_id)
+                    sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url[8:]}', self.peer_id)
             except wikipedia.exceptions.DisambiguationError as e:
-                print('wiki error', e)
+                # Select random page from references page and sends it
+                results = wikipedia.search(question, suggestion=True)
+                page = wikipedia.page(results[0])
+                self.vk_instance.send_msg(
+                    sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url[8:]}', self.peer_id)
 
     def match_command(
             self,
