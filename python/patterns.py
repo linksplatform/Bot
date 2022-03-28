@@ -16,7 +16,7 @@ KARMA = recompile(
     r'\A\s*(карма|karma)\s*\Z', IGNORECASE)
 
 APPLY_KARMA = recompile(
-    r'\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z')
+    r'\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-|(Thank you)|👍|👎|(Спасибо)|(Благодарю)|(Agree)|(True)|(Yes)|(Disagree)|(False)|(No))(?P<amount>[0-9]*)\s*\Z')
 
 ADD_PROGRAMMING_LANGUAGE = recompile(
     r'\A\s*\+=\s*(?P<language>' + DEFAULT_LANGUAGES + r')\s*\Z', IGNORECASE)
