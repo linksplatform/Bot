@@ -2,7 +2,7 @@
 from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
 
-from regex import Pattern, split, match, search, IGNORECASE, sub
+from regex import Pattern, Match, split, match, search, IGNORECASE, sub
 from social_ethosa import BetterUser
 from saya import Vk
 import wikipedia
@@ -38,7 +38,7 @@ class Commands:
         self.selected_message: Dict[str, Any] = {}
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
-        self.matched: List[str] = []
+        self.matched: Match = None
         wikipedia.set_lang('en')
 
     def help_message(self) -> NoReturn:
@@ -152,15 +152,16 @@ class Commands:
         if self.peer_id < 2e9:
             return
         languages = split(r"\s+", self.matched.group("languages"))
+        count = self.matched.group("count")
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
         users = [i for i in users if
                  ("programming_languages" in i and len(i["programming_languages"]) > 0) and
                  contains_all_strings(i["programming_languages"], languages, True)]
-        builded = CommandsBuilder.build_top_users(
-            users, self.data_service, reverse, self.karma_enabled)
-        if builded:
-            self.vk_instance.send_msg(builded, self.peer_id)
+        built = CommandsBuilder.build_top_users(
+            users[:int(count.strip())] if count else users, self.data_service, reverse, self.karma_enabled)
+        if built:
+            self.vk_instance.send_msg(built, self.peer_id)
             return
 
     def apply_karma(self) -> NoReturn:
@@ -328,9 +329,10 @@ class Commands:
             except wikipedia.exceptions.DisambiguationError as e:
                 # Select random page from references page and sends it
                 results = wikipedia.search(question, suggestion=True)
-                page = wikipedia.page(results[0])
+                links = "\n".join([f"ru.wikipedia.org/wiki/{i.replace(' ', '_')}" for i in results[0][1:]])
                 self.vk_instance.send_msg(
-                    sub(r"\\s{2,}", " ", page.summary[:256]) + f'...\n\n{page.url[8:]}', self.peer_id)
+                    sub(r"\\s{2,}", " ",
+                    f'ru.wikipedia.org/wiki/{results[0][0]}\n\nЕще на тему:\n{links}'), self.peer_id)
 
     def match_command(
             self,
