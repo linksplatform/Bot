@@ -8,13 +8,13 @@ using Storage.Remote.GitHub;
 
 namespace Platform.Bot.Triggers;
 
-public class ChangeOrganizationPullRequestsBaseBranch : ITrigger<Issue>
+public class ChangeOrganizationPullRequestsBaseBranchTrigger : ITrigger<Issue>
 {
     private readonly GitHubStorage _githubStorage;
 
     private readonly FileStorage _linksStorage;
 
-    public ChangeOrganizationPullRequestsBaseBranch(GitHubStorage githubStorage, FileStorage linksStorage)
+    public ChangeOrganizationPullRequestsBaseBranchTrigger(GitHubStorage githubStorage, FileStorage linksStorage)
     {
         _githubStorage = githubStorage;
         _linksStorage = linksStorage;
