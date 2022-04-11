@@ -6,9 +6,11 @@ namespace Platform.Bot.Triggers.Decorators;
 public class AdminAuthorIssueTriggerDecorator : ITrigger<Issue>
 {
     public readonly ITrigger<Issue> Trigger;
-    public AdminAuthorIssueTriggerDecorator(ITrigger<Issue> trigger)
+    public readonly GitHubStorage GithubStorage;
+    public AdminAuthorIssueTriggerDecorator(ITrigger<Issue> trigger, GitHubStorage githubStorage)
     {
         Trigger = trigger;
+        GithubStorage = githubStorage;
     }
 
     public virtual bool Condition(Issue issue)
