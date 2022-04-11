@@ -39,16 +39,16 @@ namespace Platform.Bot
             {
                 while (true)
                 {
-                    var api = new GitHubStorage(username, token, appName);
-                    var issueTracker = new IssueTracker(api,
-                        new HelloWorldTrigger(api, dbContext, fileSetName),
-                        new OrganizationLastMonthActivityTrigger(api),
-                        new LastCommitActivityTrigger(api),
-                        new AdminAuthorIssueTriggerDecorator(new ProtectMainBranchTrigger(api)),
-                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(api, dbContext)),
-                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranch(api, dbContext)));
-                    var pullRequenstTracker = new PullRequestTracker(api, new MergeDependabotBumpsTrigger(api));
-                    var timestampTracker = new DateTimeTracker(api, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(api, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
+                    var githubStorage = new GitHubStorage(username, token, appName);
+                    var issueTracker = new IssueTracker(githubStorage,
+                        new HelloWorldTrigger(githubStorage, dbContext, fileSetName),
+                        new OrganizationLastMonthActivityTrigger(githubStorage),
+                        new LastCommitActivityTrigger(githubStorage),
+                        new AdminAuthorIssueTriggerDecorator(new ProtectMainBranchTrigger(githubStorage)),
+                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext)),
+                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranch(githubStorage, dbContext)));
+                    var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
+                    var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                     issueTracker.Start(cancellation.Token);
                     pullRequenstTracker.Start(cancellation.Token);
                     timestampTracker.Start(cancellation.Token);
