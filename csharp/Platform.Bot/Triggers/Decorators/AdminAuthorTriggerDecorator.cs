@@ -1,5 +1,6 @@
 using Interfaces;
 using Octokit;
+using Storage.Remote.GitHub;
 
 namespace Platform.Bot.Triggers.Decorators;
 
