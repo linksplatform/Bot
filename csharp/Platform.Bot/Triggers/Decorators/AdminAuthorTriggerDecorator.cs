@@ -15,7 +15,9 @@ public class AdminAuthorIssueTriggerDecorator : ITrigger<Issue>
 
     public virtual bool Condition(Issue issue)
     {
-        return issue.User.Permissions.Admin && Trigger.Condition(issue);
+        var authorPermission = GithubStorage.Client.Repository.Collaborator.ReviewPermission(issue.Repository.Id, issue.User.Login).Result;
+        var isAdmin = authorPermission.Permission.Value == PermissionLevel.Admin;
+        return isAdmin && Trigger.Condition(issue);
     }
 
     public virtual void Action(Issue issue)
