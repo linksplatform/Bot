@@ -20,7 +20,7 @@ public class ChangeOrganizationRepositoriesDefaultBranchTrigger : ITrigger<Issue
     }
     public bool Condition(Issue issue)
     {
-        return issue.Title.Contains("Change default branch in organization repositories to");
+        return issue.Title.ToLower().Contains("Change default branch in organization repositories to".ToLower());
     }
 
     public void Action(Issue context)
