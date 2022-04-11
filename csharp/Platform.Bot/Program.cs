@@ -44,9 +44,9 @@ namespace Platform.Bot
                         new HelloWorldTrigger(githubStorage, dbContext, fileSetName),
                         new OrganizationLastMonthActivityTrigger(githubStorage),
                         new LastCommitActivityTrigger(githubStorage),
-                        new AdminAuthorIssueTriggerDecorator(new ProtectMainBranchTrigger(githubStorage)),
-                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext)),
-                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranch(githubStorage, dbContext)));
+                        new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage),
+                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage),
+                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
                     var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                     var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                     issueTracker.Start(cancellation.Token);
