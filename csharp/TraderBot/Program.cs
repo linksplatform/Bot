@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Tinkoff.InvestApi.Sample;
+using TraderBot;
 
 [assembly: UserSecretsId("2323bae0-f4bf-4c7b-90ce-1b87d3fd76a8")]
 

@@ -1,9 +1,8 @@
-using Grpc.Core;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Tinkoff.InvestApi.V1;
+using Tinkoff.InvestApi;
 
-namespace Tinkoff.InvestApi.Sample;
+namespace TraderBot;
 
 public class SyncService : BackgroundService
 {

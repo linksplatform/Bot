@@ -1,7 +1,8 @@
 using System.Text;
+using Tinkoff.InvestApi;
 using Tinkoff.InvestApi.V1;
 
-namespace Tinkoff.InvestApi.Sample;
+namespace TraderBot;
 
 public class UsersServiceSample
 {
