@@ -13,6 +13,7 @@ public class AsyncService : BackgroundService
     private readonly IHostApplicationLifetime _lifetime;
     private readonly ILogger<AsyncService> _logger;
     private MoneyValue? _rubWithdrawLimit;
+    public readonly int Quantity = 1;
 
     public AsyncService(ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
     {
