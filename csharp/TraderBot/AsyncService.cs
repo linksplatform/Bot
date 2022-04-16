@@ -43,8 +43,7 @@ public class AsyncService : BackgroundService
         {
             if (!task.IsCompletedSuccessfully)
             {
-                _logger.LogError(task.Exception, "Error while subscribing to market data");
-                return;
+                throw new Exception("Error while subscribing to market data");
             }
             _logger.LogInformation("Subscribed to market data");
         }, stoppingToken);
