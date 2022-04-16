@@ -50,10 +50,62 @@ public class AsyncService : BackgroundService
         {
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
             {
-                _logger.LogInformation($"Orderbook data received from stream.");
+                var orderBook = data.Orderbook;
+                _logger.LogInformation($"Orderbook data received from stream: {orderBook}");
+                TradeAssets(asset, account.Id, orderBook, instrument.Figi);
             }
         }
-
         _lifetime.StopApplication();
+    }
+
+    private async void TradeAssets(Asset? asset, string accountId, OrderBook marketOrderBook, string figi)
+    {
+        var cheapestBidOrder = marketOrderBook.Bids[0];
+        var cheapestAskOrder = marketOrderBook.Asks[0];
+        if (asset == null)
+        {
+            PostOrderRequest buyOrderRequest = new()
+            {
+                Figi = figi,
+                Quantity = Quantity,
+                Price = cheapestAskOrder.Price,
+                Direction = OrderDirection.Buy,
+                AccountId = accountId,
+                OrderType = OrderType.Limit,
+                OrderId = ""
+            };
+            PostBuyOrder(buyOrderRequest);
+        }
+        else
+        {
+            PostOrderRequest sellOrderRequest = new()
+            {
+                Figi = figi,
+                Quantity = Quantity,
+                Price = cheapestBidOrder.Price,
+                Direction = OrderDirection.Sell,
+                AccountId = accountId,
+                OrderType = OrderType.Limit,
+                OrderId = ""
+            };
+            PostSellOrderIfProfitable(asset.Value, sellOrderRequest);
+        }
+
+    }
+
+    private async void PostBuyOrder(PostOrderRequest sellOrderRequest)
+    {
+        var buyOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
+        _logger.LogInformation($"Buy order placed: {buyOrderResponse}");
+    }
+
+    private async void PostSellOrderIfProfitable(Asset asset, PostOrderRequest sellOrderRequest)
+    {
+        if (sellOrderRequest.Price < asset.Price)
+        {
+            return;
+        }
+        var sellOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
+        _logger.LogInformation($"Sell order placed: {sellOrderResponse}");
     }
 }
