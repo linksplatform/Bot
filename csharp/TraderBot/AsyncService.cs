@@ -25,6 +25,7 @@ public class AsyncService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
 
+        Asset? asset = null;
         var account = _investApi.Users.GetAccounts().Accounts[0];
         var withdrawLimitsResponse = _investApi.Operations.GetWithdrawLimits(new WithdrawLimitsRequest(){AccountId = account.Id});
         _rubWithdrawLimit = withdrawLimitsResponse.Money.First(moneyValue => moneyValue.Currency == "rub");
