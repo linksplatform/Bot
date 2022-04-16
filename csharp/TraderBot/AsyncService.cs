@@ -30,13 +30,13 @@ public class AsyncService : BackgroundService
         var withdrawLimitsResponse = _investApi.Operations.GetWithdrawLimits(new WithdrawLimitsRequest(){AccountId = account.Id});
         _rubWithdrawLimit = withdrawLimitsResponse.Money.First(moneyValue => moneyValue.Currency == "rub");
         var etfs = _investApi.Instruments.Etfs();
-        var trurEtf = etfs.Instruments.First(etf => etf.Ticker == "TRUR");
+        var instrument = etfs.Instruments.First(etf => etf.Ticker == "TRUR");
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
         {
             SubscribeOrderBookRequest = new SubscribeOrderBookRequest()
             {
-                Instruments = { new OrderBookInstrument() { Figi = trurEtf.Figi, Depth = 1} },
+                Instruments = { new OrderBookInstrument() { Figi = instrument.Figi, Depth = 1} },
                 SubscriptionAction = SubscriptionAction.Subscribe
             },
         }).ContinueWith((task) =>
