@@ -141,6 +141,7 @@ GITHUB_COPILOT_LANGUAGES = {
     r'Python': ['#', '.py'],  # comment, file extension
     r'C#': ['//', '.cs']
 }
+GITHUB_COPILOT_SH_FILE = './copilot.sh'
 
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
 GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])

@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
+from time import time
+from subprocess import run as run_process
 
 from regex import Pattern, Match, split, match, search, IGNORECASE, sub
 from social_ethosa import BetterUser
@@ -31,6 +33,7 @@ class Commands:
         self.msg_id: int = 0
         self.peer_id: int = 0
         self.from_id: int = 0
+        self.now: float = time()
         self.user: BetterUser = None
         self.karma_enabled: bool = False
         self.is_bot_selected: bool = False
@@ -42,23 +45,20 @@ class Commands:
         wikipedia.set_lang('en')
 
     def help_message(self) -> NoReturn:
-        """Sends help message
-        """
+        """Sends help message"""
         self.vk_instance.send_msg(
             CommandsBuilder.build_help_message(self.peer_id, self.karma_enabled),
             self.peer_id)
 
     def info_message(self) -> NoReturn:
-        """Sends user info
-        """
+        """Sends user info"""
         self.vk_instance.send_msg(
             CommandsBuilder.build_info_message(
                 self.user, self.data_service, self.from_id, self.karma_enabled),
             self.peer_id)
 
     def update_command(self) -> NoReturn:
-        """Updates user profile.
-        """
+        """Updates user profile."""
         if self.from_id > 0:
             name = self.vk_instance.get_user_name(self.from_id)
             self.current_user.name = name
@@ -69,8 +69,7 @@ class Commands:
             self,
             is_add: bool
     ) -> NoReturn:
-        """Adds or removes a new programming language in user profile.
-        """
+        """Adds or removes a new programming language in user profile."""
         language = self.matched.group('language')
         language = get_default_programming_language(language).replace('\\', '')
         if not language:
@@ -93,8 +92,7 @@ class Commands:
             self,
             is_add: bool
     ) -> NoReturn:
-        """Changes github profile.
-        """
+        """Changes github profile."""
         profile = self.matched.group('profile')
         if not profile:
             return
@@ -112,8 +110,7 @@ class Commands:
             self.peer_id)
 
     def karma_message(self) -> NoReturn:
-        """Shows user's karma.
-        """
+        """Shows user's karma."""
         if self.peer_id < 2e9 and not self.karma_enabled:
             return
         is_self = self.user.uid == self.from_id
@@ -125,8 +122,7 @@ class Commands:
             self,
             reverse: bool = False
     ) -> NoReturn:
-        """Sends users top.
-        """
+        """Sends users top."""
         if self.peer_id < 2e9:
             return
         maximum_users = self.matched.group("maximum_users")
@@ -147,8 +143,7 @@ class Commands:
             self,
             reverse: bool = False
     ) -> NoReturn:
-        """Sends users top.
-        """
+        """Sends users top."""
         if self.peer_id < 2e9:
             return
         languages = split(r"\s+", self.matched.group("languages"))
@@ -165,8 +160,7 @@ class Commands:
             return
 
     def apply_karma(self) -> NoReturn:
-        """Changes user karma.
-        """
+        """Changes user karma."""
         if self.peer_id < 2e9 or not self.karma_enabled or not self.matched or self.is_bot_selected:
             return
         if not self.user:
@@ -238,7 +232,7 @@ class Commands:
     ) -> Tuple[
         Optional[Tuple[int, str, int, int]],  # current user karma changed
         Optional[Tuple[int, str, int, int]],  # selected user karma changed
-        bool,  # collective vote applied
+        Optional[bool],  # collective vote applied
         List[int]  # voters IDs list
     ]:
         selected_user_karma_change = None
@@ -294,11 +288,11 @@ class Commands:
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
             self.user[current_voters] = []
-            return (self.apply_user_karma(self.user, amount), voters, vote_applied)
-        return (None, None, vote_applied)
+            return self.apply_user_karma(self.user, amount), voters, vote_applied
+        return None, None, vote_applied
 
+    @staticmethod
     def apply_user_karma(
-            self,
             user: BetterUser,
             amount: int
     ) -> Tuple[int, str, int, int]:
@@ -334,6 +328,28 @@ class Commands:
                     sub(r"\\s{2,}", " ",
                     f'ru.wikipedia.org/wiki/{results[0][0]}\n\nЕще на тему:\n{links}'), self.peer_id)
 
+    def github_copilot(self) -> NoReturn:
+        """send user task to GitHub Copilot"""
+        now = time()
+        if now - self.now >= 60*5:
+            language = self.matched.group('lang')
+            text = self.matched.group('text').strip()
+            # input-output files
+            input_file = f'input{config.GITHUB_COPILOT_LANGUAGES[language][1]}'
+            output_file = f'output{config.GITHUB_COPILOT_LANGUAGES[language][1]}'
+            with open(input_file, 'w', encoding='utf-8') as f:
+                f.write(text)
+            run_process([config.GITHUB_COPILOT_SH_FILE, input_file])
+            with open(output_file, 'r', encoding='utf-8') as f:
+                result = f.read()
+                self.vk_instance.send_msg(
+                    result, self.peer_id
+                )
+            return
+        self.vk_instance.send_msg(
+            'Пожалуйста подождите.', self.peer_id
+        )
+
     def match_command(
             self,
             pattern: Pattern
@@ -345,16 +361,14 @@ class Commands:
             cmd: Pattern,
             action: Callable[[], NoReturn]
     ) -> NoReturn:
-        """Registers a new command.
-        """
+        """Registers a new command."""
         Commands.cmds[cmd] = action
 
     @staticmethod
     def register_cmds(
             *cmds: Tuple[Pattern, Callable[[], NoReturn]]
     ) -> NoReturn:
-        """Registers a new commands.
-        """
+        """Registers a new commands."""
         for cmd, action in cmds:
             Commands.cmds[cmd] = action
 

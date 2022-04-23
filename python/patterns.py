@@ -63,5 +63,5 @@ WHAT_MEAN = recompile(
 # lang - list of copilot langs from config.py
 # text - task description
 GITHUB_COPILOT = recompile(
-    r'\A\s*code\s+(?P<lang>(' + COPILOT_LANGUAGES +
+    r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
