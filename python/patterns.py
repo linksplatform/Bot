@@ -60,9 +60,8 @@ WHAT_IS = recompile(
 WHAT_MEAN = recompile(
     r'\A\s*(what does\s+([\S ]+?)\s+mean\s*\??\s*|(что значит|що таке)\s+([\S ]+)\?\s*)\Z', IGNORECASE)
 
-# codetype - code, function or class
 # lang - list of copilot langs from config.py
 # text - task description
 GITHUB_COPILOT = recompile(
-    r'\A\s*(?P<codetype>code|function|class)\s+(?P<lang>(' + COPILOT_LANGUAGES +
+    r'\A\s*code\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
