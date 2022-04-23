@@ -2,6 +2,9 @@
 """Provides config around bot.
 """
 
+NEGATIVE_OPERATORS = ['-', 'False', 'No']
+POSITIVE_OPERATORS = ['Thank you', 'Спасибо', 'Благодарю', '+', 'True', 'Yes']
+
 # Bot's VK group id (change it to your group id)
 BOT_GROUP_ID = 190877945
 
@@ -134,4 +137,10 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
     r"Nemerle",
 ]
 
+GITHUB_COPILOT_LANGUAGES = {
+    r'Python': ['#', '.py'],  # comment, file extension
+    r'C#': ['//', '.cs']
+}
+
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
+GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
