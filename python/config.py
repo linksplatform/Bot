@@ -137,4 +137,10 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
     r"Nemerle",
 ]
 
+GITHUB_COPILOT_LANGUAGES = {
+    r'Python': ['#', '.py'],  # comment, file extension
+    r'C#': ['//', '.cs']
+}
+
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
+GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
