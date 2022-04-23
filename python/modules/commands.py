@@ -5,6 +5,7 @@ from time import time
 from subprocess import run as run_process
 
 from regex import Pattern, Match, split, match, search, IGNORECASE, sub
+from requests import post
 from social_ethosa import BetterUser
 from saya import Vk
 import wikipedia
@@ -19,6 +20,7 @@ from .utils import (
     is_available_ghpage
 )
 import config
+import tokens
 
 
 class Commands:
@@ -342,9 +344,21 @@ class Commands:
             run_process([config.GITHUB_COPILOT_SH_FILE, input_file])
             with open(output_file, 'r', encoding='utf-8') as f:
                 result = f.read()
-                self.vk_instance.send_msg(
-                    result, self.peer_id
+                response = post(
+                    'https://pastebin.com/api/api_post.php',
+                    data={
+                        'api_dev_key': tokens.PASTEBIN_API_KEY,
+                        'api_paste_code': result,
+                        'api_paste_private': '0',
+                        'api_paste_name': '',
+                        'api_paste_expire_date': '10M',
+                        'api_user_key': '',
+                        'api_paste_format': config.GITHUB_COPILOT_LANGUAGES[language][2],
+                        'api_option': 'paste'
+                    }
                 )
+                # send pastebin URL
+                self.vk_instance.send_msg(response.text, self.peer_id)
             return
         self.vk_instance.send_msg(
             'Пожалуйста подождите.', self.peer_id

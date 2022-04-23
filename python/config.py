@@ -138,8 +138,8 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
 ]
 
 GITHUB_COPILOT_LANGUAGES = {
-    r'Python': ['#', '.py'],  # comment, file extension
-    r'C#': ['//', '.cs']
+    r'Python': ['#', '.py', 'python'],  # comment, file extension, pastebin name
+    r'C#': ['//', '.cs', 'csharp']
 }
 GITHUB_COPILOT_SH_FILE = './copilot.sh'
 
