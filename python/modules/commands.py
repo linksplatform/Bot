@@ -35,7 +35,7 @@ class Commands:
         self.msg_id: int = 0
         self.peer_id: int = 0
         self.from_id: int = 0
-        self.now: float = time() - 60
+        self.now: float = time() - config.GITHUB_COPILOT_TIMEOUT
         self.user: BetterUser = None
         self.karma_enabled: bool = False
         self.is_bot_selected: bool = False
@@ -333,7 +333,7 @@ class Commands:
     def github_copilot(self) -> NoReturn:
         """send user task to GitHub Copilot"""
         now = time()
-        if now - self.now >= 60:
+        if now - self.now >= config.GITHUB_COPILOT_TIMEOUT:
             self.now = now
             language = self.matched.group('lang')
             text = self.matched.group('text').strip()
@@ -362,10 +362,10 @@ class Commands:
                     }
                 )
                 # send pastebin URL
-                self.vk_instance.send_msg(response.text, self.peer_id)
+                self.vk_instance.send_msg(response.text.lstrip('https://'), self.peer_id)
             return
         self.vk_instance.send_msg(
-            'Пожалуйста подождите.', self.peer_id
+            f'Пожалуйста, подождите {round(60 - (now - self.now))//60} минут', self.peer_id
         )
 
     def match_command(

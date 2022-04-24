@@ -142,6 +142,7 @@ GITHUB_COPILOT_LANGUAGES = {
     r'C#': ['//', '.cs', 'csharp']
 }
 GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} > {output_file}"'
+GITHUB_COPILOT_TIMEOUT = 60  # seconds
 
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
 GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
