@@ -376,7 +376,7 @@ class Commands:
                     )
             return
         self.vk_instance.send_msg(
-            f'Пожалуйста, подождите {round(60 - (now - self.now))} секунд', self.peer_id
+            f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
 
     def match_command(
