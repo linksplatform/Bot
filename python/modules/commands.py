@@ -338,8 +338,8 @@ class Commands:
             language = self.matched.group('lang')
             text = self.matched.group('text').strip()
             # input-output files
-            input_file = f'input{config.GITHUB_COPILOT_LANGUAGES[language][1]}'
-            output_file = f'output{config.GITHUB_COPILOT_LANGUAGES[language][1]}'
+            input_file = f'input{config.GITHUB_COPILOT_LANGUAGES[language][0]}'
+            output_file = f'output{config.GITHUB_COPILOT_LANGUAGES[language][0]}'
             with open(input_file, 'w', encoding='utf-8') as f:
                 f.write(text)
             # run.sh input.py
@@ -362,7 +362,7 @@ class Commands:
                         'api_paste_name': '',
                         'api_paste_expire_date': '10M',
                         'api_user_key': '',
-                        'api_paste_format': config.GITHUB_COPILOT_LANGUAGES[language][2],
+                        'api_paste_format': config.GITHUB_COPILOT_LANGUAGES[language][1],
                         'api_option': 'paste'
                     }
                 )
