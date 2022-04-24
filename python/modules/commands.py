@@ -35,7 +35,7 @@ class Commands:
         self.msg_id: int = 0
         self.peer_id: int = 0
         self.from_id: int = 0
-        self.now: float = time()
+        self.now: float = time() - 60
         self.user: BetterUser = None
         self.karma_enabled: bool = False
         self.is_bot_selected: bool = False
@@ -333,7 +333,8 @@ class Commands:
     def github_copilot(self) -> NoReturn:
         """send user task to GitHub Copilot"""
         now = time()
-        if now - self.now >= 60*5:
+        if now - self.now >= 60:
+            self.now = now
             language = self.matched.group('lang')
             text = self.matched.group('text').strip()
             # input-output files
