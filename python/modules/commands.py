@@ -372,7 +372,7 @@ class Commands:
                 )
             return
         self.vk_instance.send_msg(
-            f'Пожалуйста, подождите {round(60 - (now - self.now))//60} минут', self.peer_id
+            f'Пожалуйста, подождите {round(60 - (now - self.now))} секунд', self.peer_id
         )
 
     def match_command(
