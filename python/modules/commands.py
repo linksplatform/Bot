@@ -368,7 +368,7 @@ class Commands:
                 )
                 # send pastebin URL
                 self.vk_instance.send_msg(
-                    'Сгенерированный код: ' + response.text.lstrip('https://'), self.peer_id
+                    'Сгенерированный код: ' + response.text[8:], self.peer_id
                 )
             return
         self.vk_instance.send_msg(
