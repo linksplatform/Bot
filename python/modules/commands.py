@@ -348,6 +348,11 @@ class Commands:
             os.system(command)
             with open(output_file, 'r', encoding='utf-8') as f:
                 result = f.read()
+                if 'Synthesizing 0/10 solutions' in result:
+                    self.vk_instance.send_msg(
+                        'Не удалось сгенерировать код.', self.peer_id
+                    )
+                    return
                 response = post(
                     'https://pastebin.com/api/api_post.php',
                     data={
@@ -362,7 +367,9 @@ class Commands:
                     }
                 )
                 # send pastebin URL
-                self.vk_instance.send_msg(response.text.lstrip('https://'), self.peer_id)
+                self.vk_instance.send_msg(
+                    'Сгенерированный код: ' + response.text.lstrip('https://'), self.peer_id
+                )
             return
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(60 - (now - self.now))//60} минут', self.peer_id
