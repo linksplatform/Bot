@@ -342,7 +342,12 @@ class Commands:
             output_file = f'output{config.GITHUB_COPILOT_LANGUAGES[language][1]}'
             with open(input_file, 'w', encoding='utf-8') as f:
                 f.write(text)
-            run_process([config.GITHUB_COPILOT_SH_FILE, input_file])
+            # run.sh input.py
+            run_process(
+                config.GITHUB_COPILOT_RUN_COMMAND.format(
+                    input_file=input_file, output_file=output_file
+                )
+            )
             with open(output_file, 'r', encoding='utf-8') as f:
                 result = f.read()
                 response = post(
