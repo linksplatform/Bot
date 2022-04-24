@@ -366,16 +366,14 @@ class Commands:
                         'api_option': 'paste'
                     }
                 )
-                if 'Post limit' in response.text:
-                    self.vk_instance.send_msg(
-                        'Не удалось сгенерировать код.', self.peer_id
-                    )
-                    return
                 # send pastebin URL
-                self.vk_instance.send_msg(
-                    result.replace(' ', ' ') + '\n\nСгенерированный код: ' + response.text[8:],
-                    self.peer_id
-                )
+                if 'Post limit' in response.text:
+                    self.vk_instance.send_msg(result.replace(' ', ' '), self.peer_id)
+                else:
+                    self.vk_instance.send_msg(
+                        result.replace(' ', ' ') + '\n\nСгенерированный код: ' + response.text[8:],
+                        self.peer_id
+                    )
             return
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(60 - (now - self.now))} секунд', self.peer_id
