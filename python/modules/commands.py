@@ -2,7 +2,7 @@
 from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
 from time import time
-from subprocess import run as run_process
+from subprocess import call as call_process
 
 from regex import Pattern, Match, split, match, search, IGNORECASE, sub
 from requests import post
@@ -343,7 +343,7 @@ class Commands:
             with open(input_file, 'w', encoding='utf-8') as f:
                 f.write(text)
             # run.sh input.py
-            run_process(
+            call_process(
                 config.GITHUB_COPILOT_RUN_COMMAND.format(
                     input_file=input_file, output_file=output_file
                 )
