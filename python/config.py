@@ -139,7 +139,13 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
 
 GITHUB_COPILOT_LANGUAGES = {
     r'Python': ['#', '.py', 'python'],  # comment, file extension, pastebin name
-    r'C#': ['//', '.cs', 'csharp']
+    r'C#': ['//', '.cs', 'csharp'],
+    r'Go': ['//', '.go', 'go'],
+    r'TypeScript': ['//', '.ts', 'typescript'],
+    r'Java': ['//', '.java', 'java'],
+    r'Kotlin': ['//', '.kt', 'kotlin'],
+    r'JavaScript': ['//', '.js', 'javascript'],
+    r'Ruby': ['#', '.rb', 'ruby'],
 }
 GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} > {output_file}"'
 GITHUB_COPILOT_TIMEOUT = 120  # seconds
