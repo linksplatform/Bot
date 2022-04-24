@@ -348,7 +348,7 @@ class Commands:
             os.system(command)
             with open(output_file, 'r', encoding='utf-8') as f:
                 result = f.read()
-                if 'Synthesizing 0/10 solutions' in result:
+                if 'Synthesizing 0/10 solutions' in result or not result:
                     self.vk_instance.send_msg(
                         'Не удалось сгенерировать код.', self.peer_id
                     )
@@ -368,7 +368,8 @@ class Commands:
                 )
                 # send pastebin URL
                 self.vk_instance.send_msg(
-                    'Сгенерированный код: ' + response.text[8:], self.peer_id
+                    result.replace(' ', ' ') + '\n\nСгенерированный код: ' + response.text[8:],
+                    self.peer_id
                 )
             return
         self.vk_instance.send_msg(
