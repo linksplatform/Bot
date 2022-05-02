@@ -360,7 +360,7 @@ class Commands:
                         'api_paste_code': result,
                         'api_paste_private': '0',
                         'api_paste_name': '',
-                        'api_paste_expire_date': '10M',
+                        'api_paste_expire_date': 'N',
                         'api_user_key': '',
                         'api_paste_format': config.GITHUB_COPILOT_LANGUAGES[language][1],
                         'api_option': 'paste'

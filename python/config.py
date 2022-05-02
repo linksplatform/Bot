@@ -147,6 +147,8 @@ GITHUB_COPILOT_LANGUAGES = {
     r'Kotlin': ['.kt', 'kotlin'],
     r'Ruby': ['.rb', 'ruby'],
     r'PHP': ['.php', 'php'],
+    r'C': ['.c', 'c'],
+    r'C\+\+': ['.cpp', 'cpp'],
 }
 GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} {output_file}"'
 GITHUB_COPILOT_TIMEOUT = 120  # seconds
