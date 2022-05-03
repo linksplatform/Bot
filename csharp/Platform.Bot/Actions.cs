@@ -11,18 +11,18 @@ namespace Platform.Bot;
 
 public static class Actions
 {
-    public static async Task RemoveCppProjectsFromSln(string slnFilePath)
+    public static async Task RemoveProjectsFromSln(string slnFilePath, string projectPattern)
     {
         // Note that string passed to regex constructor is escaping double qoutes by using double quotes.
-        // Origin regex: Project.+?cpp\\.+?\"(?<cppProjectId>\{.+?\})\"
-        var cppProjectRegex = new Regex(@"Project.+?cpp\\.+?\""(?<cppProjectId>\{.+?\})\""");
+        // Origin regex: Project.+?cpp\\.+?\"(?<projectId>\{.+?\})\"
+        var cppProjectRegex = new Regex($@"Project.+?${projectPattern}\\.+?\""(?<projectId>\{{.+?\}})\""");
         var slnLines = await File.ReadAllLinesAsync(slnFilePath);
-        List<string> cppProjectIds = new();
+        List<string> projectIds = new();
         for (var i = 0; i < slnLines.Length; i++)
         {
-            foreach (var cppProjectId in cppProjectIds)
+            foreach (var projectId in projectIds)
             {
-                if (slnLines[i].Contains(cppProjectId))
+                if (slnLines[i].Contains(projectId))
                 {
                     slnLines[i] = "";
                 }
@@ -32,8 +32,8 @@ public static class Actions
             {
                 continue;
             }
-            var currentCppProjectId = match.Groups["cppProjectId"].Value;
-            cppProjectIds.Add(currentCppProjectId);
+            var currentCppProjectId = match.Groups["projectId"].Value;
+            projectIds.Add(currentCppProjectId);
             slnLines[i] = "";
             // Remove EndProject
             ++i;
