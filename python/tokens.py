@@ -11,3 +11,6 @@ BOT_TOKEN = ''
 # You can get it there:
 # https://oauth.vk.com/authorize?client_id=2685278&scope=1073737727&redirect_uri=https://api.vk.com/blank.html&display=page&response_type=token&revoke=1
 USER_TOKEN = ''
+
+# Pastebin.com developer API key
+PASTEBIN_API_KEY = ''

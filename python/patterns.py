@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 """This module contains Regex patterns to message handling."""
 from regex import compile as recompile, IGNORECASE
-from config import DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING as DEFAULT_LANGUAGES
+from config import (
+    DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING as DEFAULT_LANGUAGES,
+    GITHUB_COPILOT_LANGUAGES_PATTERN_STRING as COPILOT_LANGUAGES
+)
 
 HELP = recompile(
     r'\A\s*(помощь|help)\s*\Z', IGNORECASE)
@@ -56,3 +59,9 @@ WHAT_IS = recompile(
 
 WHAT_MEAN = recompile(
     r'\A\s*(what does\s+([\S ]+?)\s+mean\s*\??\s*|(что значит|що таке)\s+([\S ]+)\?\s*)\Z', IGNORECASE)
+
+# lang - list of copilot langs from config.py
+# text - task description
+GITHUB_COPILOT = recompile(
+    r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
+    r'))(?P<text>[\S\s]+)\Z', IGNORECASE)

@@ -63,6 +63,7 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
+            (patterns.GITHUB_COPILOT, self.commands.github_copilot)
         )
 
     def message_new(

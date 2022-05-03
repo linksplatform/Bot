@@ -137,4 +137,21 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
     r"Nemerle",
 ]
 
+GITHUB_COPILOT_LANGUAGES = {
+    r'Python': ['.py', 'python'],  # file extension, pastebin name
+    r'JavaScript': ['.js', 'javascript'],
+    r'TypeScript': ['.ts', 'typescript'],
+    r'C#': ['.cs', 'csharp'],
+    r'Go': ['.go', 'go'],
+    r'Java': ['.java', 'java'],
+    r'Kotlin': ['.kt', 'kotlin'],
+    r'Ruby': ['.rb', 'ruby'],
+    r'PHP': ['.php', 'php'],
+    r'C': ['.c', 'c'],
+    r'C\+\+': ['.cpp', 'cpp'],
+}
+GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} {output_file}"'
+GITHUB_COPILOT_TIMEOUT = 120  # seconds
+
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
+GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
