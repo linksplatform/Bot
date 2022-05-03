@@ -15,7 +15,7 @@ public static class Actions
     {
         // Note that string passed to regex constructor is escaping double qoutes by using double quotes.
         // Origin regex: Project.+?cpp\\.+?\"(?<projectId>\{.+?\})\"
-        var cppProjectRegex = new Regex($@"Project.+?${projectPattern}\\.+?\""(?<projectId>\{{.+?\}})\""");
+        var cppProjectRegex = new Regex($@"Project.+?{projectPattern}\\.+?\""(?<projectId>\{{.+?\}})\""");
         var slnLines = await File.ReadAllLinesAsync(slnFilePath);
         List<string> projectIds = new();
         for (var i = 0; i < slnLines.Length; i++)
