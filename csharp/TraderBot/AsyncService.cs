@@ -53,7 +53,7 @@ public class AsyncService : BackgroundService
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
             {
                 var orderBook = data.Orderbook;
-                _logger.LogInformation($"Orderbook data received from stream: {orderBook}");
+                _logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
                 TradeAssets(asset, account.Id, orderBook, instrument.Figi);
             }
         }
