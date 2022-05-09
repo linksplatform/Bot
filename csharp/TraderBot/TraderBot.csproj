@@ -9,7 +9,14 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="4.0.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+        <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.0" />
         <PackageReference Include="Tinkoff.InvestApi" Version="0.1.6" />
+
+    </ItemGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\..\..\Data.Doublets.Gql\csharp\Platform.Data.Doublets.Gql.Client\Platform.Data.Doublets.Gql.Client.csproj" />
     </ItemGroup>
 </Project>
