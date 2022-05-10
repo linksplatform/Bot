@@ -10,6 +10,8 @@ using Platform.Data;
 using Platform.Data.Doublets;
 using Platform.Data.Doublets.CriterionMatchers;
 using Platform.Data.Doublets.Gql.Client;
+using Platform.Data.Doublets.Numbers.Rational;
+using Platform.Data.Doublets.Numbers.Raw;
 using Platform.Data.Doublets.Sequences.Converters;
 using Platform.Data.Doublets.Sequences.Walkers;
 using Platform.Data.Doublets.Unicode;
@@ -39,78 +41,108 @@ public class AsyncService : BackgroundService
     public readonly static EqualityComparer<ulong> EqualityComparer = EqualityComparer<ulong>.Default;
     private readonly TLinkAddress Currency;
     private readonly TLinkAddress Amount;
-    private readonly TLinkAddress RubCurrency;
+    private readonly TLinkAddress Rub;
     public static AddressToRawNumberConverter<ulong> AddressToNumberConverter;
+    public ulong Type;
+    public Etf? Instrument;
+    public readonly RawNumberSequenceToBigIntegerConverter<TLinkAddress> RawNumberSequenceToBigIntegerConverter;
+    public readonly BigIntegerToRawNumberSequenceConverter<TLinkAddress> BigIntegerToRawNumberSequenceConverter;
+    public readonly TLinkAddress NegativeNumberMarker;
+    private readonly DecimalToRationalConverter<TLinkAddress> DecimalToRationalConverter;
+    private readonly RationalToDecimalConverter<TLinkAddress> RationalToDecimalConverter;
 
     public AsyncService(ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
     {
-        LinksGqlAdapter linksGqlAdapter = new(new GraphQLHttpClient("", new NewtonsoftJsonSerializer()), new LinksConstants<TLinkAddress>());
         _logger = logger;
         _investApi = investApi;
         _lifetime = lifetime;
+        LinksGqlAdapter = new(new GraphQLHttpClient("https", new NewtonsoftJsonSerializer()), new LinksConstants<TLinkAddress>());
         TLinkAddress zero = default;
         TLinkAddress one = Arithmetic.Increment(zero);
-        var type = one;
-        var meaningRoot = linksGqlAdapter.GetOrCreate(type, type);
-        var unicodeSymbolMarker = linksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref type));
-        var unicodeSequenceMarker = linksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref type));
-        BalancedVariantConverter<TLinkAddress> balancedVariantConverter = new(linksGqlAdapter);
+        var typeIndex = one;
+        Type = LinksGqlAdapter.GetOrCreate(typeIndex, typeIndex);
+        var typeId = LinksGqlAdapter.GetOrCreate(Type, Arithmetic.Increment(ref typeIndex));
+        var meaningRoot = LinksGqlAdapter.GetOrCreate(Type, Type);
+        var unicodeSymbolMarker = LinksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
+        var unicodeSequenceMarker = LinksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
+        NegativeNumberMarker = LinksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
+        BalancedVariantConverter<TLinkAddress> balancedVariantConverter = new(LinksGqlAdapter);
         RawNumberToAddressConverter<TLinkAddress> NumberToAddressConverter = new();
         AddressToNumberConverter = new();
-        TargetMatcher<TLinkAddress> unicodeSymbolCriterionMatcher = new(linksGqlAdapter, unicodeSymbolMarker);
-        TargetMatcher<TLinkAddress> unicodeSequenceCriterionMatcher = new(linksGqlAdapter, unicodeSequenceMarker);
+        TargetMatcher<TLinkAddress> unicodeSymbolCriterionMatcher = new(LinksGqlAdapter, unicodeSymbolMarker);
+        TargetMatcher<TLinkAddress> unicodeSequenceCriterionMatcher = new(LinksGqlAdapter, unicodeSequenceMarker);
         CharToUnicodeSymbolConverter<TLinkAddress> charToUnicodeSymbolConverter =
-            new(linksGqlAdapter, AddressToNumberConverter, unicodeSymbolMarker);
+            new(LinksGqlAdapter, AddressToNumberConverter, unicodeSymbolMarker);
         UnicodeSymbolToCharConverter<TLinkAddress> unicodeSymbolToCharConverter =
-            new(linksGqlAdapter, NumberToAddressConverter, unicodeSymbolCriterionMatcher);
+            new(LinksGqlAdapter, NumberToAddressConverter, unicodeSymbolCriterionMatcher);
         StringToUnicodeSequenceConverter = new CachingConverterDecorator<string, TLinkAddress>(
-            new StringToUnicodeSequenceConverter<TLinkAddress>(linksGqlAdapter, charToUnicodeSymbolConverter,
+            new StringToUnicodeSequenceConverter<TLinkAddress>(LinksGqlAdapter, charToUnicodeSymbolConverter,
                 balancedVariantConverter, unicodeSequenceMarker));
         RightSequenceWalker<TLinkAddress> sequenceWalker =
-            new(linksGqlAdapter, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
+            new(LinksGqlAdapter, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
         UnicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(
-            new UnicodeSequenceToStringConverter<TLinkAddress>(linksGqlAdapter, unicodeSequenceCriterionMatcher, sequenceWalker,
+            new UnicodeSequenceToStringConverter<TLinkAddress>(LinksGqlAdapter, unicodeSequenceCriterionMatcher, sequenceWalker,
                 unicodeSymbolToCharConverter));
-        InstrumentTicker = "TRUR";
-        Asset = linksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref type));
-        Balance = linksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref type));
-        Etf = Arithmetic.Increment(ref type);
-        if (!linksGqlAdapter.Exists(Etf))
-        {
-            linksGqlAdapter.Create();
-            linksGqlAdapter.Update(Etf, Asset, Etf);
-        }
-        Currency = Arithmetic.Increment(ref type);
-        if (!linksGqlAdapter.Exists(Currency))
-        {
-            linksGqlAdapter.Create();
-            linksGqlAdapter.Update(Currency, Currency, Currency);
-        }
-        RubCurrency = Arithmetic.Increment(ref type);
-        if (!linksGqlAdapter.Exists(RubCurrency))
-        {
-            linksGqlAdapter.Create();
-            linksGqlAdapter.Update(RubCurrency, Currency, RubCurrency);
-        }
-        Amount = Arithmetic.Increment(ref type);
-        if (!linksGqlAdapter.Exists(Amount))
-        {
-            linksGqlAdapter.Create();
-            linksGqlAdapter.Update(Amount, Amount, Amount);
-        }
+        BigIntegerToRawNumberSequenceConverter =
+            new(LinksGqlAdapter, AddressToNumberConverter, balancedVariantConverter, NegativeNumberMarker);
+        RawNumberSequenceToBigIntegerConverter = new(LinksGqlAdapter, NumberToAddressConverter, NegativeNumberMarker);
+        DecimalToRationalConverter = new(LinksGqlAdapter, BigIntegerToRawNumberSequenceConverter);
+        RationalToDecimalConverter = new(LinksGqlAdapter, RawNumberSequenceToBigIntegerConverter);
+        Asset = GetOrCreateType(Type, nameof(Asset));
+        Balance = GetOrCreateType(Type, nameof(Balance));
+        Etf = GetOrCreateType(Asset, nameof(Etf));
+        Currency = GetOrCreateType(Asset, nameof(Currency));
+        Rub = GetOrCreateType(Currency, nameof(Rub));
+        Amount = GetOrCreateType(Type, nameof(Amount));
         var account = _investApi.Users.GetAccounts().Accounts[0];
-        var withdrawLimitsResponse = _investApi.Operations.GetWithdrawLimits(new WithdrawLimitsRequest() { AccountId = account.Id });
-        _rubWithdrawLimit = withdrawLimitsResponse.Money.First(moneyValue => moneyValue.Currency == "rub");
+        var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
+        var rubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
+        Quotation? instrumentQuantity = null;
         var etfs = _investApi.Instruments.Etfs();
-        var instrument = etfs.Instruments.First(etf => etf.Ticker == InstrumentTicker);
-        var instrumentTickerLink = StringToUnicodeSequenceConverter.Convert(InstrumentTicker);
-        Asset = LinksGqlAdapter.GetOrCreate(Asset, instrumentTickerLink);
-        _logger.LogInformation();
+        InstrumentTicker = "TRUR";
+        Instrument = etfs.Instruments.First(etf => etf.Ticker == InstrumentTicker);
+        // var InstrumentTickerLink = StringToUnicodeSequenceConverter.Convert(InstrumentTicker);
+        foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = account.Id}).Positions)
+        {
+            if (portfolioPosition.Figi != Instrument.Figi)
+            {
+                continue;
+            }
+            instrumentQuantity = portfolioPosition.Quantity;
+        }
+        if (instrumentQuantity != null)
+        {
+            _logger.LogInformation($"{InstrumentTicker} quantity: {instrumentQuantity.Units}");
+        }
+        var any = LinksGqlAdapter.Constants.Any;
+        var @continue = LinksGqlAdapter.Constants.Continue;
+        LinksGqlAdapter.Each(new Link<TLinkAddress>(any, any, any), link =>
+        {
+            var balance = LinksGqlAdapter.GetSource(link);
+            if (!EqualityComparer.Equals(balance, Balance))
+            {
+                return @continue;
+            }
+            var balanceValue = LinksGqlAdapter.GetTarget(link);
+            var balanceValueType = LinksGqlAdapter.GetSource(balanceValue);
+            if (EqualityComparer.Equals(balanceValueType, Etf))
+            {
+                var etfAmount = LinksGqlAdapter.GetTarget(balanceValue);
+                var amountType = LinksGqlAdapter.GetSource(etfAmount);
+                if (!EqualityComparer.Equals(amountType, Amount))
+                {
+                    return @continue;
+                }
+                var amountValueAddress = LinksGqlAdapter.GetTarget(etfAmount);
+                var amountValue = RationalToDecimalConverter.Convert(amountValueAddress);
+                _logger.LogInformation($"{InstrumentTicker} amount: {amountValue}");
+            }
+            return @continue;
+        });
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-
         TLinkAddress lotQuantityLink;
         LinksGqlAdapter.Each(link =>
         {
@@ -121,7 +153,7 @@ public class AsyncService : BackgroundService
             }
             var balanceValue = LinksGqlAdapter.GetTarget(link);
             var currency = LinksGqlAdapter.GetSource(balanceValue);
-            if (!EqualityComparer.Equals(currency, RubCurrency))
+            if (!EqualityComparer.Equals(currency, Rub))
             {
                 return LinksGqlAdapter.Constants.Continue;
             }
@@ -133,24 +165,22 @@ public class AsyncService : BackgroundService
             }
             return LinksGqlAdapter.Constants.Continue;
         });
-        LinksGqlAdapter.Create(RubCurrency)
-        LinksGqlAdapter.GetOrCreate(instrumentMarker, );
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
             {
                 SubscribeInfoRequest = new SubscribeInfoRequest()
                 {
-                    Instruments = { new InfoInstrument() { Figi = instrument.Figi } },
+                    Instruments = { new InfoInstrument() { Figi = Instrument.Figi } },
                     SubscriptionAction = SubscriptionAction.Subscribe
                 },
                 SubscribeOrderBookRequest = new SubscribeOrderBookRequest()
                 {
-                    Instruments = { new OrderBookInstrument() { Figi = instrument.Figi, Depth = 1 } },
+                    Instruments = { new OrderBookInstrument() { Figi = Instrument.Figi, Depth = 1 } },
                     SubscriptionAction = SubscriptionAction.Subscribe
                 },
                 SubscribeTradesRequest = new SubscribeTradesRequest()
                 {
-                    Instruments = { new TradeInstrument(){Figi = instrument.Figi} },
+                    Instruments = { new TradeInstrument(){Figi = Instrument.Figi} },
                     SubscriptionAction = SubscriptionAction.Subscribe
                 }
             })
@@ -169,7 +199,7 @@ public class AsyncService : BackgroundService
             {
                 var orderBook = data.Orderbook;
                 _logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
-                TradeAssets(asset, account.Id, orderBook, instrument.Figi);
+                // TradeAssets(asset, account.Id, orderBook, Instrument.Figi);
             }
             else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Trade)
             {
@@ -186,7 +216,11 @@ public class AsyncService : BackgroundService
             }
             _lifetime.StopApplication();
         }
-        await ;
+    }
+
+    private TLinkAddress GetOrCreateType(TLinkAddress baseType, string typeId)
+    {
+        return LinksGqlAdapter.GetOrCreate(baseType, StringToUnicodeSequenceConverter.Convert(typeId));
     }
 
     private async void TradeAssets(Asset? asset, string accountId, OrderBook marketOrderBook, string figi)
