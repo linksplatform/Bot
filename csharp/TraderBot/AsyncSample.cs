@@ -32,11 +32,11 @@ public class AsyncService : BackgroundService
     private MoneyValue? _rubWithdrawLimit;
     public readonly int Quantity = 1;
     public readonly TLinkAddress Etf;
-    public readonly LinksGqlAdapter LinksGqlAdapter;
+    public readonly ILinks<TLinkAddress> Storage;
     public CachingConverterDecorator<string, ulong> StringToUnicodeSequenceConverter;
     public CachingConverterDecorator<ulong, string> UnicodeSequenceToStringConverter;
     private readonly TLinkAddress Asset;
-    public readonly string InstrumentTicker;
+    public readonly string EtfTicker;
     private readonly TLinkAddress Balance;
     public readonly static EqualityComparer<ulong> EqualityComparer = EqualityComparer<ulong>.Default;
     private readonly TLinkAddress Currency;
@@ -50,44 +50,46 @@ public class AsyncService : BackgroundService
     public readonly TLinkAddress NegativeNumberMarker;
     private readonly DecimalToRationalConverter<TLinkAddress> DecimalToRationalConverter;
     private readonly RationalToDecimalConverter<TLinkAddress> RationalToDecimalConverter;
+    public Quotation? InstrumentQuantity;
+    public Quotation RubBalance;
 
-    public AsyncService(ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
+    public AsyncService(ILinks<TLinkAddress> storage, ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
     {
         _logger = logger;
         _investApi = investApi;
         _lifetime = lifetime;
-        LinksGqlAdapter = new(new GraphQLHttpClient("https", new NewtonsoftJsonSerializer()), new LinksConstants<TLinkAddress>());
+        Storage = storage;
         TLinkAddress zero = default;
         TLinkAddress one = Arithmetic.Increment(zero);
         var typeIndex = one;
-        Type = LinksGqlAdapter.GetOrCreate(typeIndex, typeIndex);
-        var typeId = LinksGqlAdapter.GetOrCreate(Type, Arithmetic.Increment(ref typeIndex));
-        var meaningRoot = LinksGqlAdapter.GetOrCreate(Type, Type);
-        var unicodeSymbolMarker = LinksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
-        var unicodeSequenceMarker = LinksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
-        NegativeNumberMarker = LinksGqlAdapter.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
-        BalancedVariantConverter<TLinkAddress> balancedVariantConverter = new(LinksGqlAdapter);
+        Type = Storage.GetOrCreate(typeIndex, typeIndex);
+        var typeId = Storage.GetOrCreate(Type, Arithmetic.Increment(ref typeIndex));
+        var meaningRoot = Storage.GetOrCreate(Type, Type);
+        var unicodeSymbolMarker = Storage.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
+        var unicodeSequenceMarker = Storage.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
+        NegativeNumberMarker = Storage.GetOrCreate(meaningRoot, Arithmetic.Increment(ref Type));
+        BalancedVariantConverter<TLinkAddress> balancedVariantConverter = new(Storage);
         RawNumberToAddressConverter<TLinkAddress> NumberToAddressConverter = new();
         AddressToNumberConverter = new();
-        TargetMatcher<TLinkAddress> unicodeSymbolCriterionMatcher = new(LinksGqlAdapter, unicodeSymbolMarker);
-        TargetMatcher<TLinkAddress> unicodeSequenceCriterionMatcher = new(LinksGqlAdapter, unicodeSequenceMarker);
+        TargetMatcher<TLinkAddress> unicodeSymbolCriterionMatcher = new(Storage, unicodeSymbolMarker);
+        TargetMatcher<TLinkAddress> unicodeSequenceCriterionMatcher = new(Storage, unicodeSequenceMarker);
         CharToUnicodeSymbolConverter<TLinkAddress> charToUnicodeSymbolConverter =
-            new(LinksGqlAdapter, AddressToNumberConverter, unicodeSymbolMarker);
+            new(Storage, AddressToNumberConverter, unicodeSymbolMarker);
         UnicodeSymbolToCharConverter<TLinkAddress> unicodeSymbolToCharConverter =
-            new(LinksGqlAdapter, NumberToAddressConverter, unicodeSymbolCriterionMatcher);
+            new(Storage, NumberToAddressConverter, unicodeSymbolCriterionMatcher);
         StringToUnicodeSequenceConverter = new CachingConverterDecorator<string, TLinkAddress>(
-            new StringToUnicodeSequenceConverter<TLinkAddress>(LinksGqlAdapter, charToUnicodeSymbolConverter,
+            new StringToUnicodeSequenceConverter<TLinkAddress>(Storage, charToUnicodeSymbolConverter,
                 balancedVariantConverter, unicodeSequenceMarker));
         RightSequenceWalker<TLinkAddress> sequenceWalker =
-            new(LinksGqlAdapter, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
+            new(Storage, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
         UnicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(
-            new UnicodeSequenceToStringConverter<TLinkAddress>(LinksGqlAdapter, unicodeSequenceCriterionMatcher, sequenceWalker,
+            new UnicodeSequenceToStringConverter<TLinkAddress>(Storage, unicodeSequenceCriterionMatcher, sequenceWalker,
                 unicodeSymbolToCharConverter));
         BigIntegerToRawNumberSequenceConverter =
-            new(LinksGqlAdapter, AddressToNumberConverter, balancedVariantConverter, NegativeNumberMarker);
-        RawNumberSequenceToBigIntegerConverter = new(LinksGqlAdapter, NumberToAddressConverter, NegativeNumberMarker);
-        DecimalToRationalConverter = new(LinksGqlAdapter, BigIntegerToRawNumberSequenceConverter);
-        RationalToDecimalConverter = new(LinksGqlAdapter, RawNumberSequenceToBigIntegerConverter);
+            new(Storage, AddressToNumberConverter, balancedVariantConverter, NegativeNumberMarker);
+        RawNumberSequenceToBigIntegerConverter = new(Storage, NumberToAddressConverter, NegativeNumberMarker);
+        DecimalToRationalConverter = new(Storage, BigIntegerToRawNumberSequenceConverter);
+        RationalToDecimalConverter = new(Storage, RawNumberSequenceToBigIntegerConverter);
         Asset = GetOrCreateType(Type, nameof(Asset));
         Balance = GetOrCreateType(Type, nameof(Balance));
         Etf = GetOrCreateType(Asset, nameof(Etf));
@@ -96,11 +98,12 @@ public class AsyncService : BackgroundService
         Amount = GetOrCreateType(Type, nameof(Amount));
         var account = _investApi.Users.GetAccounts().Accounts[0];
         var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
-        var rubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
-        Quotation? instrumentQuantity = null;
+        RubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
+        _logger.LogInformation($"Rub amount: {RubBalance}");
+        InstrumentQuantity = null;
         var etfs = _investApi.Instruments.Etfs();
-        InstrumentTicker = "TRUR";
-        Instrument = etfs.Instruments.First(etf => etf.Ticker == InstrumentTicker);
+        EtfTicker = "TRUR";
+        Instrument = etfs.Instruments.First(etf => etf.Ticker == EtfTicker);
         // var InstrumentTickerLink = StringToUnicodeSequenceConverter.Convert(InstrumentTicker);
         foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = account.Id}).Positions)
         {
@@ -108,62 +111,79 @@ public class AsyncService : BackgroundService
             {
                 continue;
             }
-            instrumentQuantity = portfolioPosition.Quantity;
+            InstrumentQuantity = portfolioPosition.Quantity;
+            _logger.LogInformation($"{EtfTicker} quantity: {InstrumentQuantity.Units}");
         }
-        if (instrumentQuantity != null)
+        var any = Storage.Constants.Any;
+        var @continue = Storage.Constants.Continue;
+        // Storage.Each(new Link<TLinkAddress>(any, any, any), link =>
+        // {
+        //     var balance = Storage.GetSource(link);
+        //     if (!EqualityComparer.Equals(balance, Balance))
+        //     {
+        //         return @continue;
+        //     }
+        //     var balanceValue = Storage.GetTarget(link);
+        //     var balanceValueType = Storage.GetSource(balanceValue);
+        //     if (EqualityComparer.Equals(balanceValueType, Rub))
+        //     {
+        //         var amountAddress = Storage.GetTarget(balanceValue);
+        //         var amountValue = GetAmountValueOrDefault(amountAddress);
+        //         if (!amountValue.HasValue)
+        //         {
+        //             return @continue;
+        //         }
+        //         rubBalance = amountValue;
+        //         _logger.LogInformation($"Rub amount: {amountValue}");
+        //     }
+        //     else if (EqualityComparer.Equals(balanceValueType, Etf))
+        //     {
+        //         var amountAddress = Storage.GetTarget(balanceValue);
+        //         var amountValue = GetAmountValueOrDefault(amountAddress);
+        //         if (!amountValue.HasValue)
+        //         {
+        //             return @continue;
+        //         }
+        //         _logger.LogInformation($"{EtfTicker} amount: {amountValue}");
+        //     }
+        //     return @continue;
+        // });
+    }
+
+    private decimal? GetAmountValueOrDefault(TLinkAddress amountAddress)
+    {
+        var amountType = Storage.GetSource(amountAddress);
+        if (!EqualityComparer.Equals(amountType, Amount))
         {
-            _logger.LogInformation($"{InstrumentTicker} quantity: {instrumentQuantity.Units}");
+            return null;
         }
-        var any = LinksGqlAdapter.Constants.Any;
-        var @continue = LinksGqlAdapter.Constants.Continue;
-        LinksGqlAdapter.Each(new Link<TLinkAddress>(any, any, any), link =>
-        {
-            var balance = LinksGqlAdapter.GetSource(link);
-            if (!EqualityComparer.Equals(balance, Balance))
-            {
-                return @continue;
-            }
-            var balanceValue = LinksGqlAdapter.GetTarget(link);
-            var balanceValueType = LinksGqlAdapter.GetSource(balanceValue);
-            if (EqualityComparer.Equals(balanceValueType, Etf))
-            {
-                var etfAmount = LinksGqlAdapter.GetTarget(balanceValue);
-                var amountType = LinksGqlAdapter.GetSource(etfAmount);
-                if (!EqualityComparer.Equals(amountType, Amount))
-                {
-                    return @continue;
-                }
-                var amountValueAddress = LinksGqlAdapter.GetTarget(etfAmount);
-                var amountValue = RationalToDecimalConverter.Convert(amountValueAddress);
-                _logger.LogInformation($"{InstrumentTicker} amount: {amountValue}");
-            }
-            return @continue;
-        });
+        var amountValueAddress = Storage.GetTarget(amountAddress);
+        return RationalToDecimalConverter.Convert(amountValueAddress);
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         TLinkAddress lotQuantityLink;
-        LinksGqlAdapter.Each(link =>
+        Storage.Each(link =>
         {
-            var balance = LinksGqlAdapter.GetSource(link);
+            var balance = Storage.GetSource(link);
             if (!EqualityComparer.Equals(balance, Balance))
             {
-                return LinksGqlAdapter.Constants.Continue;
+                return Storage.Constants.Continue;
             }
-            var balanceValue = LinksGqlAdapter.GetTarget(link);
-            var currency = LinksGqlAdapter.GetSource(balanceValue);
+            var balanceValue = Storage.GetTarget(link);
+            var currency = Storage.GetSource(balanceValue);
             if (!EqualityComparer.Equals(currency, Rub))
             {
-                return LinksGqlAdapter.Constants.Continue;
+                return Storage.Constants.Continue;
             }
-            var amountLink = LinksGqlAdapter.GetTarget(balanceValue);
-            var amount = LinksGqlAdapter.GetSource(amountLink);
+            var amountLink = Storage.GetTarget(balanceValue);
+            var amount = Storage.GetSource(amountLink);
             if (EqualityComparer.Equals(amount, Amount))
             {
-                var amountIdkHowToName = AddressToNumberConverter.Convert(LinksGqlAdapter.GetTarget(amountLink));
+                var amountIdkHowToName = AddressToNumberConverter.Convert(Storage.GetTarget(amountLink));
             }
-            return LinksGqlAdapter.Constants.Continue;
+            return Storage.Constants.Continue;
         });
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
@@ -220,13 +240,18 @@ public class AsyncService : BackgroundService
 
     private TLinkAddress GetOrCreateType(TLinkAddress baseType, string typeId)
     {
-        return LinksGqlAdapter.GetOrCreate(baseType, StringToUnicodeSequenceConverter.Convert(typeId));
+        return Storage.GetOrCreate(baseType, StringToUnicodeSequenceConverter.Convert(typeId));
     }
 
     private async void TradeAssets(Asset? asset, string accountId, OrderBook marketOrderBook, string figi)
     {
         var cheapestBidOrder = marketOrderBook.Bids[0];
         var cheapestAskOrder = marketOrderBook.Asks[0];
+        if (RubBalance < cheapestAskOrder.Price)
+        {
+            _logger.LogError("Not enough money to buy {Asset}", asset);
+            return;
+        }
         if (asset == null)
         {
             PostOrderRequest buyOrderRequest = new()
