@@ -44,7 +44,7 @@ public class AsyncService : BackgroundService
     private readonly TLinkAddress Rub;
     public static AddressToRawNumberConverter<ulong> AddressToNumberConverter;
     public ulong Type;
-    public Etf? Instrument;
+    public Etf Instrument;
     public readonly RawNumberSequenceToBigIntegerConverter<TLinkAddress> RawNumberSequenceToBigIntegerConverter;
     public readonly BigIntegerToRawNumberSequenceConverter<TLinkAddress> BigIntegerToRawNumberSequenceConverter;
     public readonly TLinkAddress NegativeNumberMarker;
@@ -99,8 +99,10 @@ public class AsyncService : BackgroundService
         var account = _investApi.Users.GetAccounts().Accounts[0];
         var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
         RubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
+        var amountAddress = Storage.GetOrCreate(Amount, DecimalToRationalConverter.Convert(RubBalance));
+        var rubAmountAddress = Storage.GetOrCreate(Rub, amountAddress);
+        var runBalanceAddress = Storage.GetOrCreate(Balance, rubAmountAddress);
         _logger.LogInformation($"Rub amount: {RubBalance}");
-        InstrumentQuantity = null;
         var etfs = _investApi.Instruments.Etfs();
         EtfTicker = "TRUR";
         Instrument = etfs.Instruments.First(etf => etf.Ticker == EtfTicker);
@@ -112,10 +114,11 @@ public class AsyncService : BackgroundService
                 continue;
             }
             InstrumentQuantity = portfolioPosition.Quantity;
-            _logger.LogInformation($"{EtfTicker} quantity: {InstrumentQuantity.Units}");
+            amountAddress = Storage.GetOrCreate(Amount, DecimalToRationalConverter.Convert(InstrumentQuantity));
+            var etfAmountAddress = Storage.GetOrCreate(Etf, amountAddress);
+            var etfBalanceAddress = Storage.GetOrCreate(Balance, etfAmountAddress);
+            _logger.LogInformation($"[{portfolioPosition.Figi} {Instrument.Ticker}] quantity: {portfolioPosition.Quantity}");
         }
-        var any = Storage.Constants.Any;
-        var @continue = Storage.Constants.Continue;
         // Storage.Each(new Link<TLinkAddress>(any, any, any), link =>
         // {
         //     var balance = Storage.GetSource(link);
@@ -163,28 +166,6 @@ public class AsyncService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        TLinkAddress lotQuantityLink;
-        Storage.Each(link =>
-        {
-            var balance = Storage.GetSource(link);
-            if (!EqualityComparer.Equals(balance, Balance))
-            {
-                return Storage.Constants.Continue;
-            }
-            var balanceValue = Storage.GetTarget(link);
-            var currency = Storage.GetSource(balanceValue);
-            if (!EqualityComparer.Equals(currency, Rub))
-            {
-                return Storage.Constants.Continue;
-            }
-            var amountLink = Storage.GetTarget(balanceValue);
-            var amount = Storage.GetSource(amountLink);
-            if (EqualityComparer.Equals(amount, Amount))
-            {
-                var amountIdkHowToName = AddressToNumberConverter.Convert(Storage.GetTarget(amountLink));
-            }
-            return Storage.Constants.Continue;
-        });
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
             {
@@ -212,14 +193,13 @@ public class AsyncService : BackgroundService
                 }
                 _logger.LogInformation("Subscribed to market data");
             }, stoppingToken);
-        var repsonseStream = marketDataStream.ResponseStream;
-        await foreach (var data in repsonseStream.ReadAllAsync(stoppingToken))
+        await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(stoppingToken))
         {
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
             {
                 var orderBook = data.Orderbook;
                 _logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
-                // TradeAssets(asset, account.Id, orderBook, Instrument.Figi);
+                TradeAssets(asset, account.Id, orderBook, Instrument.Figi);
             }
             else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Trade)
             {
