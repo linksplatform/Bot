@@ -1,4 +1,5 @@
 using System.Net.NetworkInformation;
+using Google.Protobuf.WellKnownTypes;
 using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Grpc.Core;
@@ -10,12 +11,14 @@ using Platform.Data;
 using Platform.Data.Doublets;
 using Platform.Data.Doublets.CriterionMatchers;
 using Platform.Data.Doublets.Gql.Client;
+using Platform.Data.Doublets.Memory.United.Generic;
 using Platform.Data.Doublets.Numbers.Rational;
 using Platform.Data.Doublets.Numbers.Raw;
 using Platform.Data.Doublets.Sequences.Converters;
 using Platform.Data.Doublets.Sequences.Walkers;
 using Platform.Data.Doublets.Unicode;
 using Platform.Data.Numbers.Raw;
+using Platform.Memory;
 using Platform.Numbers;
 using Tinkoff.InvestApi;
 using Tinkoff.InvestApi.V1;
@@ -53,8 +56,12 @@ public class AsyncService : BackgroundService
     public Quotation? InstrumentQuantity;
     public Quotation RubBalance;
 
-    public AsyncService(ILinks<TLinkAddress> storage, ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
+    public AsyncService(ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
     {
+        HeapResizableDirectMemory memory = new();
+        UnitedMemoryLinks<TLinkAddress> storage = new (memory);
+        SynchronizedLinks<TLinkAddress> synchronizedStorage = new(storage);
+        Storage = synchronizedStorage;
         _logger = logger;
         _investApi = investApi;
         _lifetime = lifetime;
@@ -97,6 +104,8 @@ public class AsyncService : BackgroundService
         Rub = GetOrCreateType(Currency, nameof(Rub));
         Amount = GetOrCreateType(Type, nameof(Amount));
         var account = _investApi.Users.GetAccounts().Accounts[0];
+
+
         var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
         RubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
         var amountAddress = Storage.GetOrCreate(Amount, DecimalToRationalConverter.Convert(RubBalance));
@@ -119,6 +128,61 @@ public class AsyncService : BackgroundService
             var etfBalanceAddress = Storage.GetOrCreate(Balance, etfAmountAddress);
             _logger.LogInformation($"[{portfolioPosition.Figi} {Instrument.Ticker}] quantity: {portfolioPosition.Quantity}");
         }
+
+
+        List<Operation> buyInstrumentOperations = new List<Operation>();
+        long totalSoldQuantity = 0;
+        var operations = _investApi.Operations.GetOperations(new OperationsRequest()
+            {
+                Figi = Instrument.Figi,
+                AccountId = account.Id,
+                State = OperationState.Executed,
+                From = Timestamp.FromDateTime(DateTime.UtcNow.AddYears(-1)),
+                To = Timestamp.FromDateTime(DateTime.UtcNow)
+            })
+            .Operations;
+        foreach (var operation in operations)
+        {
+            if (operation.OperationType == OperationType.Buy)
+            {
+                buyInstrumentOperations.Add(new Operation()
+                {
+                    Price = new Quotation() {Nano = operation.Price.Nano, Units = operation.Price.Units},
+                    Quantity = operation.Quantity,
+                    Date = operation.Date,
+                    OperationType = operation.OperationType
+                });
+            }
+            else if (operation.OperationType == OperationType.Sell)
+            {
+                totalSoldQuantity += operation.Quantity;
+            }
+        }
+
+        buyInstrumentOperations.Sort((operation, operation1) => ((decimal)operation.Price).CompareTo((decimal)operation1.Price));
+        for (var i = 0; i < buyInstrumentOperations.Count; i++)
+        {
+            if (totalSoldQuantity == 0)
+            {
+                break;
+            }
+            var buyInstrumentOperation = buyInstrumentOperations[i];
+            if (totalSoldQuantity < buyInstrumentOperation.Quantity)
+            {
+                buyInstrumentOperation.Quantity -= totalSoldQuantity;
+                totalSoldQuantity = 0;
+                continue;
+            }
+            totalSoldQuantity -= buyInstrumentOperation.Quantity;
+            buyInstrumentOperations.RemoveAt(i);
+            --i;
+        }
+        Console.WriteLine(buyInstrumentOperations);
+        Console.WriteLine(buyInstrumentOperations.Sum(operation => operation.Quantity));        // foreach (var buyInstrumentOperation in buyInstrumentOperations)
+        // {
+        //     Console.WriteLine($"{buyInstrumentOperation.Date} {(decimal)buyInstrumentOperation.Price} {buyInstrumentOperation.Quantity}");
+        // }
+        Console.WriteLine();
         // Storage.Each(new Link<TLinkAddress>(any, any, any), link =>
         // {
         //     var balance = Storage.GetSource(link);
@@ -199,7 +263,7 @@ public class AsyncService : BackgroundService
             {
                 var orderBook = data.Orderbook;
                 _logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
-                TradeAssets(asset, account.Id, orderBook, Instrument.Figi);
+                // TradeAssets(asset, account.Id, orderBook, Instrument.Figi);
             }
             else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Trade)
             {
@@ -278,4 +342,13 @@ public class AsyncService : BackgroundService
         var sellOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
         _logger.LogInformation($"Sell order placed: {sellOrderResponse}");
     }
+
+    class Operation
+    {
+        public Timestamp Date;
+        public long Quantity;
+        public Quotation Price;
+        public OperationType OperationType;
+    }
+
 }
