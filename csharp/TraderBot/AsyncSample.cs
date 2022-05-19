@@ -113,7 +113,7 @@ public class AsyncService : BackgroundService
         var runBalanceAddress = Storage.GetOrCreate(Balance, rubAmountAddress);
         _logger.LogInformation($"Rub amount: {RubBalance}");
         var etfs = _investApi.Instruments.Etfs();
-        EtfTicker = "TGLD";
+        EtfTicker = "TRUR";
         Instrument = etfs.Instruments.First(etf => etf.Ticker == EtfTicker);
         // var InstrumentTickerLink = StringToUnicodeSequenceConverter.Convert(InstrumentTicker);
         foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = account.Id}).Positions)
@@ -128,23 +128,23 @@ public class AsyncService : BackgroundService
             var etfBalanceAddress = Storage.GetOrCreate(Balance, etfAmountAddress);
             _logger.LogInformation($"[{portfolioPosition.Figi} {Instrument.Ticker}] quantity: {portfolioPosition.Quantity}");
         }
-        var brokerReportGenerateResponseResult = _investApi.Operations.GetBrokerReportAsync(new BrokerReportRequest()
-            {
-                GenerateBrokerReportRequest = new GenerateBrokerReportRequest()
-                {
-                    From = Timestamp.FromDateTime(DateTime.UtcNow.AddYears(-2)), To = Timestamp.FromDateTime(DateTime.UtcNow), AccountId = account.Id
-                }
-            })
-            .ResponseAsync.Result.GenerateBrokerReportResponse;
-        var brokerReportTaskId = brokerReportGenerateResponseResult.TaskId;
-        var brokerReportResponseResult = investApi.Operations.GetBrokerReportAsync(new BrokerReportRequest()
-            {
-                GetBrokerReportRequest = new GetBrokerReportRequest()
-                {
-                    TaskId = brokerReportTaskId
-                }
-            })
-            .ResponseAsync.Result.GetBrokerReportResponse;
+        // var brokerReportGenerateResponseResult = _investApi.Operations.GetBrokerReportAsync(new BrokerReportRequest()
+        //     {
+        //         GenerateBrokerReportRequest = new GenerateBrokerReportRequest()
+        //         {
+        //             From = Timestamp.FromDateTime(DateTime.UtcNow.AddYears(-2)), To = Timestamp.FromDateTime(DateTime.UtcNow), AccountId = account.Id
+        //         }
+        //     })
+        //     .ResponseAsync.Result.GenerateBrokerReportResponse;
+        // var brokerReportTaskId = brokerReportGenerateResponseResult.TaskId;
+        // var brokerReportResponseResult = investApi.Operations.GetBrokerReportAsync(new BrokerReportRequest()
+        //     {
+        //         GetBrokerReportRequest = new GetBrokerReportRequest()
+        //         {
+        //             TaskId = brokerReportTaskId
+        //         }
+        //     })
+        //     .ResponseAsync.Result.GetBrokerReportResponse;
 
         List<Operation> buyInstrumentOperations = new List<Operation>();
         long totalSoldQuantity = 0;
@@ -163,26 +163,22 @@ public class AsyncService : BackgroundService
         Console.WriteLine($"{operations.Last().Date}");
         foreach (var operation in operations)
         {
+            long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
             if (operation.OperationType == OperationType.Buy)
             {
                 buyInstrumentOperations.Add(new Operation()
                 {
                     Price = new Quotation() {Nano = operation.Price.Nano, Units = operation.Price.Units},
-                    Quantity = operation.Quantity,
+                    Quantity = quantity,
                     Date = operation.Date,
                     OperationType = operation.OperationType
                 });
             }
             else if (operation.OperationType == OperationType.Sell)
             {
-                totalSoldQuantity += operation.Quantity;
+                totalSoldQuantity += quantity;
             }
         }
-
-        var a = operations.Where(operation => operation.Quantity == 6990).ToList();
-        var buys = operations.Where(operation => operation.OperationType == OperationType.Buy).Sum(operation => operation.Quantity);
-        var sells = operations.Where(operation => operation.OperationType == OperationType.Sell).Sum(operation => operation.Quantity);
-        var difference = buys - sells;
 
         buyInstrumentOperations.Sort((operation, operation1) => ((decimal)operation.Price).CompareTo((decimal)operation1.Price));
         for (var i = 0; i < buyInstrumentOperations.Count; i++)
@@ -203,10 +199,8 @@ public class AsyncService : BackgroundService
             --i;
         }
         Console.WriteLine(buyInstrumentOperations);
-        Console.WriteLine(buyInstrumentOperations.Sum(operation => operation.Quantity));        // foreach (var buyInstrumentOperation in buyInstrumentOperations)
-        // {
-        //     Console.WriteLine($"{buyInstrumentOperation.Date} {(decimal)buyInstrumentOperation.Price} {buyInstrumentOperation.Quantity}");
-        // }
+        var a  = buyInstrumentOperations.GroupBy(operation => operation.Price).ToList();
+        Console.WriteLine(buyInstrumentOperations.Sum(operation => operation.Quantity));
         Console.WriteLine();
         // Storage.Each(new Link<TLinkAddress>(any, any, any), link =>
         // {
