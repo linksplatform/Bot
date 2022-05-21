@@ -251,58 +251,7 @@ public class AsyncService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        List<Operation> buyInstrumentOperations = new List<Operation>();
-        long totalSoldQuantity = 0;
-        var operations = _investApi.Operations.GetOperations(new OperationsRequest()
-            {
-                Figi = Instrument.Figi,
-                AccountId = Account.Id,
-                State = OperationState.Executed,
-                From = Timestamp.FromDateTime(new DateTime(2022, 2, 12).ToUniversalTime()),
-                // To = Timestamp.FromDateTime(new DateTime(2022, 2, 15).ToUniversalTime()),
-                // From = Timestamp.FromDateTime(DateTime.UtcNow.AddMonths(-30)),
-                To = Timestamp.FromDateTime(DateTime.UtcNow.AddMonths(1))
-            })
-            .Operations;
-        Console.WriteLine($"{operations.First().Date}");
-        Console.WriteLine($"{operations.Last().Date}");
-        foreach (var operation in operations)
-        {
-            long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
-            if (operation.OperationType == OperationType.Buy)
-            {
-                buyInstrumentOperations.Add(new Operation()
-                {
-                    Price = new Quotation() {Nano = operation.Price.Nano, Units = operation.Price.Units},
-                    Quantity = quantity,
-                    Date = operation.Date,
-                    OperationType = operation.OperationType
-                });
-            }
-            else if (operation.OperationType == OperationType.Sell)
-            {
-                totalSoldQuantity += quantity;
-            }
-        }
-
-        buyInstrumentOperations.Sort((operation, operation1) => (operation.Date).CompareTo(operation1.Date));
-        for (var i = 0; i < buyInstrumentOperations.Count; i++)
-        {
-            if (totalSoldQuantity == 0)
-            {
-                break;
-            }
-            var buyInstrumentOperation = buyInstrumentOperations[i];
-            if (totalSoldQuantity < buyInstrumentOperation.Quantity)
-            {
-                buyInstrumentOperation.Quantity -= totalSoldQuantity;
-                totalSoldQuantity = 0;
-                continue;
-            }
-            totalSoldQuantity -= buyInstrumentOperation.Quantity;
-            buyInstrumentOperations.RemoveAt(i);
-            --i;
-        }
+        var buyInstrumentOperations = GetBuyInstrumentOperations();
         var buyInstrumentOperationsGroupedByPrice  = buyInstrumentOperations.GroupBy(operation => operation.Price).ToList();
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
@@ -365,6 +314,62 @@ public class AsyncService : BackgroundService
             }
         }
         _lifetime.StopApplication();
+    }
+
+    private List<Operation> GetBuyInstrumentOperations()
+    {
+        List<Operation> buyInstrumentOperations = new List<Operation>();
+        long totalSoldQuantity = 0;
+        var operations = _investApi.Operations.GetOperations(new OperationsRequest()
+            {
+                Figi = Instrument.Figi,
+                AccountId = Account.Id,
+                State = OperationState.Executed,
+                From = Timestamp.FromDateTime(new DateTime(2022, 2, 12).ToUniversalTime()),
+                // To = Timestamp.FromDateTime(new DateTime(2022, 2, 15).ToUniversalTime()),
+                // From = Timestamp.FromDateTime(DateTime.UtcNow.AddMonths(-30)),
+                To = Timestamp.FromDateTime(DateTime.UtcNow.AddMonths(1))
+            })
+            .Operations;
+        Console.WriteLine($"{operations.First().Date}");
+        Console.WriteLine($"{operations.Last().Date}");
+        foreach (var operation in operations)
+        {
+            long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
+            if (operation.OperationType == OperationType.Buy)
+            {
+                buyInstrumentOperations.Add(new Operation()
+                {
+                    Price = new Quotation() { Nano = operation.Price.Nano, Units = operation.Price.Units },
+                    Quantity = quantity,
+                    Date = operation.Date,
+                    OperationType = operation.OperationType
+                });
+            }
+            else if (operation.OperationType == OperationType.Sell)
+            {
+                totalSoldQuantity += quantity;
+            }
+        }
+        buyInstrumentOperations.Sort((operation, operation1) => (operation.Date).CompareTo(operation1.Date));
+        for (var i = 0; i < buyInstrumentOperations.Count; i++)
+        {
+            if (totalSoldQuantity == 0)
+            {
+                break;
+            }
+            var buyInstrumentOperation = buyInstrumentOperations[i];
+            if (totalSoldQuantity < buyInstrumentOperation.Quantity)
+            {
+                buyInstrumentOperation.Quantity -= totalSoldQuantity;
+                totalSoldQuantity = 0;
+                continue;
+            }
+            totalSoldQuantity -= buyInstrumentOperation.Quantity;
+            buyInstrumentOperations.RemoveAt(i);
+            --i;
+        }
+        return buyInstrumentOperations;
     }
 
     private TLinkAddress GetOrCreateType(TLinkAddress baseType, string typeId)
