@@ -363,8 +363,8 @@ public class AsyncService : BackgroundService
                 }
                 ;
             }
-            _lifetime.StopApplication();
         }
+        _lifetime.StopApplication();
     }
 
     private TLinkAddress GetOrCreateType(TLinkAddress baseType, string typeId)
@@ -376,11 +376,6 @@ public class AsyncService : BackgroundService
     {
         var cheapestBidOrder = marketOrderBook.Bids[0];
         var cheapestAskOrder = marketOrderBook.Asks[0];
-        if (RubBalance < cheapestAskOrder.Price)
-        {
-            _logger.LogError("Not enough money to buy {Asset}", asset);
-            return;
-        }
         if (asset == null)
         {
             PostOrderRequest buyOrderRequest = new()
@@ -393,6 +388,11 @@ public class AsyncService : BackgroundService
                 OrderType = OrderType.Limit,
                 OrderId = ""
             };
+            if (RubBalance < cheapestAskOrder.Price)
+            {
+                _logger.LogError("Not enough money to buy {Asset}", asset);
+                return;
+            }
             PostBuyOrder(buyOrderRequest);
         }
         else
