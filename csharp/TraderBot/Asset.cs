@@ -5,5 +5,5 @@ namespace TraderBot;
 public struct Asset
 {
     public Quotation Price;
-    public int Amount;
+    public long Amount;
 }
