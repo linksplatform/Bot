@@ -34,17 +34,17 @@ public class AsyncService : BackgroundService
     private readonly ILogger<AsyncService> _logger;
     private MoneyValue? _rubWithdrawLimit;
     public readonly int Quantity = 1;
-    public readonly TLinkAddress Etf;
+    public readonly TLinkAddress EtfType;
     public readonly ILinks<TLinkAddress> Storage;
     public CachingConverterDecorator<string, ulong> StringToUnicodeSequenceConverter;
     public CachingConverterDecorator<ulong, string> UnicodeSequenceToStringConverter;
-    private readonly TLinkAddress Asset;
+    private readonly TLinkAddress AssetType;
     public readonly string EtfTicker;
-    private readonly TLinkAddress Balance;
+    private readonly TLinkAddress BalanceType;
     public readonly static EqualityComparer<ulong> EqualityComparer = EqualityComparer<ulong>.Default;
-    private readonly TLinkAddress Currency;
-    private readonly TLinkAddress Amount;
-    private readonly TLinkAddress Rub;
+    private readonly TLinkAddress OperationCurrencyFieldType;
+    private readonly TLinkAddress AmountType;
+    private readonly TLinkAddress RubType;
     public static AddressToRawNumberConverter<ulong> AddressToNumberConverter;
     public ulong Type;
     public Etf Instrument;
@@ -55,7 +55,22 @@ public class AsyncService : BackgroundService
     private readonly RationalToDecimalConverter<TLinkAddress> RationalToDecimalConverter;
     public Quotation? InstrumentQuantity;
     public Quotation RubBalance;
-    public readonly Account? Account;
+    public readonly Account? AccountType;
+    private ulong OperationType;
+    public readonly ulong OperationFieldType;
+    public ulong IdOperationFieldType;
+    public ulong ParentOperationIdOperationFieldType;
+    public ulong PaymentOperationFieldType;
+    public ulong PriceOperationFieldType;
+    private ulong StateOperationFieldType;
+    private ulong QuantityOperationFieldType;
+    public ulong QuantityRestOperationFieldType;
+    public ulong FigiOperationFieldType;
+    public ulong InstrumentTypeOperationFieldType;
+    public readonly ulong DateOperationFieldType;
+    public readonly ulong TypeAsStringOperationFieldType;
+    public readonly ulong TypeAsEnumOperationFieldType;
+    public readonly ulong TradesOperationFieldType;
 
     public AsyncService(ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
     {
@@ -98,13 +113,29 @@ public class AsyncService : BackgroundService
         RawNumberSequenceToBigIntegerConverter = new(Storage, NumberToAddressConverter, NegativeNumberMarker);
         DecimalToRationalConverter = new(Storage, BigIntegerToRawNumberSequenceConverter);
         RationalToDecimalConverter = new(Storage, RawNumberSequenceToBigIntegerConverter);
-        Asset = GetOrCreateType(Type, nameof(Asset));
-        Balance = GetOrCreateType(Type, nameof(Balance));
-        Etf = GetOrCreateType(Asset, nameof(Etf));
-        Currency = GetOrCreateType(Asset, nameof(Currency));
-        Rub = GetOrCreateType(Currency, nameof(Rub));
-        Amount = GetOrCreateType(Type, nameof(Amount));
-        Account = _investApi.Users.GetAccounts().Accounts[0];
+        OperationType = GetOrCreateType(Type, nameof(OperationType));
+        OperationFieldType = GetOrCreateType(OperationType, nameof(OperationFieldType));
+        IdOperationFieldType = GetOrCreateType(OperationFieldType, nameof(IdOperationFieldType));
+        ParentOperationIdOperationFieldType = GetOrCreateType(OperationFieldType, nameof(ParentOperationIdOperationFieldType));
+        OperationCurrencyFieldType = GetOrCreateType(OperationFieldType, nameof(OperationCurrencyFieldType));
+        PaymentOperationFieldType = GetOrCreateType(OperationFieldType, nameof(PaymentOperationFieldType));
+        PriceOperationFieldType = GetOrCreateType(OperationFieldType, nameof(PriceOperationFieldType));
+        StateOperationFieldType = GetOrCreateType(OperationFieldType, nameof(StateOperationFieldType));
+        QuantityOperationFieldType = GetOrCreateType(OperationFieldType, nameof(QuantityOperationFieldType));
+        QuantityRestOperationFieldType = GetOrCreateType(OperationFieldType, nameof(QuantityRestOperationFieldType));
+        FigiOperationFieldType = GetOrCreateType(OperationFieldType, nameof(FigiOperationFieldType));
+        InstrumentTypeOperationFieldType = GetOrCreateType(OperationFieldType, nameof(InstrumentTypeOperationFieldType));
+        DateOperationFieldType = GetOrCreateType(OperationFieldType, nameof(DateOperationFieldType));
+        TypeAsStringOperationFieldType = GetOrCreateType(OperationFieldType, nameof(TypeAsStringOperationFieldType));
+        TypeAsEnumOperationFieldType = GetOrCreateType(OperationFieldType, nameof(TypeAsEnumOperationFieldType));
+        TradesOperationFieldType = GetOrCreateType(OperationFieldType, nameof(TradesOperationFieldType));
+        AssetType = GetOrCreateType(Type, nameof(AssetType));
+        BalanceType = GetOrCreateType(Type, nameof(BalanceType));
+        EtfType = GetOrCreateType(AssetType, nameof(EtfType));
+        OperationCurrencyFieldType = GetOrCreateType(AssetType, nameof(OperationCurrencyFieldType));
+        RubType = GetOrCreateType(OperationCurrencyFieldType, nameof(RubType));
+        AmountType = GetOrCreateType(Type, nameof(AmountType));
+        AccountType = _investApi.Users.GetAccounts().Accounts[0];
 
 
         var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = Account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
