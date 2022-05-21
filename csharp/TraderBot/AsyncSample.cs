@@ -71,6 +71,7 @@ public class AsyncService : BackgroundService
     public readonly ulong TypeAsStringOperationFieldType;
     public readonly ulong TypeAsEnumOperationFieldType;
     public readonly ulong TradesOperationFieldType;
+    public ulong SequenceType;
 
     public AsyncService(ILogger<AsyncService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime)
     {
@@ -113,6 +114,7 @@ public class AsyncService : BackgroundService
         RawNumberSequenceToBigIntegerConverter = new(Storage, NumberToAddressConverter, NegativeNumberMarker);
         DecimalToRationalConverter = new(Storage, BigIntegerToRawNumberSequenceConverter);
         RationalToDecimalConverter = new(Storage, RawNumberSequenceToBigIntegerConverter);
+        SequenceType = GetOrCreateType(Type, nameof(SequenceType));
         OperationType = GetOrCreateType(Type, nameof(OperationType));
         OperationFieldType = GetOrCreateType(OperationType, nameof(OperationFieldType));
         IdOperationFieldType = GetOrCreateType(OperationFieldType, nameof(IdOperationFieldType));
@@ -138,26 +140,26 @@ public class AsyncService : BackgroundService
         AccountType = _investApi.Users.GetAccounts().Accounts[0];
 
 
-        var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = Account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
+        var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = AccountType.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
         RubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
-        var amountAddress = Storage.GetOrCreate(Amount, DecimalToRationalConverter.Convert(RubBalance));
-        var rubAmountAddress = Storage.GetOrCreate(Rub, amountAddress);
-        var runBalanceAddress = Storage.GetOrCreate(Balance, rubAmountAddress);
+        var amountAddress = Storage.GetOrCreate(AmountType, DecimalToRationalConverter.Convert(RubBalance));
+        var rubAmountAddress = Storage.GetOrCreate(RubType, amountAddress);
+        var runBalanceAddress = Storage.GetOrCreate(BalanceType, rubAmountAddress);
         _logger.LogInformation($"Rub amount: {RubBalance}");
         var etfs = _investApi.Instruments.Etfs();
         EtfTicker = "TRUR";
         Instrument = etfs.Instruments.First(etf => etf.Ticker == EtfTicker);
         // var InstrumentTickerLink = StringToUnicodeSequenceConverter.Convert(InstrumentTicker);
-        foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = Account.Id}).Positions)
+        foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = AccountType.Id}).Positions)
         {
             if (portfolioPosition.Figi != Instrument.Figi)
             {
                 continue;
             }
             InstrumentQuantity = portfolioPosition.Quantity;
-            amountAddress = Storage.GetOrCreate(Amount, DecimalToRationalConverter.Convert(InstrumentQuantity));
-            var etfAmountAddress = Storage.GetOrCreate(Etf, amountAddress);
-            var etfBalanceAddress = Storage.GetOrCreate(Balance, etfAmountAddress);
+            amountAddress = Storage.GetOrCreate(AmountType, DecimalToRationalConverter.Convert(InstrumentQuantity));
+            var etfAmountAddress = Storage.GetOrCreate(EtfType, amountAddress);
+            var etfBalanceAddress = Storage.GetOrCreate(BalanceType, etfAmountAddress);
             _logger.LogInformation($"[{portfolioPosition.Figi} {Instrument.Ticker}] quantity: {portfolioPosition.Quantity}");
         }
         // var brokerReportGenerateResponseResult = _investApi.Operations.GetBrokerReportAsync(new BrokerReportRequest()
@@ -272,7 +274,7 @@ public class AsyncService : BackgroundService
     private decimal? GetAmountValueOrDefault(TLinkAddress amountAddress)
     {
         var amountType = Storage.GetSource(amountAddress);
-        if (!EqualityComparer.Equals(amountType, Amount))
+        if (!EqualityComparer.Equals(amountType, AmountType))
         {
             return null;
         }
@@ -282,7 +284,7 @@ public class AsyncService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var buyInstrumentOperations = GetBuyInstrumentOperations();
+        var buyInstrumentOperations = GetBuyInstrumentOperationsOrNull();
         var buyInstrumentOperationsGroupedByPrice  = buyInstrumentOperations.GroupBy(operation => operation.Price).ToList();
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
@@ -326,7 +328,7 @@ public class AsyncService : BackgroundService
                             Amount = operation.Quantity,
                             Price = operation.Price
                         };
-                        TradeAssets(asset, Account.Id, orderBook, Instrument.Figi);
+                        TradeAssets(asset, AccountType.Id, orderBook, Instrument.Figi);
                     }
                 }
             }
@@ -347,14 +349,52 @@ public class AsyncService : BackgroundService
         _lifetime.StopApplication();
     }
 
-    private List<Operation> GetBuyInstrumentOperations()
+    private List<Operation>? GetBuyInstrumentOperationsOrNull()
     {
-        List<Operation> buyInstrumentOperations = new List<Operation>();
+        List<Operation> buyInstrumentOperations = new ();
+        var @continue = Storage.Constants.Continue;
+        TLinkAddress operationFieldsSequenceLinkAddress = default;
+         Storage.Each(Link<TLinkAddress>.Null, linkAddress =>
+        {
+            var operationType = Storage.GetSource(linkAddress);
+            if (!EqualityComparer.Equals(operationType, OperationType))
+            {
+                return @continue;
+            }
+            var sequence = Storage.GetTarget(linkAddress);
+            var sequenceType = Storage.GetSource(sequence);
+            if (!EqualityComparer.Equals(sequenceType, SequenceType))
+            {
+                return @continue;
+            }
+            operationFieldsSequenceLinkAddress = sequence;
+            return Storage.Constants.Break;
+        });
+         if (EqualityComparer.Equals(operationFieldsSequenceLinkAddress, default))
+         {
+             return default;
+         }
+        RightSequenceWalker<TLinkAddress> rightSequenceWalker = new(Storage, new DefaultStack<TLinkAddress>(), linkAddress =>
+        {
+            var operationFieldTypeSubtype = Storage.GetSource(linkAddress);
+            var operationFieldType = Storage.GetSource(operationFieldTypeSubtype);
+            return EqualityComparer.Equals(operationFieldType, OperationFieldType);
+        });
+        var operationFieldLinkAddresses = rightSequenceWalker.Walk(operationFieldsSequenceLinkAddress);
+        foreach (var operationFieldLinkAddress in operationFieldLinkAddresses)
+        {
+            Tinkoff.InvestApi.V1.Operation operation = new();
+            if (EqualityComparer.Equals(operationFieldLinkAddress, IdOperationFieldType))
+            {
+                var idLink = Storage.GetTarget(operationFieldLinkAddress);
+                operation.Id = UnicodeSequenceToStringConverter.Convert(idLink);
+            }
+        }
         long totalSoldQuantity = 0;
         var operations = _investApi.Operations.GetOperations(new OperationsRequest()
             {
                 Figi = Instrument.Figi,
-                AccountId = Account.Id,
+                AccountId = AccountType.Id,
                 State = OperationState.Executed,
                 From = Timestamp.FromDateTime(new DateTime(2022, 2, 12).ToUniversalTime()),
                 // To = Timestamp.FromDateTime(new DateTime(2022, 2, 15).ToUniversalTime()),
