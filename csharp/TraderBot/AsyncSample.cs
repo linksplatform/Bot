@@ -353,14 +353,10 @@ public class AsyncService : BackgroundService
     {
         List<Operation> buyInstrumentOperations = new ();
         var @continue = Storage.Constants.Continue;
+        var any = Storage.Constants.Any;
         TLinkAddress operationFieldsSequenceLinkAddress = default;
-         Storage.Each(Link<TLinkAddress>.Null, linkAddress =>
+         Storage.Each(new Link<TLinkAddress>(any, OperationType, any), linkAddress =>
         {
-            var operationType = Storage.GetSource(linkAddress);
-            if (!EqualityComparer.Equals(operationType, OperationType))
-            {
-                return @continue;
-            }
             var sequence = Storage.GetTarget(linkAddress);
             var sequenceType = Storage.GetSource(sequence);
             if (!EqualityComparer.Equals(sequenceType, SequenceType))
