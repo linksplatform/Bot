@@ -54,7 +54,7 @@ public class AsyncService : BackgroundService
     private readonly RationalToDecimalConverter<TLinkAddress> RationalToDecimalConverter;
     public Quotation? InstrumentQuantity;
     public Quotation RubBalance;
-    public readonly Account? AccountType;
+    public readonly Account? Account;
     private ulong OperationType;
     public readonly ulong OperationFieldType;
     public ulong IdOperationFieldType;
@@ -136,10 +136,10 @@ public class AsyncService : BackgroundService
         OperationCurrencyFieldType = GetOrCreateType(AssetType, nameof(OperationCurrencyFieldType));
         RubType = GetOrCreateType(OperationCurrencyFieldType, nameof(RubType));
         AmountType = GetOrCreateType(Type, nameof(AmountType));
-        AccountType = _investApi.Users.GetAccounts().Accounts[0];
+        Account = _investApi.Users.GetAccounts().Accounts[0];
 
 
-        var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = AccountType.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
+        var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = Account.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == "rub");
         RubBalance = new Quotation(){Nano = rubBalanceMoneyValue.Nano, Units = rubBalanceMoneyValue.Units};
         var amountAddress = Storage.GetOrCreate(AmountType, DecimalToRationalConverter.Convert(RubBalance));
         var rubAmountAddress = Storage.GetOrCreate(RubType, amountAddress);
@@ -149,7 +149,7 @@ public class AsyncService : BackgroundService
         EtfTicker = "TRUR";
         Instrument = etfs.Instruments.First(etf => etf.Ticker == EtfTicker);
         // var InstrumentTickerLink = StringToUnicodeSequenceConverter.Convert(InstrumentTicker);
-        foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = AccountType.Id}).Positions)
+        foreach (var portfolioPosition in investApi.Operations.GetPortfolio(new PortfolioRequest(){AccountId = Account.Id}).Positions)
         {
             if (portfolioPosition.Figi != Instrument.Figi)
             {
@@ -288,21 +288,21 @@ public class AsyncService : BackgroundService
         var marketDataStream = _investApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest()
             {
-                SubscribeInfoRequest = new SubscribeInfoRequest()
-                {
-                    Instruments = { new InfoInstrument() { Figi = Instrument.Figi } },
-                    SubscriptionAction = SubscriptionAction.Subscribe
-                },
+                // SubscribeInfoRequest = new SubscribeInfoRequest()
+                // {
+                //     Instruments = { new InfoInstrument() { Figi = Instrument.Figi } },
+                //     SubscriptionAction = SubscriptionAction.Subscribe
+                // },
                 SubscribeOrderBookRequest = new SubscribeOrderBookRequest()
                 {
                     Instruments = { new OrderBookInstrument() { Figi = Instrument.Figi, Depth = 1 } },
                     SubscriptionAction = SubscriptionAction.Subscribe
                 },
-                SubscribeTradesRequest = new SubscribeTradesRequest()
-                {
-                    Instruments = { new TradeInstrument(){Figi = Instrument.Figi} },
-                    SubscriptionAction = SubscriptionAction.Subscribe
-                }
+                // SubscribeTradesRequest = new SubscribeTradesRequest()
+                // {
+                //     Instruments = { new TradeInstrument(){Figi = Instrument.Figi} },
+                //     SubscriptionAction = SubscriptionAction.Subscribe
+                // }
             })
             .ContinueWith((task) =>
             {
@@ -318,17 +318,43 @@ public class AsyncService : BackgroundService
             {
                 var orderBook = data.Orderbook;
                 _logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
-                foreach (var buyInstrumentOperation in buyInstrumentOperationsGroupedByPrice)
+                
+                _logger.LogInformation($"Asks[0]: {orderBook.Asks[0].Price}");
+                _logger.LogInformation($"Asks[0].Nano/1000000000: {(decimal)orderBook.Asks[0].Price.Nano / 1000000000m}");
+
+                var bestAskPrice = orderBook.Asks[0].Price;
+                Decimal bestAsk = QuotationToDecimal(bestAskPrice);
+                
+                _logger.LogInformation($"bestAsk: {bestAsk}");
+                _logger.LogInformation($"Bids[0]: {orderBook.Bids[0].Price}");
+                _logger.LogInformation($"Bought.First(): {buyInstrumentOperationsGroupedByPrice.First().Key}");
+                
+
+                foreach (var group in buyInstrumentOperationsGroupedByPrice)
                 {
-                    foreach (var operation in buyInstrumentOperation)
-                    {
-                        Asset asset = new()
-                        {
-                            Amount = operation.Quantity,
-                            Price = operation.Price
-                        };
-                        TradeAssets(asset, AccountType.Id, orderBook, Instrument.Figi);
-                    }
+                    decimal groupPrice = MoneyValueToDecimal(group.Key);
+                    _logger.LogInformation($"groupPrice: {groupPrice}");
+
+                    decimal targetSellPriceCandidate = groupPrice + 0.01m;
+                    _logger.LogInformation($"targetSellPriceCandidate: {targetSellPriceCandidate}");
+
+                    decimal targetSellPrice = System.Math.Max(targetSellPriceCandidate, bestAsk);
+                    _logger.LogInformation($"targetSellPrice: {targetSellPrice}");
+
+                    long amount = group.Sum(o => o.Trades.Sum(t => t.Quantity));
+                    _logger.LogInformation($"amount: {amount}");
+                    
+                    PlaceSellOrder(amount, targetSellPrice);
+                    
+                    // foreach (var operation in buyInstrumentOperation)
+                    // {
+                    //     Asset asset = new()
+                    //     {
+                    //         Amount = operation.Quantity,
+                    //         Price = operation.Price
+                    //     };
+                    //     TradeAssets(asset, AccountType.Id, orderBook, Instrument.Figi);
+                    // }
                 }
             }
             else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Trade)
@@ -347,6 +373,17 @@ public class AsyncService : BackgroundService
         }
         _lifetime.StopApplication();
     }
+
+    private static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
+    
+    private static decimal QuotationToDecimal(Quotation value) => value.Units + value.Nano / 1000000000m;
+
+    private static Quotation DecimalToQuatation(decimal value)
+    {
+        long units = (long) System.Math.Truncate(value);
+        int nano = (int) System.Math.Truncate((value - units) * 1000000000m);
+        return new Quotation() { Units = units, Nano = nano };
+    } 
 
     private List<Operation>? GetBuyInstrumentOperationsOrNull()
     {
@@ -389,7 +426,7 @@ public class AsyncService : BackgroundService
         var operations = _investApi.Operations.GetOperations(new OperationsRequest()
             {
                 Figi = Instrument.Figi,
-                AccountId = AccountType.Id,
+                AccountId = Account.Id,
                 State = OperationState.Executed,
                 From = Timestamp.FromDateTime(new DateTime(2022, 2, 12).ToUniversalTime()),
                 // To = Timestamp.FromDateTime(new DateTime(2022, 2, 15).ToUniversalTime()),
@@ -404,13 +441,7 @@ public class AsyncService : BackgroundService
             long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
             if (operation.OperationType == TinkoffOperationType.Buy)
             {
-                buyInstrumentOperations.Add(new Operation()
-                {
-                    Price = new Quotation() { Nano = operation.Price.Nano, Units = operation.Price.Units },
-                    Quantity = quantity,
-                    Date = operation.Date,
-                    OperationType = operation.OperationType
-                });
+                buyInstrumentOperations.Add(operation);
             }
             else if (operation.OperationType == TinkoffOperationType.Sell)
             {
@@ -442,7 +473,7 @@ public class AsyncService : BackgroundService
     {
         return Storage.GetOrCreate(baseType, StringToUnicodeSequenceConverter.Convert(typeId));
     }
-
+    
     private async void TradeAssets(Asset? asset, string accountId, OrderBook marketOrderBook, string figi)
     {
         var cheapestBidOrder = marketOrderBook.Bids[0];
@@ -483,6 +514,24 @@ public class AsyncService : BackgroundService
 
     }
 
+    private async void PlaceSellOrder(long amount, decimal price)
+    {
+        PostOrderRequest sellOrderRequest = new()
+        {
+            Figi = Instrument.Figi,
+            Quantity = amount,
+            Price = DecimalToQuatation(price),
+            Direction = OrderDirection.Sell,
+            AccountId = Account.Id,
+            OrderType = OrderType.Limit,
+            OrderId = Guid.NewGuid().ToString()
+        };
+        _logger.LogInformation("Placing sell order {SellOrderRequest}", sellOrderRequest);
+        
+        var sellOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
+        _logger.LogInformation($"Sell order placed: {sellOrderResponse}");
+    }
+
     private async void PostBuyOrder(PostOrderRequest sellOrderRequest)
     {
         var buyOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
@@ -499,12 +548,12 @@ public class AsyncService : BackgroundService
         _logger.LogInformation($"Sell order placed: {sellOrderResponse}");
     }
 
-    class Operation
-    {
-        public Timestamp Date;
-        public long Quantity;
-        public Quotation Price;
-        public OperationType OperationType;
-    }
+    // class Operation
+    // {
+    //     public Timestamp Date;
+    //     public long Quantity;
+    //     public Quotation Price;
+    //     public OperationType OperationType;
+    // }
 
 }
