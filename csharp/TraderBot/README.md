@@ -45,7 +45,7 @@ You can configure the bot to trade ETF/cash pair at `TradingSettings`/`EtfTicker
 Бот делает одну заявку за раз. После подачи заявки бот останавливается. Вы можете запустить бота снова, чтобы подать еще одну заявку.
 Вы можете настроить торговлю ETF/наличными ботом в ключах `TradingSettings`/`EtfTicker` и `TradingSettings`/`CashCurrency` в файле `appsettings.json`.
 
-# Strategy | Стратегия
+## Strategy | Стратегия
 
 This bot implements a simple scalping strategy.
 It helps to execute continuous loops of buying and selling each time making 1 pt of profit per each iteration of buying and selling.
@@ -55,7 +55,7 @@ Works best on growing market.
 Он помогает выполнять постоянный цикл покупок и продаж каждый раз получая прибыль размером в 1 пункт за каждую итерацию покупки и продажи.
 Работает наилучшим образом на растущем рынке.
 
-# Roadmap | Дорожная карта
+## Roadmap | Дорожная карта
 - [x] Make a bot that can place buy and sell orders at best price on a single run | Сделать бота, который может подавать заявки на покупку и продажу по лучшей цене за один запуск
 - [ ] Make this bot work without restarts | Сделать этот бот работал без перезапусков
 - [ ] Add short trading mode | Добавить режим короткой торговли
