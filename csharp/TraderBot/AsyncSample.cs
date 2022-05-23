@@ -327,9 +327,7 @@ public class AsyncService : BackgroundService
                 
                 _logger.LogInformation($"bestAsk: {bestAsk}");
                 _logger.LogInformation($"Bids[0]: {orderBook.Bids[0].Price}");
-                _logger.LogInformation($"Bought.First(): {buyInstrumentOperationsGroupedByPrice.First().Key}");
                 
-
                 foreach (var group in buyInstrumentOperationsGroupedByPrice)
                 {
                     decimal groupPrice = MoneyValueToDecimal(group.Key);
@@ -527,9 +525,23 @@ public class AsyncService : BackgroundService
             OrderId = Guid.NewGuid().ToString()
         };
         _logger.LogInformation("Placing sell order {SellOrderRequest}", sellOrderRequest);
+
+        var positions = await _investApi.Operations.GetPositionsAsync(new PositionsRequest() { AccountId = Account.Id }).ResponseAsync;
+        var securityPosition = positions.Securities.SingleOrDefault(x => x.Figi == Instrument.Figi);
+        if (securityPosition != null)
+        {
+            _logger.LogInformation("Security position {SecurityPosition}", securityPosition);
         
-        var sellOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
-        _logger.LogInformation($"Sell order placed: {sellOrderResponse}");
+            if (securityPosition.Balance >= amount)
+            {
+                var sellOrderResponse = await _investApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
+                _logger.LogInformation($"Sell order placed: {sellOrderResponse}");
+            }
+            else
+            {
+                _logger.LogError($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
+            }
+        }
     }
 
     private async void PostBuyOrder(PostOrderRequest sellOrderRequest)
