@@ -41,6 +41,7 @@ You can configure the bot to trade ETF/cash pair at `TradingSettings`/`EtfTicker
 В настоящее время бот имеет следующие возможности:
 * Продажа по лучшей цене или +0.01
 * Покупка по лучшей цене
+
 Бот делает одну заявку за раз. После подачи заявки бот останавливается. Вы можете запустить бота снова, чтобы подать еще одну заявку.
 Вы можете настроить торговлю ETF/наличными ботом в ключах `TradingSettings`/`EtfTicker` и `TradingSettings`/`CashCurrency` в файле `appsettings.json`.
 
