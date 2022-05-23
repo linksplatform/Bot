@@ -13,6 +13,6 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
         <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.0" />
         <PackageReference Include="Tinkoff.InvestApi" Version="0.1.6" />
-
     </ItemGroup>
+
 </Project>

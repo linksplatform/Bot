@@ -16,6 +16,8 @@ using TLinkAddress = System.UInt64;
 
 namespace TraderBot;
 
+// TODO: Under construction
+
 public class FinancialStorage
 {
     public readonly ILinks<TLinkAddress> Storage;
