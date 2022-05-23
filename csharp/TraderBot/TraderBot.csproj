@@ -10,7 +10,7 @@
 
     <ItemGroup>
         <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="4.0.2" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.1" />
         <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.0" />
         <PackageReference Include="Tinkoff.InvestApi" Version="0.1.6" />
     </ItemGroup>
