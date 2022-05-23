@@ -20,6 +20,7 @@ var host = builder
         services.AddInvestApiClient((_, settings) =>
         {
             settings.AccessToken = "";
+            settings.AppName = "LinksPlatformScalper";
             context.Configuration.Bind(settings);
         });
     })

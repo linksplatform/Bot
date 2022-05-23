@@ -42,6 +42,8 @@ public class AsyncService : BackgroundService
         var etfs = _investApi.Instruments.Etfs();
         EtfTicker = "TRUR";
         Instrument = etfs.Instruments.First(etf => etf.Ticker == EtfTicker);
+        _logger.LogInformation($"ETF ticker: {EtfTicker}");
+        _logger.LogInformation($"Intrument: {Instrument}");
 
         // var brokerReportGenerateResponseResult = _investApi.Operations.GetBrokerReportAsync(new BrokerReportRequest()
         //     {
@@ -160,7 +162,7 @@ public class AsyncService : BackgroundService
                 if (buyInstrumentOperationsGroupedByPrice.Any())
                 {
                     var bestAskPrice = orderBook.Asks[0].Price;
-                    Decimal bestAsk = QuotationToDecimal(bestAskPrice);
+                    var bestAsk = QuotationToDecimal(bestAskPrice);
                     _logger.LogInformation($"bestAsk: {bestAsk}");
                     foreach (var group in buyInstrumentOperationsGroupedByPrice)
                     {
@@ -178,38 +180,43 @@ public class AsyncService : BackgroundService
                     
                         await PlaceSellOrder(amount, targetSellPrice);
                     }
-                    _lifetime.StopApplication();
+                    _lifetime.StopApplication(); // TODO: Data about orders and operations should be updated to continue the loop
                 }
+
+                var bestBidPrice = orderBook.Bids[0].Price;
+                var bestBid = QuotationToDecimal(bestBidPrice);
+                var lotSize = Instrument.Lot;
+                var lotPrice = bestBid * lotSize;
                 
-                // if (RubBalance > )
-                // {
-                //     
-                // }
+                if (RubBalance > lotPrice)
+                {
+                    var lots = (long)(RubBalance / lotPrice);
+                    await PlaceBuyOrder(lots, bestBid);
+                    _lifetime.StopApplication(); // TODO: Data about orders and balance should be updated to continue the loop
+                }
                 
                 _logger.LogInformation($"Bids[0]: {orderBook.Bids[0].Price}");
             }
-            else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Trade)
-            {
-                var trade = data.Trade;
-                if (trade.Direction == TradeDirection.Buy)
-                {
-
-                }
-                else if (trade.Direction == TradeDirection.Sell)
-                {
-
-                }
-                ;
-            }
+            // else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Trade)
+            // {
+            //     var trade = data.Trade;
+            //     if (trade.Direction == TradeDirection.Buy)
+            //     {
+            //
+            //     }
+            //     else if (trade.Direction == TradeDirection.Sell)
+            //     {
+            //
+            //     }
+            // }
         }
-        
     }
 
     private static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
     
     private static decimal QuotationToDecimal(Quotation value) => value.Units + value.Nano / 1000000000m;
 
-    private static Quotation DecimalToQuatation(decimal value)
+    private static Quotation DecimalToQuotation(decimal value)
     {
         long units = (long) System.Math.Truncate(value);
         int nano = (int) System.Math.Truncate((value - units) * 1000000000m);
@@ -313,7 +320,7 @@ public class AsyncService : BackgroundService
         {
             Figi = Instrument.Figi,
             Quantity = amount,
-            Price = DecimalToQuatation(price),
+            Price = DecimalToQuotation(price),
             Direction = OrderDirection.Sell,
             AccountId = Account.Id,
             OrderType = OrderType.Limit,
@@ -337,6 +344,28 @@ public class AsyncService : BackgroundService
                 _logger.LogError($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
             }
         }
+    }
+    
+    private async Task PlaceBuyOrder(long amount, decimal price)
+    {
+        PostOrderRequest buyOrderRequest = new()
+        {
+            Figi = Instrument.Figi,
+            Quantity = Quantity,
+            Price = DecimalToQuotation(price),
+            Direction = OrderDirection.Buy,
+            AccountId = Account.Id,
+            OrderType = OrderType.Limit,
+            OrderId = Guid.NewGuid().ToString()
+        };
+        var total = amount * price;
+        if (RubBalance < total)
+        {
+            _logger.LogError($"Not enough money to buy {Instrument.Figi} asset.");
+            return;
+        }
+        var buyOrderResponse = await _investApi.Orders.PostOrderAsync(buyOrderRequest).ResponseAsync;
+        _logger.LogInformation($"Buy order placed: {buyOrderResponse}");
     }
 
     private async void PostBuyOrder(PostOrderRequest sellOrderRequest)
