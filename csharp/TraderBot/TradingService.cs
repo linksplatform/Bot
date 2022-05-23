@@ -144,8 +144,6 @@ public class TradingService : BackgroundService
             From = CurrentAccount.OpenedDate,
             To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(3))
         }).Operations;
-        Console.WriteLine($"{operations.First().Date}");
-        Console.WriteLine($"{operations.Last().Date}");
         foreach (var operation in operations)
         {
             long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
