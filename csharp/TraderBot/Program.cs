@@ -17,7 +17,11 @@ var host = builder
         // {
             services.AddHostedService<AsyncService>();
         // }
-        services.AddInvestApiClient((_, settings) => context.Configuration.Bind(settings));
+        services.AddInvestApiClient((_, settings) =>
+        {
+            settings.AccessToken = "";
+            context.Configuration.Bind(settings);
+        });
     })
     .Build();
 await host.RunAsync();

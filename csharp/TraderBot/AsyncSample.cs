@@ -351,40 +351,40 @@ public class AsyncService : BackgroundService
     private List<Operation>? GetBuyInstrumentOperationsOrNull()
     {
         List<Operation> buyInstrumentOperations = new ();
-        var @continue = Storage.Constants.Continue;
-        var any = Storage.Constants.Any;
-        TLinkAddress operationFieldsSequenceLinkAddress = default;
-         Storage.Each(new Link<TLinkAddress>(any, OperationType, any), linkAddress =>
-        {
-            var sequence = Storage.GetTarget(linkAddress);
-            var sequenceType = Storage.GetSource(sequence);
-            if (!EqualityComparer.Equals(sequenceType, SequenceType))
-            {
-                return @continue;
-            }
-            operationFieldsSequenceLinkAddress = sequence;
-            return Storage.Constants.Break;
-        });
-         if (EqualityComparer.Equals(operationFieldsSequenceLinkAddress, default))
-         {
-             return default;
-         }
-        RightSequenceWalker<TLinkAddress> rightSequenceWalker = new(Storage, new DefaultStack<TLinkAddress>(), linkAddress =>
-        {
-            var operationFieldTypeSubtype = Storage.GetSource(linkAddress);
-            var operationFieldType = Storage.GetSource(operationFieldTypeSubtype);
-            return EqualityComparer.Equals(operationFieldType, OperationFieldType);
-        });
-        var operationFieldLinkAddresses = rightSequenceWalker.Walk(operationFieldsSequenceLinkAddress);
-        foreach (var operationFieldLinkAddress in operationFieldLinkAddresses)
-        {
-            Tinkoff.InvestApi.V1.Operation operation = new();
-            if (EqualityComparer.Equals(operationFieldLinkAddress, IdOperationFieldType))
-            {
-                var idLink = Storage.GetTarget(operationFieldLinkAddress);
-                operation.Id = UnicodeSequenceToStringConverter.Convert(idLink);
-            }
-        }
+        // var @continue = Storage.Constants.Continue;
+        // var any = Storage.Constants.Any;
+        // TLinkAddress operationFieldsSequenceLinkAddress = default;
+        //  Storage.Each(new Link<TLinkAddress>(any, OperationType, any), linkAddress =>
+        // {
+        //     var sequence = Storage.GetTarget(linkAddress);
+        //     var sequenceType = Storage.GetSource(sequence);
+        //     if (!EqualityComparer.Equals(sequenceType, SequenceType))
+        //     {
+        //         return @continue;
+        //     }
+        //     operationFieldsSequenceLinkAddress = sequence;
+        //     return Storage.Constants.Break;
+        // });
+        //  if (EqualityComparer.Equals(operationFieldsSequenceLinkAddress, default))
+        //  {
+        //      return default;
+        //  }
+        // RightSequenceWalker<TLinkAddress> rightSequenceWalker = new(Storage, new DefaultStack<TLinkAddress>(), linkAddress =>
+        // {
+        //     var operationFieldTypeSubtype = Storage.GetSource(linkAddress);
+        //     var operationFieldType = Storage.GetSource(operationFieldTypeSubtype);
+        //     return EqualityComparer.Equals(operationFieldType, OperationFieldType);
+        // });
+        // var operationFieldLinkAddresses = rightSequenceWalker.Walk(operationFieldsSequenceLinkAddress);
+        // foreach (var operationFieldLinkAddress in operationFieldLinkAddresses)
+        // {
+        //     Tinkoff.InvestApi.V1.Operation operation = new();
+        //     if (EqualityComparer.Equals(operationFieldLinkAddress, IdOperationFieldType))
+        //     {
+        //         var idLink = Storage.GetTarget(operationFieldLinkAddress);
+        //         operation.Id = UnicodeSequenceToStringConverter.Convert(idLink);
+        //     }
+        // }
         long totalSoldQuantity = 0;
         var operations = _investApi.Operations.GetOperations(new OperationsRequest()
             {
