@@ -1,6 +1,5 @@
 using System.Net.NetworkInformation;
 using Google.Protobuf.WellKnownTypes;
-using GraphQL.Client.Http;
 using GraphQL.Client.Serializer.Newtonsoft;
 using Grpc.Core;
 using Microsoft.Extensions.Hosting;
@@ -10,7 +9,6 @@ using Platform.Converters;
 using Platform.Data;
 using Platform.Data.Doublets;
 using Platform.Data.Doublets.CriterionMatchers;
-using Platform.Data.Doublets.Gql.Client;
 using Platform.Data.Doublets.Memory.United.Generic;
 using Platform.Data.Doublets.Numbers.Rational;
 using Platform.Data.Doublets.Numbers.Raw;
@@ -22,6 +20,7 @@ using Platform.Memory;
 using Platform.Numbers;
 using Tinkoff.InvestApi;
 using Tinkoff.InvestApi.V1;
+using TinkoffOperationType = Tinkoff.InvestApi.V1.OperationType;
 using TLinkAddress = System.UInt64;
 
 
@@ -403,7 +402,7 @@ public class AsyncService : BackgroundService
         foreach (var operation in operations)
         {
             long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
-            if (operation.OperationType == OperationType.Buy)
+            if (operation.OperationType == TinkoffOperationType.Buy)
             {
                 buyInstrumentOperations.Add(new Operation()
                 {
@@ -413,7 +412,7 @@ public class AsyncService : BackgroundService
                     OperationType = operation.OperationType
                 });
             }
-            else if (operation.OperationType == OperationType.Sell)
+            else if (operation.OperationType == TinkoffOperationType.Sell)
             {
                 totalSoldQuantity += quantity;
             }

@@ -1,7 +1,4 @@
-using GraphQL.Client.Http;
 using Microsoft.Extensions.Configuration.UserSecrets;
-using Platform.Data;
-using Platform.Data.Doublets.Gql.Client;
 using TraderBot;
 using TLinkAddresss = System.UInt64;
 
