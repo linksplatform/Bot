@@ -84,8 +84,7 @@ public class FinancialStorage
         RightSequenceWalker<TLinkAddress> sequenceWalker =
             new(Storage, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
         UnicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(
-            new UnicodeSequenceToStringConverter<TLinkAddress>(Storage, unicodeSequenceCriterionMatcher, sequenceWalker,
-                unicodeSymbolToCharConverter));
+            new UnicodeSequenceToStringConverter<TLinkAddress>(Storage, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter, unicodeSequenceMarker));
         BigIntegerToRawNumberSequenceConverter =
             new(Storage, AddressToNumberConverter, balancedVariantConverter, NegativeNumberMarker);
         RawNumberSequenceToBigIntegerConverter = new(Storage, NumberToAddressConverter, NegativeNumberMarker);
