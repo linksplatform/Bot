@@ -35,18 +35,12 @@ namespace Platform.Bot
             var minimumInteractionInterval = TimeSpan.FromSeconds(Int32.Parse(minimumInteractionIntervalStringInputInSeconds));
             var dbContext = new FileStorage(databaseFileName);
             Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
-            try
+            while (true)
             {
-                while (true)
+                try
                 {
                     var githubStorage = new GitHubStorage(username, token, appName);
-                    var issueTracker = new IssueTracker(githubStorage,
-                        new HelloWorldTrigger(githubStorage, dbContext, fileSetName),
-                        new OrganizationLastMonthActivityTrigger(githubStorage),
-                        new LastCommitActivityTrigger(githubStorage),
-                        new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage),
-                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage),
-                        new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
+                    var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
                     var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                     var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                     issueTracker.Start(cancellation.Token);
@@ -54,10 +48,10 @@ namespace Platform.Bot
                     timestampTracker.Start(cancellation.Token);
                     Thread.Sleep(minimumInteractionInterval);
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.ToStringWithAllInnerExceptions());
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.ToStringWithAllInnerExceptions());
+                }
             }
         }
     }
