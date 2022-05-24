@@ -1,5 +1,8 @@
+using System.Collections.Concurrent;
+using Google.Protobuf.Collections;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
+using Platform.Collections;
 using Tinkoff.InvestApi;
 using Tinkoff.InvestApi.V1;
 
@@ -16,6 +19,7 @@ public class TradingService : BackgroundService
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
     protected volatile int AreOrdersActive;
+    protected ConcurrentDictionary<string, OrderState> ActiveOrders;
 
     public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
     {
@@ -29,26 +33,91 @@ public class TradingService : BackgroundService
 
         CurrentAccount = InvestApi.Users.GetAccounts().Accounts[0];
         Logger.LogInformation($"CurrentAccount: {CurrentAccount}");
-
-        var rubBalanceMoneyValue = investApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
-        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
-        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
         
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
 
         PriceStep = QuotationToDecimal(CurrentInstrument.MinPriceIncrement);
         Logger.LogInformation($"PriceStep: {PriceStep}");
-        
-        // TODO: Load actual data
-        AreOrdersActive = 0;
+
+        ActiveOrders = new ConcurrentDictionary<string, OrderState>();
     }
-    
-    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+
+    protected async Task WaitForActiveOrders(CancellationToken cancellationToken)
     {
+        // Load active orders
+        var ordersResponse = InvestApi.Orders.GetOrders(new GetOrdersRequest {  AccountId = CurrentAccount.Id });
+        foreach (var orderState in ordersResponse.Orders)
+        {
+            if (orderState.Figi == CurrentInstrument.Figi)
+            {
+                ActiveOrders.TryAdd(orderState.OrderId, orderState);
+            }
+        }
+        // Log active orders
+        foreach (var order in ActiveOrders)
+        {
+            Logger.LogInformation($"Active order: {order.Value}");
+        }
+        if (ActiveOrders.Count > 0)
+        {
+            var activeOrdersToken = new CancellationTokenSource();
+            var tradesStream = InvestApi.OrdersStream.TradesStream(new TradesStreamRequest()
+            {
+                Accounts = { CurrentAccount.Id }
+            });
+            await foreach (var data in tradesStream.ResponseStream.ReadAllAsync(activeOrdersToken.Token))
+            {
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    activeOrdersToken.Cancel();
+                }
+                Logger.LogInformation($"Trade: {data}");
+                if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.OrderTrades)
+                {
+                    var order = data.OrderTrades;
+                    Logger.LogInformation($"OrderTrades: {order}");
+                    if (ActiveOrders.TryGetValue(order.OrderId, out var activeOrder))
+                    {
+                        foreach (var trade in order.Trades)
+                        {
+                            activeOrder.LotsRequested -= trade.Quantity;
+                        }
+                        Logger.LogInformation($"Active order: {activeOrder}");
+                        if (activeOrder.LotsRequested == 0)
+                        {
+                            ActiveOrders.TryRemove(order.OrderId, out activeOrder);
+                            Logger.LogInformation($"Active order removed: {activeOrder}");
+                        }
+                        if (ActiveOrders.Count == 0)
+                        {
+                            activeOrdersToken.Cancel();
+                            Logger.LogInformation($"All orders are closed");
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    protected async Task PlaceNewOrders(CancellationToken cancellationToken)
+    {
+        Interlocked.Exchange(ref AreOrdersActive, 0);
+        
+        var rubBalanceMoneyValue = InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
+        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
+        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
+        
         var openOperations = GetOpenOperations();
+        if (CashBalance <= 0 || openOperations.IsNullOrEmpty())
+        {
+            Logger.LogInformation($"No cash or assets to trade");
+            return;
+        }
+        
         var openOperationsGroupedByPrice  = openOperations.GroupBy(operation => operation.Price).ToList();
         
+        var newOrdersToken = new CancellationTokenSource();
         var marketDataStream = InvestApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest
         {
@@ -65,8 +134,12 @@ public class TradingService : BackgroundService
             }
             Logger.LogInformation("Subscribed to market data");
         }, cancellationToken);
-        await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(cancellationToken))
+        await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(newOrdersToken.Token))
         {
+            if (cancellationToken.IsCancellationRequested)
+            {
+                newOrdersToken.Cancel();
+            }
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
             {
                 var orderBook = data.Orderbook;
@@ -97,7 +170,6 @@ public class TradingService : BackgroundService
                             Interlocked.Exchange(ref AreOrdersActive, 1);
                         }
                     }
-                    Lifetime.StopApplication(); // TODO: Data about orders and operations should be updated to continue the loop
                 }
 
                 var bestBidPrice = orderBook.Bids[0].Price;
@@ -113,15 +185,24 @@ public class TradingService : BackgroundService
                     {
                         Interlocked.Exchange(ref AreOrdersActive, 1);
                     }
-                    Lifetime.StopApplication(); // TODO: Data about orders and balance should be updated to continue the loop
                 }
 
                 if (AreOrdersActive == 1)
                 {
+                    newOrdersToken.Cancel();
                 }
                 
                 Logger.LogInformation($"Bids[0]: {orderBook.Bids[0].Price}");
             }
+        }
+    }
+
+    protected override async Task ExecuteAsync(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            await WaitForActiveOrders(cancellationToken);
+            await PlaceNewOrders(cancellationToken);
         }
     }
 
