@@ -13,6 +13,7 @@ public class TradingService : BackgroundService
     protected readonly TradingSettings Settings;
     protected readonly Account CurrentAccount;
     protected Etf CurrentInstrument;
+    protected readonly decimal PriceStep;
     protected decimal CashBalance;
     protected volatile int AreOrdersActive;
 
@@ -35,6 +36,9 @@ public class TradingService : BackgroundService
         
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
+
+        PriceStep = QuotationToDecimal(CurrentInstrument.MinPriceIncrement);
+        Logger.LogInformation($"PriceStep: {PriceStep}");
         
         // TODO: Load actual data
         AreOrdersActive = 0;
@@ -78,7 +82,7 @@ public class TradingService : BackgroundService
                         var groupPrice = MoneyValueToDecimal(group.Key);
                         Logger.LogInformation($"groupPrice: {groupPrice}");
 
-                        var targetSellPriceCandidate = groupPrice + 0.01m;
+                        var targetSellPriceCandidate = groupPrice + PriceStep;
                         Logger.LogInformation($"targetSellPriceCandidate: {targetSellPriceCandidate}");
 
                         var targetSellPrice = System.Math.Max(targetSellPriceCandidate, bestAsk);
