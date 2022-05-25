@@ -1,4 +1,4 @@
-# Торговый бот ([английская версия](README.md))
+# Торговый бот ([english version](README.md))
 
 Этот бот участвует в конкурсе [Tinkoff Invest Robot Contest](https://github.com/Tinkoff/invest-robot-contest).
 
