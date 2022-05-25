@@ -2,6 +2,8 @@
 
 This bot is participating in the [Tinkoff Invest Robot Contest](https://github.com/Tinkoff/invest-robot-contest).
 
+[![Trading with bot](trading.png)](trading.png)
+
 ## Prerequisites
 * Linux, macOS, Windows
 * [Git](https://git-scm.com/downloads)
