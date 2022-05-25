@@ -103,27 +103,29 @@ public class TradingService : BackgroundService
     protected async Task PlaceNewOrders(CancellationToken cancellationToken)
     {
         Interlocked.Exchange(ref AreOrdersActive, 0);
-        
-        var rubBalanceMoneyValue = InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }).ResponseAsync.Result.Money.First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
+
+        var rubBalanceMoneyValue = InvestApi.Operations
+            .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
+            .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
         CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
         Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
-        
+
         var openOperations = GetOpenOperations();
-        if (CashBalance <= 0 || openOperations.IsNullOrEmpty())
+        if (CashBalance <= 0m && openOperations.IsNullOrEmpty())
         {
-            Logger.LogInformation($"No cash or assets to trade");
+            Logger.LogInformation($"No cash and assets to trade");
             return;
         }
-        
-        var openOperationsGroupedByPrice  = openOperations.GroupBy(operation => operation.Price).ToList();
-        
+
+        var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
+
         var newOrdersToken = new CancellationTokenSource();
         var marketDataStream = InvestApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest
         {
             SubscribeOrderBookRequest = new SubscribeOrderBookRequest
             {
-                Instruments = { new OrderBookInstrument() { Figi = CurrentInstrument.Figi, Depth = 1 } },
+                Instruments = {new OrderBookInstrument() {Figi = CurrentInstrument.Figi, Depth = 1}},
                 SubscriptionAction = SubscriptionAction.Subscribe
             },
         }).ContinueWith((task) =>
@@ -132,6 +134,7 @@ public class TradingService : BackgroundService
             {
                 throw new Exception("Error while subscribing to market data");
             }
+
             Logger.LogInformation("Subscribed to market data");
         }, cancellationToken);
         await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(newOrdersToken.Token))
@@ -140,6 +143,7 @@ public class TradingService : BackgroundService
             {
                 newOrdersToken.Cancel();
             }
+
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
             {
                 var orderBook = data.Orderbook;
@@ -163,7 +167,7 @@ public class TradingService : BackgroundService
 
                         var amount = group.Sum(o => o.Trades.Sum(t => t.Quantity));
                         Logger.LogInformation($"amount: {amount}");
-                    
+
                         var isOrderPlaced = await TryPlaceSellOrder(amount, targetSellPrice);
                         if (isOrderPlaced)
                         {
@@ -176,10 +180,10 @@ public class TradingService : BackgroundService
                 var bestBid = QuotationToDecimal(bestBidPrice);
                 var lotSize = CurrentInstrument.Lot;
                 var lotPrice = bestBid * lotSize;
-                
+
                 if (CashBalance > lotPrice)
                 {
-                    var lots = (long)(CashBalance / lotPrice);
+                    var lots = (long) (CashBalance / lotPrice);
                     var isOrderPlaced = await TryPlaceBuyOrder(lots, bestBid);
                     if (isOrderPlaced)
                     {
@@ -191,8 +195,6 @@ public class TradingService : BackgroundService
                 {
                     newOrdersToken.Cancel();
                 }
-                
-                Logger.LogInformation($"Bids[0]: {orderBook.Bids[0].Price}");
             }
         }
     }
@@ -201,8 +203,19 @@ public class TradingService : BackgroundService
     {
         while (!cancellationToken.IsCancellationRequested)
         {
-            await WaitForActiveOrders(cancellationToken);
-            await PlaceNewOrders(cancellationToken);
+            try
+            {
+                await WaitForActiveOrders(cancellationToken);
+                await PlaceNewOrders(cancellationToken);
+            }
+            catch (RpcException exception)
+            {
+                Logger.LogInformation($"RpcException status code: {exception.StatusCode}");
+                if (exception.StatusCode != StatusCode.Cancelled)
+                {
+                    throw exception;
+                }
+            }
         }
     }
 
