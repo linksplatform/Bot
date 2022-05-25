@@ -111,6 +111,7 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
 
         var openOperations = GetOpenOperations();
+        Logger.LogInformation($"Open operations count: {openOperations.Count}");
         if (CashBalance <= 0m && openOperations.IsNullOrEmpty())
         {
             Logger.LogInformation($"No cash and assets to trade");
