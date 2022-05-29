@@ -49,6 +49,7 @@ Works best on growing market and with least volotile asset.
 - [x] Make a bot that can place buy and sell orders at best price on a single run
 - [x] Make this bot work without restarts
 - [ ] Support moving buy order up
+- [ ] Optional support moving sell order down (up to equal to buy price)
 - [ ] Add short trading mode
 - [ ] Optimize the number of requests to the API
 - [ ] Store all the data in the database (doublets links storage)
