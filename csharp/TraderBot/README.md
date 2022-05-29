@@ -45,6 +45,14 @@ This bot implements a simple scalping strategy.
 It executes continuous loop of buying and selling each time making 1 pt of profit per each iteration of buying and selling.
 Works best on growing market and with least volotile asset.
 
+Hypothesis:
+```
+It is possible to make more profit using this strategy
+than with buy and hold strategy
+due to effect of compound interest
+on each buy and sell iteration.
+```
+
 ## Roadmap
 - [x] Make a bot that can place buy and sell orders at best price on a single run
 - [x] Make this bot work without restarts
