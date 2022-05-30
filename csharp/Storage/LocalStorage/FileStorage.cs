@@ -85,7 +85,8 @@ namespace Storage.Local
             var unicodeSymbolToCharConverter = new UnicodeSymbolToCharConverter<TLinkAddress>(_synchronizedLinks, _numberToAddressConverter, unicodeSymbolCriterionMatcher);
             var sequenceWalker = new RightSequenceWalker<TLinkAddress>(_synchronizedLinks, new DefaultStack<TLinkAddress>(), unicodeSymbolCriterionMatcher.IsMatched);
             _stringToUnicodeSequenceConverter = new CachingConverterDecorator<string, TLinkAddress>(new StringToUnicodeSequenceConverter<TLinkAddress>(_synchronizedLinks, charToUnicodeSymbolConverter, balancedVariantConverter, _unicodeSequenceMarker));
-            _unicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(new UnicodeSequenceToStringConverter<TLinkAddress>(_synchronizedLinks, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter));
+            var unicodeSequenceToStringConverter = new UnicodeSequenceToStringConverter<TLinkAddress>(_synchronizedLinks, unicodeSequenceCriterionMatcher, sequenceWalker, unicodeSymbolToCharConverter, _unicodeSequenceMarker);
+            _unicodeSequenceToStringConverter = new CachingConverterDecorator<TLinkAddress, string>(unicodeSequenceToStringConverter);
             _listToSequenceConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
             _bigIntederToRawNumberConverter = new BigIntegerToRawNumberSequenceConverter<TLinkAddress>(_synchronizedLinks, _addressToNumberConverter, _listToSequenceConverter, _negativeNumberIndex);
             _rawNumberToBigIntegerConverter = new RawNumberSequenceToBigIntegerConverter<TLinkAddress>(_synchronizedLinks, _numberToAddressConverter, _negativeNumberIndex);
