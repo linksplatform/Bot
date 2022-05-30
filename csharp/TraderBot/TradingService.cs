@@ -160,12 +160,11 @@ public class TradingService : BackgroundService
                 var bestAsk = QuotationToDecimal(bestAskPrice);
                 var bestBidPrice = orderBook.Bids[0].Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
-                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
 
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
+                    Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     var isOrderPlaced = false;
-                    
                     // Process potential sell order
                     var openOperations = GetOpenOperations();
                     Logger.LogInformation($"Open operations count: {openOperations.Count}");
@@ -203,6 +202,7 @@ public class TradingService : BackgroundService
                         SyncActiveOrders();
                     }
                 } else if (ActiveBuyOrders.Count == 1) {
+                    Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
                     var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialOrderPrice);
                     Logger.LogInformation($"initialOrderPrice: {initialOrderPrice}");
