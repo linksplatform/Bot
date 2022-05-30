@@ -16,8 +16,8 @@ public class TradingService : BackgroundService
     protected readonly Etf CurrentInstrument;
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
-    protected volatile int AreOrdersActive;
-    protected readonly ConcurrentDictionary<string, OrderState> ActiveOrders;
+    protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
+    protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
 
     public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, TradingSettings settings)
     {
@@ -26,89 +26,113 @@ public class TradingService : BackgroundService
         Settings = settings;
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
-        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[0];
+        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[3];
         Logger.LogInformation($"CurrentAccount: {CurrentAccount}");
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
         PriceStep = QuotationToDecimal(CurrentInstrument.MinPriceIncrement);
         Logger.LogInformation($"PriceStep: {PriceStep}");
-        ActiveOrders = new ConcurrentDictionary<string, OrderState>();
+        ActiveBuyOrders = new ConcurrentDictionary<string, OrderState>();
+        ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
     }
 
-    protected async Task WaitForActiveOrders(CancellationToken cancellationToken)
+    protected async Task ReceiveTrades(CancellationToken cancellationToken)
     {
-        // Load active orders
-        var ordersResponse = InvestApi.Orders.GetOrders(new GetOrdersRequest {  AccountId = CurrentAccount.Id });
-        foreach (var orderState in ordersResponse.Orders)
+        var tradesStream = InvestApi.OrdersStream.TradesStream(new TradesStreamRequest()
+        {
+            Accounts = { CurrentAccount.Id }
+        });
+        await foreach (var data in tradesStream.ResponseStream.ReadAllAsync(cancellationToken))
+        {
+            Logger.LogInformation($"Trade: {data}");
+            if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.OrderTrades)
+            {
+                var orderTrades = data.OrderTrades;
+                TrySubtractTradesFromOrder(ActiveBuyOrders, orderTrades);
+                TrySubtractTradesFromOrder(ActiveSellOrders, orderTrades);
+            }
+            else if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.Ping)
+            {
+                SyncActiveOrders();
+            }
+        }
+    }
+
+    protected void LogActiveOrders()
+    {
+        foreach (var order in ActiveBuyOrders)
+        {
+            Logger.LogInformation($"Active buy order: {order.Value}");
+        }
+        foreach (var order in ActiveSellOrders)
+        {
+            Logger.LogInformation($"Active sell order: {order.Value}");
+        }
+    }
+
+    protected void SyncActiveOrders()
+    {
+        var orders = InvestApi.Orders.GetOrders(new GetOrdersRequest {AccountId = CurrentAccount.Id}).Orders;
+        var deletedBuyOrders = new List<string>();
+        foreach (var order in ActiveBuyOrders)
+        {
+            if (orders.All(o => o.OrderId != order.Key))
+            {
+                deletedBuyOrders.Add(order.Key);
+            }
+        }
+        var deletedSellOrders = new List<string>();
+        foreach (var order in ActiveSellOrders)
+        {
+            if (orders.All(o => o.OrderId != order.Key))
+            {
+                deletedSellOrders.Add(order.Key);
+            }
+        }
+        foreach (var orderState in orders)
         {
             if (orderState.Figi == CurrentInstrument.Figi)
             {
-                ActiveOrders.TryAdd(orderState.OrderId, orderState);
+                if (orderState.Direction == OrderDirection.Buy)
+                {
+                    ActiveBuyOrders.TryAdd(orderState.OrderId, orderState);
+                }
+                else if (orderState.Direction == OrderDirection.Sell)
+                {
+                    ActiveSellOrders.TryAdd(orderState.OrderId, orderState);
+                }
             }
         }
-        // Log active orders
-        foreach (var order in ActiveOrders)
+        foreach (var orderId in deletedBuyOrders)
         {
-            Logger.LogInformation($"Active order: {order.Value}");
+            ActiveBuyOrders.TryRemove(orderId, out OrderState? orderState);
         }
-        if (ActiveOrders.Count > 0)
+        foreach (var orderId in deletedSellOrders)
         {
-            var activeOrdersToken = new CancellationTokenSource();
-            var tradesStream = InvestApi.OrdersStream.TradesStream(new TradesStreamRequest()
+            ActiveSellOrders.TryRemove(orderId, out OrderState? orderState);
+        }
+    }
+
+    protected void TrySubtractTradesFromOrder(ConcurrentDictionary<string, OrderState> orders, OrderTrades orderTrades)
+    {
+        Logger.LogInformation($"OrderTrades: {orderTrades}");
+        if (orders.TryGetValue(orderTrades.OrderId, out var activeOrder))
+        {
+            foreach (var trade in orderTrades.Trades)
             {
-                Accounts = { CurrentAccount.Id }
-            });
-            await foreach (var data in tradesStream.ResponseStream.ReadAllAsync(activeOrdersToken.Token))
+                activeOrder.LotsRequested -= trade.Quantity;
+            }
+            Logger.LogInformation($"Active order: {activeOrder}");
+            if (activeOrder.LotsRequested == 0)
             {
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    activeOrdersToken.Cancel();
-                }
-                Logger.LogInformation($"Trade: {data}");
-                if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.OrderTrades)
-                {
-                    var order = data.OrderTrades;
-                    Logger.LogInformation($"OrderTrades: {order}");
-                    if (ActiveOrders.TryGetValue(order.OrderId, out var activeOrder))
-                    {
-                        foreach (var trade in order.Trades)
-                        {
-                            activeOrder.LotsRequested -= trade.Quantity;
-                        }
-                        Logger.LogInformation($"Active order: {activeOrder}");
-                        if (activeOrder.LotsRequested == 0)
-                        {
-                            ActiveOrders.TryRemove(order.OrderId, out activeOrder);
-                            Logger.LogInformation($"Active order removed: {activeOrder}");
-                        }
-                        if (ActiveOrders.Count == 0)
-                        {
-                            activeOrdersToken.Cancel();
-                            Logger.LogInformation($"All orders are closed");
-                        }
-                    }
-                }
+                orders.TryRemove(orderTrades.OrderId, out activeOrder);
+                Logger.LogInformation($"Active order removed: {activeOrder}");
             }
         }
     }
 
-    protected async Task PlaceNewOrders(CancellationToken cancellationToken)
+    protected async Task SendOrders(CancellationToken cancellationToken)
     {
-        Interlocked.Exchange(ref AreOrdersActive, 0);
-        var rubBalanceMoneyValue = InvestApi.Operations
-            .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
-            .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
-        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
-        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
-        var openOperations = GetOpenOperations();
-        Logger.LogInformation($"Open operations count: {openOperations.Count}");
-        if (CashBalance <= 0m && openOperations.IsNullOrEmpty())
-        {
-            Logger.LogInformation($"No cash and assets to trade");
-            return;
-        }
-        var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
-        var newOrdersToken = new CancellationTokenSource();
         var marketDataStream = InvestApi.MarketDataStream.MarketDataStream();
         await marketDataStream.RequestStream.WriteAsync(new MarketDataRequest
         {
@@ -125,56 +149,95 @@ public class TradingService : BackgroundService
             }
             Logger.LogInformation("Subscribed to market data");
         }, cancellationToken);
-        await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(newOrdersToken.Token))
+        await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(cancellationToken))
         {
-            if (cancellationToken.IsCancellationRequested)
-            {
-                newOrdersToken.Cancel();
-            }
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
             {
                 var orderBook = data.Orderbook;
-                Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
-                // Process potential sell order
-                if (openOperationsGroupedByPrice.Any())
-                {
-                    var bestAskPrice = orderBook.Asks[0].Price;
-                    var bestAsk = QuotationToDecimal(bestAskPrice);
-                    Logger.LogInformation($"bestAsk: {bestAsk}");
-                    foreach (var group in openOperationsGroupedByPrice)
-                    {
-                        var groupPrice = MoneyValueToDecimal(group.Key);
-                        Logger.LogInformation($"groupPrice: {groupPrice}");
-                        var targetSellPriceCandidate = groupPrice + PriceStep;
-                        Logger.LogInformation($"targetSellPriceCandidate: {targetSellPriceCandidate}");
-                        var targetSellPrice = System.Math.Max(targetSellPriceCandidate, bestAsk);
-                        Logger.LogInformation($"targetSellPrice: {targetSellPrice}");
-                        var amount = group.Sum(o => o.Trades.Sum(t => t.Quantity));
-                        Logger.LogInformation($"amount: {amount}");
-                        var isOrderPlaced = await TryPlaceSellOrder(amount, targetSellPrice);
-                        if (isOrderPlaced)
-                        {
-                            Interlocked.Exchange(ref AreOrdersActive, 1);
-                        }
-                    }
-                }
-                // Process potential buy order
+                // Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
+                
+                var bestAskPrice = orderBook.Asks[0].Price;
+                var bestAsk = QuotationToDecimal(bestAskPrice);
                 var bestBidPrice = orderBook.Bids[0].Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
-                var lotSize = CurrentInstrument.Lot;
-                var lotPrice = bestBid * lotSize;
-                if (CashBalance > lotPrice)
+                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+
+                if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
-                    var lots = (long) (CashBalance / lotPrice);
-                    var isOrderPlaced = await TryPlaceBuyOrder(lots, bestBid);
+                    var isOrderPlaced = false;
+                    
+                    // Process potential sell order
+                    var openOperations = GetOpenOperations();
+                    Logger.LogInformation($"Open operations count: {openOperations.Count}");
+                    if (CashBalance <= 0m && openOperations.IsNullOrEmpty())
+                    {
+                        Logger.LogInformation($"No cash and assets to trade");
+                        return;
+                    }
+                    var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
+                    if (openOperationsGroupedByPrice.Any())
+                    {
+                        foreach (var group in openOperationsGroupedByPrice)
+                        {
+                            var groupPrice = MoneyValueToDecimal(group.Key);
+                            Logger.LogInformation($"groupPrice: {groupPrice}");
+                            var targetSellPriceCandidate = groupPrice + PriceStep;
+                            Logger.LogInformation($"targetSellPriceCandidate: {targetSellPriceCandidate}");
+                            var targetSellPrice = System.Math.Max(targetSellPriceCandidate, bestAsk);
+                            Logger.LogInformation($"targetSellPrice: {targetSellPrice}");
+                            var amount = group.Sum(o => o.Trades.Sum(t => t.Quantity));
+                            Logger.LogInformation($"amount: {amount}");
+                            isOrderPlaced |= await TryPlaceSellOrder(amount, targetSellPrice);
+                        }
+                    }
+                    // Process potential buy order
+                    var rubBalanceMoneyValue = InvestApi.Operations
+                        .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
+                        .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
+                    CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
+                    Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
+                    var lotSize = CurrentInstrument.Lot;
+                    var lotPrice = bestBid * lotSize;
+                    if (CashBalance > lotPrice)
+                    {
+                        var lots = (long) (CashBalance / lotPrice);
+                        isOrderPlaced |= await TryPlaceBuyOrder(lots, bestBid);
+                    }
                     if (isOrderPlaced)
                     {
-                        Interlocked.Exchange(ref AreOrdersActive, 1);
+                        SyncActiveOrders();
                     }
-                }
-                if (AreOrdersActive == 1)
-                {
-                    newOrdersToken.Cancel();
+                } else if (ActiveBuyOrders.Count == 1) {
+                    var activeBuyOrder = ActiveBuyOrders.Single().Value;
+                    var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialOrderPrice);
+                    Logger.LogInformation($"initialOrderPrice: {initialOrderPrice}");
+                    if (initialOrderPrice < bestBid)
+                    {
+                        // Cancel order
+                        await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
+                        {
+                            OrderId = activeBuyOrder.OrderId,
+                            AccountId = CurrentAccount.Id
+                        });
+                        // Place new order
+                        var rubBalanceMoneyValue = InvestApi.Operations
+                            .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
+                            .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
+                        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
+                        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
+                        var lotSize = CurrentInstrument.Lot;
+                        var lotPrice = bestBid * lotSize;
+                        var isOrderPlaced = false;
+                        if (CashBalance > lotPrice)
+                        {
+                            var lots = (long) (CashBalance / lotPrice);
+                            isOrderPlaced |= await TryPlaceBuyOrder(lots, bestBid);
+                        }
+                        if (isOrderPlaced)
+                        {
+                            SyncActiveOrders();
+                        }
+                    }
                 }
             }
         }
@@ -182,22 +245,14 @@ public class TradingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        while (!cancellationToken.IsCancellationRequested)
+        SyncActiveOrders();
+        LogActiveOrders();
+        var tasks = new []
         {
-            try
-            {
-                await WaitForActiveOrders(cancellationToken);
-                await PlaceNewOrders(cancellationToken);
-            }
-            catch (RpcException exception)
-            {
-                Logger.LogInformation($"RpcException status code: {exception.StatusCode}");
-                if (exception.StatusCode != StatusCode.Cancelled)
-                {
-                    throw exception;
-                }
-            }
-        }
+            ReceiveTrades(cancellationToken),
+            SendOrders(cancellationToken)
+        };
+        await Task.WhenAll(tasks);
     }
 
     public static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
