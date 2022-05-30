@@ -2,7 +2,7 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using Tinkoff.InvestApi;
 using TraderBot;
 
-var builder = Host.CreateDefaultBuilder(args);
+var builder = Host.CreateDefaultBuilder();
 var host = builder
     .ConfigureServices((context, services) =>
     {

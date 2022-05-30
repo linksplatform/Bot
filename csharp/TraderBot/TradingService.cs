@@ -26,7 +26,15 @@ public class TradingService : BackgroundService
         Settings = settings;
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
-        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[0];
+        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[2];
+        if(InvestApi.Users.GetAccounts().Accounts.Count > 0)
+        {
+            Console.WriteLine("Choose Account:");
+            foreach(var acc in InvestApi.Users.GetAccounts().Accounts){
+                Console.WriteLine(acc);
+            }
+            CurrentAccount = InvestApi.Users.GetAccounts().Accounts[int.Parse(Console.ReadLine())];
+        }
         Logger.LogInformation($"CurrentAccount: {CurrentAccount}");
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
