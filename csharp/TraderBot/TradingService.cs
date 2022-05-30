@@ -26,7 +26,7 @@ public class TradingService : BackgroundService
         Settings = settings;
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
-        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[3];
+        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[4];
         Logger.LogInformation($"CurrentAccount: {CurrentAccount}");
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
@@ -169,11 +169,6 @@ public class TradingService : BackgroundService
                     // Process potential sell order
                     var openOperations = GetOpenOperations();
                     Logger.LogInformation($"Open operations count: {openOperations.Count}");
-                    if (CashBalance <= 0m && openOperations.IsNullOrEmpty())
-                    {
-                        Logger.LogInformation($"No cash and assets to trade");
-                        return;
-                    }
                     var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
                     if (openOperationsGroupedByPrice.Any())
                     {
