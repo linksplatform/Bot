@@ -4,4 +4,5 @@ public class TradingSettings
 {
     public string EtfTicker { get; set; }
     public string CashCurrency { get; set; }
+    public int AccountIndex { get; set; }
 }

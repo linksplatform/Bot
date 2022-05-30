@@ -26,7 +26,7 @@ public class TradingService : BackgroundService
         Settings = settings;
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
-        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[4];
+        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[Settings.AccountIndex];
         Logger.LogInformation($"CurrentAccount: {CurrentAccount}");
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
