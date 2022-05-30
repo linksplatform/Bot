@@ -26,8 +26,15 @@ public class TradingService : BackgroundService
         Settings = settings;
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
-        CurrentAccount = InvestApi.Users.GetAccounts().Accounts[Settings.AccountIndex];
-        Logger.LogInformation($"CurrentAccount: {CurrentAccount}");
+        Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
+        Logger.LogInformation("Accounts:");
+        var accounts = InvestApi.Users.GetAccounts().Accounts;
+        for (int i = 0; i < accounts.Count; i++)
+        {
+            Logger.LogInformation($"[{i}]: {accounts[i]}");
+        }
+        CurrentAccount = accounts[Settings.AccountIndex];
+        Logger.LogInformation($"CurrentAccount (with {Settings.AccountIndex} index): {CurrentAccount}");
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
         Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
         PriceStep = QuotationToDecimal(CurrentInstrument.MinPriceIncrement);
