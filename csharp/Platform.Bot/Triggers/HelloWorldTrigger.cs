@@ -60,7 +60,7 @@ namespace Platform.Bot.Triggers
         {
             foreach (var file in _fileStorage.GetFilesFromSet(_fileSetName))
             {
-                _storage.CreateOrUpdateFile(file.Content, file.Path, context.Repository, context.Repository.DefaultBranch, "Update file").Wait();
+                _storage.CreateOrUpdateFile(file.Content, context.Repository, context.Repository.DefaultBranch, file.Path, "Update file").Wait();
             }
             _storage.CloseIssue(context);
         }
