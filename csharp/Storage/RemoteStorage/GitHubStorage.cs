@@ -1,12 +1,14 @@
 using Octokit;
 using Platform.Exceptions;
-using Storage.Local;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Platform.Threading;
+using File = Storage.Local.File;
 
 namespace Storage.Remote.GitHub
 {
@@ -164,43 +166,50 @@ namespace Storage.Remote.GitHub
         /// </para>
         /// <para></para>
         /// </summary>
+        /// <param name="filePath">
+        /// <para>The file path.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="fileContent">
+        /// <para>The file content.</para>
+        /// <para></para>
+        /// </param>
         /// <param name="repository">
         /// <para>The repository.</para>
         /// <para></para>
         /// </param>
-        /// <param name="branch">
+        /// <param name="branchName">
         /// <para>The branch.</para>
         /// <para></para>
         /// </param>
-        /// <param name="file">
-        /// <para>The file.</para>
+        /// <param name="commitMessage">
+        /// <para>The commit message.</para>
         /// <para></para>
         /// </param>
-        public void CreateOrUpdateFile(string repository, string branch, File file)
+        public async Task<RepositoryContentChangeSet> CreateOrUpdateFile(string fileContent, Repository repository, string branchName, string filePath, string commitMessage)
         {
             var repositoryContent = Client.Repository.Content;
-            try
+            var branch = await Client.Repository.Branch.Get(repository.Id, branchName);
+            var tree = await Client.Git.Tree.GetRecursive(repository.Id, branch.Commit.Sha);
+            var isFileExists = false;
+            var fileToUpdateSha = "";
+            foreach (var treeItem in tree.Tree)
             {
-                repositoryContent.UpdateFile(
-                    Owner,
-                    repository,
-                    file.Path,
-                    new UpdateFileRequest(
-                        "Update file.",
-                        file.Content,
-                        repositoryContent.GetAllContentsByRef(
-                            Owner,
-                            repository,
-                            file.Path,
-                            branch
-                        ).Result[0].Sha
-                    )
-                );
+                if (treeItem.Path == filePath)
+                {
+                    isFileExists = true;
+                    fileToUpdateSha = treeItem.Sha;
+                }
             }
-            catch (Exception ex)
+            if (isFileExists)
             {
-                ex.Ignore();
-                repositoryContent.CreateFile(Owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
+                var fileToUpdate = repositoryContent.GetAllContentsByRef(repository.Id, filePath, branchName);
+                fileToUpdate.Wait();
+                return await repositoryContent.UpdateFile(repository.Id, filePath, new UpdateFileRequest(commitMessage, fileContent, fileToUpdateSha));
+            }
+            else
+            {
+                return await repositoryContent.CreateFile(repository.Id, filePath, new CreateFileRequest(commitMessage, fileContent, branchName));
             }
         }
 
@@ -223,9 +232,25 @@ namespace Storage.Remote.GitHub
             Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, issueUpdate);
         }
 
-        #region Repositories
+        #region Repository
 
         public Task<IReadOnlyList<Repository>> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName);
+        
+        #region Content
+
+        // public async Task<RepositoryContentChangeSet> CreateOrUpdateFile(string fileContent, string filePath, Repository repository, string branchName, string commitMessage)
+        // {
+        //     try
+        //     {
+        //         var fileToUpdateContents = Client.Repository.Content.GetAllContents(repository.Id, filePath).Result;
+        //     }
+        //     catch (NotFoundException e)
+        //     {
+        //         return await Client.Repository.Content.UpdateFile(repository.Id, filePath, new UpdateFileRequest(commitMessage, fileContent, fileToUpdateContents.First().Sha, branchName));
+        //     }
+        // }
+
+        #endregion
 
         #endregion
 

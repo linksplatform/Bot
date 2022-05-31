@@ -1,0 +1,135 @@
+name: csharpWorkflow
+
+on:
+  push:
+    branches: main 
+    paths:
+      - 'csharp/**'
+      - '.github/workflows/csharp.yml'
+env:
+  NUGETTOKEN: ${{ secrets.NUGET_TOKEN }}
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  SCRIPTS_BASE_URL: https://raw.githubusercontent.com/linksplatform/Scripts/main/MultiProjectRepository
+  
+defaults:
+  run:
+    working-directory: csharp
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: Test
+        run: |
+          dotnet test -c Release -f net6
+  pushNuGetPackageToGitHubPackageRegistry:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - uses: nuget/setup-nuget@v1
+      - name: Publish NuGet package to GitHub Package Registry
+        run: |
+          dotnet build -c Release
+          dotnet pack -c Release
+          nuget source Add -Name "GitHub" -Source "https://nuget.pkg.github.com/linksplatform/index.json" -UserName linksplatform -Password ${{ secrets.GITHUB_TOKEN }}
+          nuget push **/*.nupkg -Source "GitHub" -SkipDuplicate
+  pusnToNuget:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Read project information
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/read_csharp_package_info.sh"
+        bash ./read_csharp_package_info.sh
+    - name: Publish NuGet package
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/push-csharp-nuget.sh"
+        bash ./push-csharp-nuget.sh
+  publiseRelease:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - uses: actions/checkout@v1
+        with:
+          submodules: true
+      - name: Read project information
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          export REPOSITORY_NAME=$(basename ${{ github.repository }})
+          wget "$SCRIPTS_BASE_URL/read_csharp_package_info.sh"
+          bash ./read_csharp_package_info.sh
+      - name: Publish release
+        run: |
+          export REPOSITORY_NAME=$(basename ${{ github.repository }})
+          wget "$SCRIPTS_BASE_URL/publish-release.sh"
+          chmod +x ./publish-release.sh
+          wget "$SCRIPTS_BASE_URL/publish-csharp-release.sh"
+          bash ./publish-csharp-release.sh
+  findChangedCsFiles:
+    runs-on: ubuntu-latest
+    needs: test
+    outputs:
+      isCsFilesChanged: ${{ steps.setIsCsFilesChangedOutput.outputs.isCsFilesChanged }}
+    steps:
+    - uses: actions/checkout@v3
+      with:
+       fetch-depth: 0
+    - name: Get changed files using defaults
+      id: changed-files
+      uses: tj-actions/changed-files@v21
+    - name: Set output isCsFilesChanged
+      id: setIsCsFilesChangedOutput
+      run: |
+        isCsFilesChanged='false'
+        echo "Changed files: ${{ steps.changed-files.outputs.all_changed_files }}"
+        for changedFile in ${{ steps.changed-files.outputs.all_changed_files }}; do
+          if [[ $changedFile == *.cs ]]
+          then
+            echo "isCsFilesChanged='true'"
+            isCsFilesChanged='true'
+          fi
+        done
+        echo "::set-output name=isCsFilesChanged::${isCsFilesChanged}"
+        echo "isCsFilesChanged: ${isCsFilesChanged}"
+  generatePdfWithCode:
+    runs-on: ubuntu-latest
+    needs: [findChangedCsFiles]
+    if: ${{ needs.findChangedCsFiles.outputs.isCsFilesChanged == 'true' }}
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Generate PDF with code
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/format-csharp-files.py"
+        wget "$SCRIPTS_BASE_URL/format-csharp-document.sh"
+        wget "$SCRIPTS_BASE_URL/generate-csharp-pdf.sh"
+        bash ./generate-csharp-pdf.sh
+  publishDocumentation:
+    runs-on: ubuntu-latest
+    needs: [findChangedCsFiles]
+    if: ${{ needs.findChangedCsFiles.outputs.isCsFilesChanged == 'true' }}
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        submodules: true
+    - name: Publish documentation to gh-pages branch
+      run: |
+        export REPOSITORY_NAME=$(basename ${{ github.repository }})
+        wget "$SCRIPTS_BASE_URL/docfx.json"
+        wget "$SCRIPTS_BASE_URL/filter.yml"
+        wget "$SCRIPTS_BASE_URL/toc.yml"
+        wget "$SCRIPTS_BASE_URL/publish-csharp-docs.sh"
+        bash ./publish-csharp-docs.sh
