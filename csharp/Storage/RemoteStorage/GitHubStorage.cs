@@ -1,12 +1,13 @@
 using Octokit;
 using Platform.Exceptions;
-using Storage.Local;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Platform.Threading;
+using File = Storage.Local.File;
 
 namespace Storage.Remote.GitHub
 {
@@ -158,51 +159,51 @@ namespace Storage.Remote.GitHub
             return Client.Issue.GetAllForRepository(owner, reposiroty, new RepositoryIssueRequest() { Since = date }).Result;
         }
 
-        /// <summary>
-        /// <para>
-        /// Creates the or update file using the specified repository.
-        /// </para>
-        /// <para></para>
-        /// </summary>
-        /// <param name="repository">
-        /// <para>The repository.</para>
-        /// <para></para>
-        /// </param>
-        /// <param name="branch">
-        /// <para>The branch.</para>
-        /// <para></para>
-        /// </param>
-        /// <param name="file">
-        /// <para>The file.</para>
-        /// <para></para>
-        /// </param>
-        public void CreateOrUpdateFile(string repository, string branch, File file)
-        {
-            var repositoryContent = Client.Repository.Content;
-            try
-            {
-                repositoryContent.UpdateFile(
-                    Owner,
-                    repository,
-                    file.Path,
-                    new UpdateFileRequest(
-                        "Update file.",
-                        file.Content,
-                        repositoryContent.GetAllContentsByRef(
-                            Owner,
-                            repository,
-                            file.Path,
-                            branch
-                        ).Result[0].Sha
-                    )
-                );
-            }
-            catch (Exception ex)
-            {
-                ex.Ignore();
-                repositoryContent.CreateFile(Owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
-            }
-        }
+        // /// <summary>
+        // /// <para>
+        // /// Creates the or update file using the specified repository.
+        // /// </para>
+        // /// <para></para>
+        // /// </summary>
+        // /// <param name="repository">
+        // /// <para>The repository.</para>
+        // /// <para></para>
+        // /// </param>
+        // /// <param name="branch">
+        // /// <para>The branch.</para>
+        // /// <para></para>
+        // /// </param>
+        // /// <param name="file">
+        // /// <para>The file.</para>
+        // /// <para></para>
+        // /// </param>
+        // public void CreateOrUpdateFile(string repository, string branch, File file)
+        // {
+        //     var repositoryContent = Client.Repository.Content;
+        //     try
+        //     {
+        //         repositoryContent.UpdateFile(
+        //             Owner,
+        //             repository,
+        //             file.Path,
+        //             new UpdateFileRequest(
+        //                 "Update file.",
+        //                 file.Content,
+        //                 repositoryContent.GetAllContentsByRef(
+        //                     Owner,
+        //                     repository,
+        //                     file.Path,
+        //                     branch
+        //                 ).Result[0].Sha
+        //             )
+        //         );
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         ex.Ignore();
+        //         repositoryContent.CreateFile(Owner, repository, file.Path, new CreateFileRequest("Creation File", file.Content, branch));
+        //     }
+        // }
 
         /// <summary>
         /// <para>
@@ -223,9 +224,26 @@ namespace Storage.Remote.GitHub
             Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, issueUpdate);
         }
 
-        #region Repositories
+        #region Repository
 
         public Task<IReadOnlyList<Repository>> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName);
+        
+        #region Content
+
+        public async Task<RepositoryContentChangeSet> CreateOrUpdateFileInRepository(string fileContent, string filePath, Repository repository, string branchName, string commitMessage)
+        {
+            var fileToUpdateContents = Client.Repository.Content.GetAllContents(repository.Id, filePath).Result;
+            if (fileToUpdateContents == null)
+            {
+                return await Client.Repository.Content.CreateFile(repository.Id, filePath, new CreateFileRequest(commitMessage, fileContent, branchName));
+            }
+            else
+            {
+                return await Client.Repository.Content.UpdateFile(repository.Id, filePath, new UpdateFileRequest(commitMessage, fileContent, fileToUpdateContents.First().Sha, branchName));
+            }
+        }
+
+        #endregion
 
         #endregion
 
