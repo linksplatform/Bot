@@ -124,7 +124,7 @@ public class TradingService : BackgroundService
         foreach (var orderId in deletedSellOrders)
         {
             ActiveSellOrders.TryRemove(orderId, out OrderState? orderState);
-            ActiveSellOrderSourcePrice.TryRemove(orderId, out decimal? sourcePrice);
+            ActiveSellOrderSourcePrice.TryRemove(orderId, out decimal sourcePrice);
         }
     }
 
@@ -328,7 +328,7 @@ public class TradingService : BackgroundService
                                 var response = await TryPlaceSellOrder(amount, targetSellPrice);
                                 if (response != null)
                                 {
-                                    ActiveSellOrderSourcePrice[response.OrderId] = lotsSetPrice;
+                                    ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
                                     isOrderPlaced = true;
                                 }
                                 if (isOrderPlaced)
