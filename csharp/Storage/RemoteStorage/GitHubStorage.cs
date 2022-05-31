@@ -230,7 +230,7 @@ namespace Storage.Remote.GitHub
         
         #region Content
 
-        public async Task<RepositoryContentChangeSet> CreateOrUpdateFileInRepository(string fileContent, string filePath, Repository repository, string branchName, string commitMessage)
+        public async Task<RepositoryContentChangeSet> CreateOrUpdateFile(string fileContent, string filePath, Repository repository, string branchName, string commitMessage)
         {
             var fileToUpdateContents = Client.Repository.Content.GetAllContents(repository.Id, filePath).Result;
             if (fileToUpdateContents == null)
