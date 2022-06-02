@@ -238,8 +238,9 @@ public class TradingService : BackgroundService
                 var bestBidPrice = orderBook.Bids[0].Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
                 
-                // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
-                // Logger.LogInformation($"ActiveSellOrders.Count: {ActiveSellOrders.Count}");
+                Logger.LogInformation($"Time: {DateTime.Now}");
+                Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
+                Logger.LogInformation($"ActiveSellOrders.Count: {ActiveSellOrders.Count}");
 
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
@@ -282,7 +283,7 @@ public class TradingService : BackgroundService
                 else if (ActiveBuyOrders.Count == 1)
                 {
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
-                    var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialOrderPrice) / activeBuyOrder.LotsRequested;
+                    var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
                     if (initialOrderPrice < bestBid)
                     {
                         Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
@@ -317,7 +318,7 @@ public class TradingService : BackgroundService
                 else if (ActiveSellOrders.Count == 1)
                 {
                     var activeSellOrder = ActiveSellOrders.Single().Value;
-                    var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialOrderPrice) / activeSellOrder.LotsRequested;
+                    var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
                     
                     if (bestAsk != initialOrderPrice)
                     {
