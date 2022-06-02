@@ -213,12 +213,12 @@ public class TradingService : BackgroundService
         {
             try
             {
-                Refresh();
                 await SendOrders(cancellationToken);
             }
             catch(Exception ex)
             {
-                Logger.LogError(ex, "SendOrders exception."); 
+                Logger.LogError(ex, "SendOrders exception.");
+                Refresh();
             }
         }
     }
@@ -229,12 +229,12 @@ public class TradingService : BackgroundService
         {
             try
             {
-                Refresh();
                 await ReceiveTrades(cancellationToken);
             }
             catch(Exception ex)
             {
-                Logger.LogError(ex, "ReceiveTrades exception."); 
+                Logger.LogError(ex, "ReceiveTrades exception.");
+                Refresh();
             }
         }
     }
