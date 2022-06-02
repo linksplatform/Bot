@@ -132,17 +132,17 @@ public class TradingService : BackgroundService
     protected void SyncLots() 
     {
         var openOperations = GetOpenOperations();
-        Logger.LogInformation($"Open operations count: {openOperations.Count}");
+        // Logger.LogInformation($"Open operations count: {openOperations.Count}");
         var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
         // log all operations
-        foreach (var operationGroup in openOperationsGroupedByPrice)
-        {
-            Logger.LogInformation($"Operation group price: {operationGroup.Key}");
-            foreach (var operation in operationGroup)
-            {
-                Logger.LogInformation($"Operation \t{operation}");
-            }
-        }
+        // foreach (var operationGroup in openOperationsGroupedByPrice)
+        // {
+        //     Logger.LogInformation($"Operation group price: {operationGroup.Key}");
+        //     foreach (var operation in operationGroup)
+        //     {
+        //         Logger.LogInformation($"Operation \t{operation}");
+        //     }
+        // }
         var deletedLotsSets = new List<decimal>();
         foreach (var lotsSet in LotsSets)
         {
@@ -449,14 +449,14 @@ public class TradingService : BackgroundService
         }).Operations;
         
         // log operations
-        foreach (var operation in operations)
-        {
-            Logger.LogInformation($"Operation \t{operation}");
-        }
-        
-        Logger.LogInformation($"Total sell operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        Logger.LogInformation($"Total buy operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        
+        // foreach (var operation in operations)
+        // {
+        //     Logger.LogInformation($"Operation \t{operation}");
+        // }
+        //
+        // Logger.LogInformation($"Total sell operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        // Logger.LogInformation($"Total buy operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        //
         foreach (var operation in operations)
         {
             if (operation.OperationType == OperationType.Buy)
@@ -471,10 +471,10 @@ public class TradingService : BackgroundService
             }
         }
         
-        Logger.LogInformation($"totalSoldQuantity: \t{totalSoldQuantity}");
-        
-        Logger.LogInformation($"Total buy operations quantity after filter \t{openOperations.Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        
+        // Logger.LogInformation($"totalSoldQuantity: \t{totalSoldQuantity}");
+        //
+        // Logger.LogInformation($"Total buy operations quantity after filter \t{openOperations.Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        //
         openOperations.Sort((operation, operation1) => (operation.Date).CompareTo(operation1.Date));
         for (var i = 0; i < openOperations.Count; i++)
         {
@@ -486,10 +486,10 @@ public class TradingService : BackgroundService
             var actualQuantity = openOperation.Quantity - openOperation.QuantityRest;
             if (totalSoldQuantity < actualQuantity)
             {
-                Logger.LogInformation($"final totalSoldQuantity: \t{totalSoldQuantity}");
-                Logger.LogInformation($"final actualQuantity: \t{actualQuantity}");
+                // Logger.LogInformation($"final totalSoldQuantity: \t{totalSoldQuantity}");
+                // Logger.LogInformation($"final actualQuantity: \t{actualQuantity}");
                 openOperation.Quantity = actualQuantity - totalSoldQuantity;
-                Logger.LogInformation($"openOperation.Quantity: \t{openOperation.Quantity}");
+                // Logger.LogInformation($"openOperation.Quantity: \t{openOperation.Quantity}");
                 totalSoldQuantity = 0;
                 continue;
             }
@@ -498,11 +498,11 @@ public class TradingService : BackgroundService
             --i;
         }
         
-        // log operations
-        foreach (var openOperation in openOperations)
-        {
-            Logger.LogInformation($"Open operation \t{openOperation}");
-        }
+        // // log operations
+        // foreach (var openOperation in openOperations)
+        // {
+        //     Logger.LogInformation($"Open operation \t{openOperation}");
+        // }
         return openOperations;
     }
 
