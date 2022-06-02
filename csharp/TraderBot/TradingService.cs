@@ -11,6 +11,7 @@ public class TradingService : BackgroundService
 {
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
+    protected readonly IHostApplicationLifetime Lifetime;
     protected readonly TradingSettings Settings;
     protected readonly Account CurrentAccount;
     protected readonly Etf CurrentInstrument;
@@ -21,10 +22,11 @@ public class TradingService : BackgroundService
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
     protected readonly ConcurrentDictionary<string, decimal> ActiveSellOrderSourcePrice;
 
-    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, TradingSettings settings)
+    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
     {
         Logger = logger;
         InvestApi = investApi;
+        Lifetime = lifetime;
         Settings = settings;
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
@@ -133,6 +135,15 @@ public class TradingService : BackgroundService
         var openOperations = GetOpenOperations();
         Logger.LogInformation($"Open operations count: {openOperations.Count}");
         var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
+        // log all operations
+        foreach (var operationGroup in openOperationsGroupedByPrice)
+        {
+            Logger.LogInformation($"Operation group price: {operationGroup.Key}");
+            foreach (var operation in operationGroup)
+            {
+                Logger.LogInformation($"Operation \t{operation}");
+            }
+        }
         var deletedLotsSets = new List<decimal>();
         foreach (var lotsSet in LotsSets)
         {
@@ -143,7 +154,7 @@ public class TradingService : BackgroundService
         }
         foreach (var group in openOperationsGroupedByPrice)
         {
-            LotsSets.TryAdd(group.Key, group.Sum(o => o.Trades.Sum(t => t.Quantity)));
+            LotsSets.TryAdd(group.Key, group.Sum(o => o.Quantity));
         }
         foreach (var lotsSet in deletedLotsSets)
         {
@@ -226,6 +237,9 @@ public class TradingService : BackgroundService
                 var bestAsk = QuotationToDecimal(bestAskPrice);
                 var bestBidPrice = orderBook.Bids[0].Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
+                
+                // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
+                // Logger.LogInformation($"ActiveSellOrders.Count: {ActiveSellOrders.Count}");
 
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
@@ -267,12 +281,12 @@ public class TradingService : BackgroundService
                 }
                 else if (ActiveBuyOrders.Count == 1)
                 {
-                    Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
-                    var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialOrderPrice);
-                    Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
+                    var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialOrderPrice) / activeBuyOrder.LotsRequested;
                     if (initialOrderPrice < bestBid)
                     {
+                        Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                        Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
                         // Cancel order
                         await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
                         {
@@ -302,16 +316,19 @@ public class TradingService : BackgroundService
                 }
                 else if (ActiveSellOrders.Count == 1)
                 {
-                    Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
-                    var activeSellOrder = ActiveBuyOrders.Single().Value;
-                    var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialOrderPrice);
-                    Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
+                    var activeSellOrder = ActiveSellOrders.Single().Value;
+                    var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialOrderPrice) / activeSellOrder.LotsRequested;
+                    
                     if (bestAsk != initialOrderPrice)
                     {
                         if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                         {
                             if ((Settings.AllowSamePriceSell && bestAsk >= sourcePrice) || (!Settings.AllowSamePriceSell && bestAsk > sourcePrice))
                             {
+                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
+                                Logger.LogInformation($"initial sell order source price: {sourcePrice}");
+                                
                                 // Cancel order
                                 await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
                                 {
@@ -358,6 +375,10 @@ public class TradingService : BackgroundService
         LogActiveOrders();
         SyncLots();
         LogLots();
+        if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
+        {
+            ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
+        }
         var tasks = new []
         {
             ReceiveTrades(cancellationToken),
@@ -387,20 +408,36 @@ public class TradingService : BackgroundService
             State = OperationState.Executed,
             Figi = CurrentInstrument.Figi,
             From = CurrentAccount.OpenedDate,
-            To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(3))
+            To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(4))
         }).Operations;
+        
+        // log operations
         foreach (var operation in operations)
         {
-            long quantity = operation.Trades.Count == 0 ? operation.Quantity : operation.Trades.Sum(trade => trade.Quantity);
+            Logger.LogInformation($"Operation \t{operation}");
+        }
+        
+        Logger.LogInformation($"Total sell operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        Logger.LogInformation($"Total buy operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        
+        foreach (var operation in operations)
+        {
             if (operation.OperationType == OperationType.Buy)
             {
                 openOperations.Add(operation);
             }
             else if (operation.OperationType == OperationType.Sell)
             {
+                var operationQuantity = operation.Quantity - operation.QuantityRest;
+                var quantity = operation.Trades.Count == 0 ? operationQuantity : operation.Trades.Sum(trade => trade.Quantity);
                 totalSoldQuantity += quantity;
             }
         }
+        
+        Logger.LogInformation($"totalSoldQuantity: \t{totalSoldQuantity}");
+        
+        Logger.LogInformation($"Total buy operations quantity after filter \t{openOperations.Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        
         openOperations.Sort((operation, operation1) => (operation.Date).CompareTo(operation1.Date));
         for (var i = 0; i < openOperations.Count; i++)
         {
@@ -408,16 +445,26 @@ public class TradingService : BackgroundService
             {
                 break;
             }
-            var buyInstrumentOperation = openOperations[i];
-            if (totalSoldQuantity < buyInstrumentOperation.Quantity)
+            var openOperation = openOperations[i];
+            var actualQuantity = openOperation.Quantity - openOperation.QuantityRest;
+            if (totalSoldQuantity < actualQuantity)
             {
-                buyInstrumentOperation.Quantity -= totalSoldQuantity;
+                Logger.LogInformation($"final totalSoldQuantity: \t{totalSoldQuantity}");
+                Logger.LogInformation($"final actualQuantity: \t{actualQuantity}");
+                openOperation.Quantity = actualQuantity - totalSoldQuantity;
+                Logger.LogInformation($"openOperation.Quantity: \t{openOperation.Quantity}");
                 totalSoldQuantity = 0;
                 continue;
             }
-            totalSoldQuantity -= buyInstrumentOperation.Quantity;
+            totalSoldQuantity -= actualQuantity;
             openOperations.RemoveAt(i);
             --i;
+        }
+        
+        // log operations
+        foreach (var openOperation in openOperations)
+        {
+            Logger.LogInformation($"Open operation \t{openOperation}");
         }
         return openOperations;
     }
