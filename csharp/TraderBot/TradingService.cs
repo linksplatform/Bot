@@ -3,7 +3,6 @@ using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 using Tinkoff.InvestApi;
 using Tinkoff.InvestApi.V1;
-using Platform.Collections;
 
 namespace TraderBot;
 
@@ -208,6 +207,38 @@ public class TradingService : BackgroundService
         }
     }
 
+    protected async Task SendOrdersLoop(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                Refresh();
+                await SendOrders(cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                Logger.LogError(ex, "SendOrders exception."); 
+            }
+        }
+    }
+    
+    protected async Task ReceiveTradesLoop(CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                Refresh();
+                await ReceiveTrades(cancellationToken);
+            }
+            catch(Exception ex)
+            {
+                Logger.LogError(ex, "ReceiveTrades exception."); 
+            }
+        }
+    }
+
     protected async Task SendOrders(CancellationToken cancellationToken)
     {
         var marketDataStream = InvestApi.MarketDataStream.MarketDataStream();
@@ -238,9 +269,9 @@ public class TradingService : BackgroundService
                 var bestBidPrice = orderBook.Bids[0].Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
                 
-                Logger.LogInformation($"Time: {DateTime.Now}");
-                Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
-                Logger.LogInformation($"ActiveSellOrders.Count: {ActiveSellOrders.Count}");
+                // Logger.LogInformation($"Time: {DateTime.Now}");
+                // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
+                // Logger.LogInformation($"ActiveSellOrders.Count: {ActiveSellOrders.Count}");
 
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
@@ -372,20 +403,25 @@ public class TradingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        SyncActiveOrders();
-        LogActiveOrders();
-        SyncLots();
-        LogLots();
+        Refresh();
         if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
         {
             ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
         }
         var tasks = new []
         {
-            ReceiveTrades(cancellationToken),
-            SendOrders(cancellationToken)
+            ReceiveTradesLoop(cancellationToken),
+            SendOrdersLoop(cancellationToken)
         };
         await Task.WhenAll(tasks);
+    }
+
+    protected void Refresh()
+    {
+        SyncActiveOrders();
+        LogActiveOrders();
+        SyncLots();
+        LogLots();
     }
 
     public static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
