@@ -9,7 +9,7 @@ namespace TraderBot;
 public class TradingService : BackgroundService
 {
     protected readonly InvestApiClient InvestApi;
-    protected readonly ILogger<TradingService> Logger;
+    protected readonly TraderBot.Logger Logger;
     protected readonly IHostApplicationLifetime Lifetime;
     protected readonly TradingSettings Settings;
     protected readonly Account CurrentAccount;
@@ -21,9 +21,12 @@ public class TradingService : BackgroundService
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
     protected readonly ConcurrentDictionary<string, decimal> ActiveSellOrderSourcePrice;
 
-    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
+
+    public TradingService(ILogger<TradingService> log, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
     {
-        Logger = logger;
+        string FileToLog = Console.ReadLine();
+        Console.WriteLine(FileToLog);
+        Logger = new Logger(log, FileToLog);
         InvestApi = investApi;
         Lifetime = lifetime;
         Settings = settings;
