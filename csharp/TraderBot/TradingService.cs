@@ -16,6 +16,7 @@ public class TradingService : BackgroundService
     protected readonly Etf CurrentInstrument;
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
+    protected string? FileToLog;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
@@ -24,9 +25,8 @@ public class TradingService : BackgroundService
 
     public TradingService(ILogger<TradingService> log, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
     {
-        string FileToLog = Console.ReadLine();
-        Console.WriteLine(FileToLog);
-        Logger = new Logger(log, FileToLog);
+
+        Logger = new Logger(log, settings.FileToLog);
         InvestApi = investApi;
         Lifetime = lifetime;
         Settings = settings;
@@ -40,6 +40,9 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation($"[{i}]: {accounts[i]}");
         }
+        Logger.LogInformation($"selected account: {accounts[Settings.AccountIndex]}"); 
+        Logger.LogInformation($"Press any key to continue");
+        Console.Read();
         CurrentAccount = accounts[Settings.AccountIndex];
         Logger.LogInformation($"CurrentAccount (with {Settings.AccountIndex} index): {CurrentAccount}");
         CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
@@ -50,6 +53,7 @@ public class TradingService : BackgroundService
         ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
+        Thread.Sleep(1000);
     }
 
     protected async Task ReceiveTrades(CancellationToken cancellationToken)
