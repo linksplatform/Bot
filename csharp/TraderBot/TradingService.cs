@@ -193,15 +193,28 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"OrderTrades: {orderTrades}");
         foreach (var trade in orderTrades.Trades)
         {
+            Logger.LogInformation($"orderTrades.Direction: {trade.Price}");
             if (orderTrades.Direction == OrderDirection.Buy)
             {
-                LotsSets.AddOrUpdate(trade.Price, trade.Quantity, (key, value) => value + trade.Quantity);
+                Logger.LogInformation($"trade.Price: {trade.Price}");
+                Logger.LogInformation($"trade.Quantity: {trade.Quantity}");
+                LotsSets.AddOrUpdate(trade.Price, trade.Quantity, (key, value) => {
+                    Logger.LogInformation($"Previous value: {value}");
+                    Logger.LogInformation($"New value: {value + trade.Quantity}");
+                    return value + trade.Quantity;
+                });
             }
             else if (orderTrades.Direction == OrderDirection.Sell)
             {
+                Logger.LogInformation($"orderTrades.OrderId: {orderTrades.OrderId}");
                 if (ActiveSellOrderSourcePrice.TryGetValue(orderTrades.OrderId, out decimal sourcePrice))
                 {
-                    LotsSets.TryUpdateOrRemove(sourcePrice, (key, value) => value - trade.Quantity, (key, value) => value <= 0);
+                    Logger.LogInformation($"sourcePrice: {sourcePrice}");
+                    LotsSets.TryUpdateOrRemove(sourcePrice, (key, value) => {
+                        Logger.LogInformation($"Previous value: {value}");
+                        Logger.LogInformation($"New value: {value - trade.Quantity}");
+                        return value - trade.Quantity;
+                    }, (key, value) => value <= 0);
                 }
             }
         }
