@@ -85,8 +85,14 @@ public class TradingService : BackgroundService
         }
     }
 
-    protected void SyncActiveOrders()
+    protected void SyncActiveOrders(bool forceReset = false)
     {
+        if (forceReset)
+        {
+            ActiveBuyOrders = new ConcurrentDictionary<string, OrderState>();
+            ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
+            ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
+        }
         var orders = InvestApi.Orders.GetOrders(new GetOrdersRequest {AccountId = CurrentAccount.Id}).Orders;
         var deletedBuyOrders = new List<string>();
         foreach (var order in ActiveBuyOrders)
@@ -129,8 +135,12 @@ public class TradingService : BackgroundService
         }
     }
 
-    protected void SyncLots() 
+    protected void SyncLots(bool forceReset = false)
     {
+        if (forceReset)
+        {
+            LotsSets = new ConcurrentDictionary<decimal, long>();
+        }
         var openOperations = GetOpenOperations();
         // Logger.LogInformation($"Open operations count: {openOperations.Count}");
         var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
@@ -237,7 +247,8 @@ public class TradingService : BackgroundService
             catch(Exception ex)
             {
                 Logger.LogError(ex, "SendOrders exception.");
-                Refresh();
+                await Task.Delay(2500);
+                Refresh(forceReset: true);
             }
         }
     }
@@ -253,7 +264,8 @@ public class TradingService : BackgroundService
             catch(Exception ex)
             {
                 Logger.LogError(ex, "ReceiveTrades exception.");
-                Refresh();
+                await Task.Delay(2500);
+                Refresh(forceReset: true);
             }
         }
     }
@@ -435,11 +447,11 @@ public class TradingService : BackgroundService
         await Task.WhenAll(tasks);
     }
 
-    protected void Refresh()
+    protected void Refresh(bool forceReset = false)
     {
-        SyncActiveOrders();
+        SyncActiveOrders(forceReset);
         LogActiveOrders();
-        SyncLots();
+        SyncLots(forceReset);
         LogLots();
     }
 
