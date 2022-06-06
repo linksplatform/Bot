@@ -209,12 +209,18 @@ public class TradingService : BackgroundService
                 Logger.LogInformation($"orderTrades.OrderId: {orderTrades.OrderId}");
                 if (ActiveSellOrderSourcePrice.TryGetValue(orderTrades.OrderId, out decimal sourcePrice))
                 {
+                    Logger.LogInformation($"LotsSets.Count before TryUpdateOrRemove: {LotsSets.Count}");
                     Logger.LogInformation($"sourcePrice: {sourcePrice}");
-                    LotsSets.TryUpdateOrRemove(sourcePrice, (key, value) => {
+                    var result = LotsSets.TryUpdateOrRemove(sourcePrice, (key, value) => {
                         Logger.LogInformation($"Previous value: {value}");
                         Logger.LogInformation($"New value: {value - trade.Quantity}");
                         return value - trade.Quantity;
-                    }, (key, value) => value <= 0);
+                    }, (key, value) => {
+                        Logger.LogInformation($"Remove condition: {value <= 0}");
+                        return value <= 0;
+                    });
+                    Logger.LogInformation($"TryUpdateOrRemove.result: {result}");
+                    Logger.LogInformation($"LotsSets.Count after TryUpdateOrRemove: {LotsSets.Count}");
                 }
             }
         }

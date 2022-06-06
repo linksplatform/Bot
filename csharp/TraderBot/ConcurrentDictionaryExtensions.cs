@@ -13,13 +13,13 @@ public static class ConcurrentDictionaryExtensions
             value = updateValueFactory(key, value);
             if (removeCondition(key, value))
             {
-                dictionary.TryRemove(key, out value);
+                return dictionary.TryRemove(key, out value);
             }
             else
             {
                 dictionary[key] = value;
+                return true;
             }
-            return true;
         }
         return false;
     }
