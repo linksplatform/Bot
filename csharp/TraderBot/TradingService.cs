@@ -61,9 +61,9 @@ public class TradingService : BackgroundService
             if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.OrderTrades)
             {
                 var orderTrades = data.OrderTrades;
+                TryUpdateLots(orderTrades);
                 TrySubtractTradesFromOrder(ActiveBuyOrders, orderTrades);
                 TrySubtractTradesFromOrder(ActiveSellOrders, orderTrades);
-                TryUpdateLots(orderTrades);
             }
             else if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.Ping)
             {
@@ -163,7 +163,7 @@ public class TradingService : BackgroundService
 
     protected void TrySubtractTradesFromOrder(ConcurrentDictionary<string, OrderState> orders, OrderTrades orderTrades)
     {
-        Logger.LogInformation($"OrderTrades: {orderTrades}");
+        Logger.LogInformation($"TrySubtractTradesFromOrder.orderTrades: {orderTrades}");
         if (orders.TryGetValue(orderTrades.OrderId, out var activeOrder))
         {
             foreach (var trade in orderTrades.Trades)
@@ -190,10 +190,10 @@ public class TradingService : BackgroundService
     
     protected void TryUpdateLots(OrderTrades orderTrades)
     {
-        Logger.LogInformation($"OrderTrades: {orderTrades}");
+        Logger.LogInformation($"TryUpdateLots.orderTrades: {orderTrades}");
         foreach (var trade in orderTrades.Trades)
         {
-            Logger.LogInformation($"orderTrades.Direction: {trade.Price}");
+            Logger.LogInformation($"orderTrades.Direction: {orderTrades.Direction}");
             if (orderTrades.Direction == OrderDirection.Buy)
             {
                 Logger.LogInformation($"trade.Price: {trade.Price}");
