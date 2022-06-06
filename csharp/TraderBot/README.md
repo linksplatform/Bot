@@ -32,7 +32,8 @@ To stop the bot, press Ctrl+C.
 
 At the moment, the bot is able to:
 * Place sell order at best price or buy order price;
-* Place buy order at best price.
+* Place buy order at best price;
+* Move buy and sell orders.
 
 After placing the order, the bot will wait for the order to be filled. Then it will place the next order:
 * After buy order is filled, the bot will place sell order at best price or buy order price;
