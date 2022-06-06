@@ -89,9 +89,9 @@ public class TradingService : BackgroundService
     {
         if (forceReset)
         {
-            ActiveBuyOrders = new ConcurrentDictionary<string, OrderState>();
-            ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
-            ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
+            ActiveBuyOrders.Clear();
+            ActiveSellOrders.Clear();
+            ActiveSellOrderSourcePrice.Clear();
         }
         var orders = InvestApi.Orders.GetOrders(new GetOrdersRequest {AccountId = CurrentAccount.Id}).Orders;
         var deletedBuyOrders = new List<string>();
@@ -139,7 +139,7 @@ public class TradingService : BackgroundService
     {
         if (forceReset)
         {
-            LotsSets = new ConcurrentDictionary<decimal, long>();
+            LotsSets.Clear();
         }
         var openOperations = GetOpenOperations();
         // Logger.LogInformation($"Open operations count: {openOperations.Count}");
