@@ -1,0 +1,1001 @@
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ETF ticker: TRUR
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      CashCurrency: rub
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      AccountIndex: 4
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      AllowSamePriceSell: True
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Accounts:
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.UsersService/GetAccounts
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.UsersService/GetAccounts
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 792.5219ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 854.1193ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      [0]: { "id": "2004038234", "type": "ACCOUNT_TYPE_TINKOFF", "name": "Брокерский счёт", "status": "ACCOUNT_STATUS_OPEN", "openedDate": "2020-03-27T00:00:00Z", "closedDate": "1970-01-01T00:00:00Z", "accessLevel": "ACCOUNT_ACCESS_LEVEL_NO_ACCESS" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      [1]: { "id": "2081948172", "type": "ACCOUNT_TYPE_INVEST_BOX", "name": "Инвесткопилка", "status": "ACCOUNT_STATUS_OPEN", "openedDate": "2021-05-14T00:00:00Z", "closedDate": "1970-01-01T00:00:00Z", "accessLevel": "ACCOUNT_ACCESS_LEVEL_NO_ACCESS" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      [2]: { "id": "2120742602", "type": "ACCOUNT_TYPE_TINKOFF_IIS", "name": "ИИС", "status": "ACCOUNT_STATUS_OPEN", "openedDate": "2021-10-29T00:00:00Z", "closedDate": "1970-01-01T00:00:00Z", "accessLevel": "ACCOUNT_ACCESS_LEVEL_NO_ACCESS" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      [3]: { "id": "2106594977", "type": "ACCOUNT_TYPE_TINKOFF", "name": "Контрольная закупка", "status": "ACCOUNT_STATUS_OPEN", "openedDate": "2021-09-07T00:00:00Z", "closedDate": "1970-01-01T00:00:00Z", "accessLevel": "ACCOUNT_ACCESS_LEVEL_NO_ACCESS" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      [4]: { "id": "2106970052", "type": "ACCOUNT_TYPE_TINKOFF", "name": "Торговля ботом", "status": "ACCOUNT_STATUS_OPEN", "openedDate": "2021-09-09T00:00:00Z", "closedDate": "1970-01-01T00:00:00Z", "accessLevel": "ACCOUNT_ACCESS_LEVEL_FULL_ACCESS" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      CurrentAccount (with 4 index): { "id": "2106970052", "type": "ACCOUNT_TYPE_TINKOFF", "name": "Торговля ботом", "status": "ACCOUNT_STATUS_OPEN", "openedDate": "2021-09-09T00:00:00Z", "closedDate": "1970-01-01T00:00:00Z", "accessLevel": "ACCOUNT_ACCESS_LEVEL_FULL_ACCESS" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.InstrumentsService/Etfs
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.InstrumentsService/Etfs
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 42.2216ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 42.7163ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      CurrentInstrument: { "figi": "BBG000000001", "ticker": "TRUR", "classCode": "TQTF", "isin": "RU000A1011U5", "lot": 1, "currency": "rub", "klong": { "units": "2" }, "kshort": { "units": "2" }, "dlong": { "nano": 501600000 }, "dshort": { "nano": 674400000 }, "dlongMin": { "nano": 294000000 }, "dshortMin": { "nano": 294000000 }, "name": "Тинькофф Вечный портфель RUB", "exchange": "MOEX_PLUS", "focusType": "equity", "releasedDate": "2019-11-07T00:00:00Z", "countryOfRisk": "RU", "countryOfRiskName": "Российская Федерация", "rebalancingFreq": "quarterly", "tradingStatus": "SECURITY_TRADING_STATUS_NORMAL_TRADING", "buyAvailableFlag": true, "sellAvailableFlag": true, "minPriceIncrement": { "nano": 10000000 }, "apiTradeAvailableFlag": true, "realExchange": "REAL_EXCHANGE_MOEX" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      PriceStep: 0.01
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 47.1265ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 47.3947ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active buy order: { "orderId": "31526543876", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "183", "initialOrderPrice": { "currency": "rub", "units": "1013", "nano": 820000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1013", "nano": 820000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 540000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T11:52:20.649320Z" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetOperations
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetOperations
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 168.4023ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 168.7472ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersStreamService/TradesStream
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersStreamService/TradesStream
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.MarketDataStreamService/MarketDataStream
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.MarketDataStreamService/MarketDataStream
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 63.5395ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Subscribed to market data
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 63.9759ms - OK
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Application started. Press Ctrl+C to shut down.
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Hosting environment: Production
+[40m[32minfo[39m[22m[49m: Microsoft.Hosting.Lifetime[0]
+      Content root path: /home/konard/Documents/CodeArchive/Links/Bot/csharp/TraderBot
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 6253.753ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 6254.176ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "ping": { "time": "2022-06-06T08:59:50.741167Z" } }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 30.5713ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 30.8947ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetOperations
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetOperations
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 46.4649ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 46.8419ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.55.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      initial buy order price: 5.54
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 143.0518ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 143.5269ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 43.8663ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 44.1876ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 1016.33
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 151.9225ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 152.2569ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Buy order placed: { "orderId": "31526823551", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "183", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "aciValue": { }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "orderType": "ORDER_TYPE_LIMIT" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.9747ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.2107ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526823551", "createdAt": "2022-06-06T09:02:30.263990616Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:02:30.127411Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "183" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526823551", "createdAt": "2022-06-06T09:02:30.263990616Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:02:30.127411Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "183" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526823551", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:02:29.946972Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order removed: { "orderId": "31526823551", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:02:29.946972Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526823551", "createdAt": "2022-06-06T09:02:30.263990616Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:02:30.127411Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "183" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526823551", "createdAt": "2022-06-06T09:02:30.263990616Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:02:30.127411Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "183" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      trade.Price: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      trade.Quantity: 183
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 183
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 45.6498ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 45.9215ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 135.4909ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 135.8127ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Sell order placed: { "orderId": "31526823956", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "183", "initialOrderPrice": { "currency": "rub", "units": "1017", "nano": 480000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "aciValue": { }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 560000000 }, "orderType": "ORDER_TYPE_LIMIT" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 41.4637ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 41.9657ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 31.9908ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 32.2235ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.55, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      initial sell order price: 5.56
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      initial sell order source price: 5.55
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 92.5448ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 92.7956ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      price: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      amount: 183
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.55
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 34.4971ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 34.688ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 134.0538ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 134.2305ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Sell order placed: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "183", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "aciValue": { }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "orderType": "ORDER_TYPE_LIMIT" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 32.1749ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 32.3368ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.256981593Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.729631Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "30" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.256981593Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.729631Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "30" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.256981593Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.729631Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "30" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "153", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.256981593Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.729631Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "30" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.OrderId: 31526888471
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      sourcePrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 183
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 153
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.298023154Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.931354Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "11" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.298023154Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.931354Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "11" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.298023154Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.931354Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "11" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "142", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.298023154Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.931354Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "11" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.OrderId: 31526888471
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      sourcePrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 153
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 142
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.310598590Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.933059Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "34" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.310598590Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.933059Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "34" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.310598590Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.933059Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "34" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "108", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.310598590Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.933059Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "34" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.OrderId: 31526888471
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      sourcePrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 142
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 108
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.325834214Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.976893Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "5" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.325834214Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.976893Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "5" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.325834214Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.976893Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "5" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "103", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.325834214Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.976893Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "5" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.OrderId: 31526888471
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      sourcePrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 108
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 103
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.333291047Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.986350Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "25" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.333291047Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.986350Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "25" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.333291047Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.986350Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "25" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "78", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.333291047Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.986350Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "25" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.OrderId: 31526888471
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      sourcePrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 103
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 78
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      initial sell order price: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      initial sell order source price: 5.55
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 71.8817ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 72.2893ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.463242414Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.998330Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "78" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.463242414Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.998330Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "78" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.463242414Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.998330Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "78" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order removed: { "orderId": "31526888471", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_SELL", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:04:13.728936Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526888471", "createdAt": "2022-06-06T09:06:12.463242414Z", "direction": "ORDER_DIRECTION_SELL", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:06:11.998330Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "78" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.OrderId: 31526888471
+[40m[32minfo[39m[22m[49m: Grpc.Net.Client.Internal.GrpcCall[3]
+      Call failed with gRPC error status. Status code: 'InvalidArgument', Message: '30059'.
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      SendOrders exception.
+      Grpc.Core.RpcException: Status(StatusCode="InvalidArgument", Detail="30059")
+         at Grpc.Net.Client.Internal.Retry.RetryCallBase`2.GetResponseAsync()
+         at TraderBot.TradingService.SendOrders(CancellationToken cancellationToken) in /home/konard/Documents/CodeArchive/Links/Bot/csharp/TraderBot/TradingService.cs:line 378
+         at TraderBot.TradingService.SendOrders(CancellationToken cancellationToken) in /home/konard/Documents/CodeArchive/Links/Bot/csharp/TraderBot/TradingService.cs:line 273
+         at TraderBot.TradingService.SendOrdersLoop(CancellationToken cancellationToken) in /home/konard/Documents/CodeArchive/Links/Bot/csharp/TraderBot/TradingService.cs:line 229
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 31.1524ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 31.2744ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetOperations
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetOperations
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 109.9811ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 110.1645ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      78 lots with 5.55 price
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.MarketDataStreamService/MarketDataStream
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.MarketDataStreamService/MarketDataStream
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Subscribed to market data
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 40.8697ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 41.2088ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 78
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 36.0023ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 36.1592ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.6959ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.2731ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 1016.33
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 173.6196ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 173.7994ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Buy order placed: { "orderId": "31526957441", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "183", "initialOrderPrice": { "currency": "rub", "units": "1013", "nano": 820000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "aciValue": { }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 540000000 }, "orderType": "ORDER_TYPE_LIMIT" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 29.8251ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 29.9823ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.55.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      initial buy order price: 5.54
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/CancelOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 110.1646ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 110.3601ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 37.4331ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 37.6325ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 1016.33
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/PostOrder
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 133.5809ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 133.7717ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Buy order placed: { "orderId": "31526986136", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "183", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "aciValue": { }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "orderType": "ORDER_TYPE_LIMIT" }
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OrdersService/GetOrders
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 22.4275ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 22.5806ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:20.255013883Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:19.919948Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "160" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:20.255013883Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:19.919948Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "160" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526986136", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "lotsRequested": "23", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:07:10.249464Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:20.255013883Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:19.919948Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "160" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:20.255013883Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:19.919948Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "160" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      trade.Price: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      trade.Quantity: 160
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 78
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 238
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Trade: { "orderTrades": { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:22.257061722Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:21.995692Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "23" } ], "accountId": "2106970052" } }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:22.257061722Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:21.995692Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "23" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order: { "orderId": "31526986136", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:07:10.249464Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Active order removed: { "orderId": "31526986136", "executionReportStatus": "EXECUTION_REPORT_STATUS_NEW", "initialOrderPrice": { "currency": "rub", "units": "1015", "nano": 650000000 }, "executedOrderPrice": { "currency": "rub" }, "totalOrderAmount": { "currency": "rub", "units": "1015", "nano": 650000000 }, "averagePositionPrice": { "currency": "rub" }, "initialCommission": { "currency": "rub" }, "executedCommission": { "currency": "rub" }, "figi": "BBG000000001", "direction": "ORDER_DIRECTION_BUY", "initialSecurityPrice": { "currency": "rub", "units": "5", "nano": 550000000 }, "serviceCommission": { "currency": "rub" }, "currency": "RUB", "orderType": "ORDER_TYPE_LIMIT", "orderDate": "2022-06-06T12:07:10.249464Z" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:22.257061722Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:21.995692Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "23" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      OrderTrades: { "orderId": "31526986136", "createdAt": "2022-06-06T09:07:22.257061722Z", "direction": "ORDER_DIRECTION_BUY", "figi": "BBG000000001", "trades": [ { "dateTime": "2022-06-06T09:07:21.995692Z", "price": { "units": "5", "nano": 550000000 }, "quantity": "23" } ], "accountId": "2106970052" }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      orderTrades.Direction: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      trade.Price: { "units": "5", "nano": 550000000 }
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      trade.Quantity: 23
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Previous value: 238
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      New value: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 25.5113ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 25.7017ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 39.9545ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 40.1172ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.6057ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.7762ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 30.3636ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 30.6058ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 17.4503ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 17.584ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 20.4417ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.5559ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 44.7062ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 44.9013ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.5816ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.7571ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 21.9573ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 22.1751ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 38.1111ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 38.2507ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.9075ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.1299ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 20.834ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.0319ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 21.2613ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.4131ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 19.5605ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.7002ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.9584ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 19.1599ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 21.1256ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.2565ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 24.2153ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.3642ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 23.9661ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.1472ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 21.2136ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 21.4688ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 19.9567ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.1108ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.1728ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.3184ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 24.1573ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.2665ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 22.1164ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 22.263ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.3214ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.4565ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 18.1791ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 18.3423ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 19.8713ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 20.1209ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      ask: 5.56, bid: 5.54.
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetPrice: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      lotsSetAmount: 261
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPriceCandidate: 5.55
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      targetSellPrice: 5.56
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 24.4171ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 24.5708ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Security position { "figi": "BBG000000001", "balance": "183" }
+[41m[30mfail[39m[22m[49m: TraderBot.TradingService[0]
+      Not enough amount to sell 261 assets. Available amount: 183
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[100]
+      Start processing HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[100]
+      Sending HTTP request POST https://invest-public-api.tinkoff.ru/tinkoff.public.invest.api.contract.v1.OperationsService/GetPositions
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.ClientHandler[101]
+      Received HTTP response after 22.6536ms - OK
+[40m[32minfo[39m[22m[49m: System.Net.Http.HttpClient.Default.LogicalHandler[101]
+      End processing HTTP request after 22.7933ms - OK
+[40m[32minfo[39m[22m[49m: TraderBot.TradingService[0]
+      Cash (rub) amount: 0.68
