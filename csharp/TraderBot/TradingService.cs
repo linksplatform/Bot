@@ -30,7 +30,7 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
         Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
-        Logger.LogInformation($"AllowSamePriceSell: {Settings.AllowSamePriceSell}");
+        Logger.LogInformation($"MinimumProfitSteps: {Settings.MinimumProfitSteps}");
         Logger.LogInformation($"SecuritiesAmountThresholdForOrderPriceChange: {Settings.SecuritiesAmountThresholdForOrderPriceChange}");
         Logger.LogInformation("Accounts:");
         var accounts = InvestApi.Users.GetAccounts().Accounts;
@@ -318,7 +318,8 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"lotsSetPrice: {lotsSetPrice}");
                         var lotsSetAmount = lotsSet.Value;
                         Logger.LogInformation($"lotsSetAmount: {lotsSetAmount}");
-                        var targetSellPrice = GetTargetSellPrice(lotsSetPrice, bestAsk);
+                        var minimumSellPrice = GetMinimumSellPrice(lotsSetPrice);
+                        var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                         var response = await TryPlaceSellOrder(lotsSetAmount, targetSellPrice);
                         if (response != null)
                         {
@@ -388,7 +389,8 @@ public class TradingService : BackgroundService
                     {
                         if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                         {
-                            if ((Settings.AllowSamePriceSell && bestAsk >= sourcePrice) || (!Settings.AllowSamePriceSell && bestAsk > sourcePrice))
+                            var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
+                            if (bestAsk >= minimumSellPrice)
                             {
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
@@ -405,7 +407,7 @@ public class TradingService : BackgroundService
                                 Logger.LogInformation($"price: {price}");
                                 var amount = activeSellOrder.LotsRequested;
                                 Logger.LogInformation($"amount: {amount}");
-                                var targetSellPrice = GetTargetSellPrice(sourcePrice, bestAsk);
+                                var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                                 var isOrderPlaced = false;
                                 var response = await TryPlaceSellOrder(amount, targetSellPrice);
                                 if (response != null)
@@ -425,11 +427,16 @@ public class TradingService : BackgroundService
         }
     }
 
-    private decimal GetTargetSellPrice(decimal sourcePrice, decimal bestAsk)
+    private decimal GetMinimumSellPrice(decimal sourcePrice)
     {
-        var targetSellPriceCandidate = Settings.AllowSamePriceSell ? sourcePrice : sourcePrice + PriceStep;
-        Logger.LogInformation($"targetSellPriceCandidate: {targetSellPriceCandidate}");
-        var targetSellPrice = Math.Max(targetSellPriceCandidate, bestAsk);
+        var minimumSellPrice = sourcePrice + Settings.MinimumProfitSteps * PriceStep;
+        Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
+        return minimumSellPrice;
+    }
+    
+    private decimal GetTargetSellPrice(decimal minimumSellPrice, decimal bestAsk)
+    {
+        var targetSellPrice = Math.Max(minimumSellPrice, bestAsk);
         Logger.LogInformation($"targetSellPrice: {targetSellPrice}");
         return targetSellPrice;
     }
