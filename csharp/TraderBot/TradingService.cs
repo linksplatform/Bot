@@ -31,6 +31,7 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
         Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
         Logger.LogInformation($"AllowSamePriceSell: {Settings.AllowSamePriceSell}");
+        Logger.LogInformation($"SecuritiesAmountThresholdForOrderPriceChange: {Settings.SecuritiesAmountThresholdForOrderPriceChange}");
         Logger.LogInformation("Accounts:");
         var accounts = InvestApi.Users.GetAccounts().Accounts;
         for (int i = 0; i < accounts.Count; i++)
@@ -294,10 +295,12 @@ public class TradingService : BackgroundService
             {
                 var orderBook = data.Orderbook;
                 // Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
-                
-                var bestAskPrice = orderBook.Asks[0].Price;
+
+                var bestAskOrder = orderBook.Asks[0];
+                var bestAskPrice = bestAskOrder.Price;
                 var bestAsk = QuotationToDecimal(bestAskPrice);
-                var bestBidPrice = orderBook.Bids[0].Price;
+                var bestBidOrder = orderBook.Bids[0];
+                var bestBidPrice = bestBidOrder.Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
                 
                 // Logger.LogInformation($"Time: {DateTime.Now}");
@@ -346,7 +349,7 @@ public class TradingService : BackgroundService
                 {
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
                     var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
-                    if (initialOrderPrice < bestBid)
+                    if (initialOrderPrice < bestBid && bestBidOrder.Quantity > Settings.SecuritiesAmountThresholdForOrderPriceChange)
                     {
                         Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                         Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
@@ -381,8 +384,7 @@ public class TradingService : BackgroundService
                 {
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
-                    
-                    if (bestAsk != initialOrderPrice)
+                    if (bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.SecuritiesAmountThresholdForOrderPriceChange)
                     {
                         if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                         {
