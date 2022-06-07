@@ -42,6 +42,7 @@ jobs:
         run: |
           if [ -f "install-local-conan-dependencies.sh" ]; then
               echo "install-local-conan-dependencies.sh exists."
+              chmod +x ./install-local-conan-dependencies.sh
               ./install-local-conan-dependencies.sh
           fi
       - name: Test and scan-build
