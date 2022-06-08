@@ -205,10 +205,10 @@ public class TradingService : BackgroundService
         foreach (var trade in orderTrades.Trades)
         {
             Logger.LogInformation($"orderTrades.Direction: {orderTrades.Direction}");
+            Logger.LogInformation($"trade.Price: {trade.Price}");
+            Logger.LogInformation($"trade.Quantity: {trade.Quantity}");
             if (orderTrades.Direction == OrderDirection.Buy)
             {
-                Logger.LogInformation($"trade.Price: {trade.Price}");
-                Logger.LogInformation($"trade.Quantity: {trade.Quantity}");
                 LotsSets.AddOrUpdate(trade.Price, trade.Quantity, (key, value) => {
                     Logger.LogInformation($"Previous value: {value}");
                     Logger.LogInformation($"New value: {value + trade.Quantity}");
@@ -220,7 +220,7 @@ public class TradingService : BackgroundService
                 Logger.LogInformation($"orderTrades.OrderId: {orderTrades.OrderId}");
                 if (ActiveSellOrderSourcePrice.TryGetValue(orderTrades.OrderId, out decimal sourcePrice))
                 {
-                    Logger.LogInformation($"LotsSets.Count before TryUpdateOrRemove: {LotsSets.Count}");
+                    // Logger.LogInformation($"LotsSets.Count before TryUpdateOrRemove: {LotsSets.Count}");
                     Logger.LogInformation($"sourcePrice: {sourcePrice}");
                     var result = LotsSets.TryUpdateOrRemove(sourcePrice, (key, value) => {
                         Logger.LogInformation($"Previous value: {value}");
@@ -231,7 +231,7 @@ public class TradingService : BackgroundService
                         return value <= 0;
                     });
                     Logger.LogInformation($"TryUpdateOrRemove.result: {result}");
-                    Logger.LogInformation($"LotsSets.Count after TryUpdateOrRemove: {LotsSets.Count}");
+                    // Logger.LogInformation($"LotsSets.Count after TryUpdateOrRemove: {LotsSets.Count}");
                 }
             }
         }
@@ -310,7 +310,6 @@ public class TradingService : BackgroundService
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
                     Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
-                    var isOrderPlaced = false;
                     // Process potential sell order
                     foreach (var lotsSet in LotsSets)
                     {
@@ -320,12 +319,8 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"lotsSetAmount: {lotsSetAmount}");
                         var minimumSellPrice = GetMinimumSellPrice(lotsSetPrice);
                         var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
-                        var response = await TryPlaceSellOrder(lotsSetAmount, targetSellPrice);
-                        if (response != null)
-                        {
-                            ActiveSellOrderSourcePrice[response.OrderId] = lotsSetPrice;
-                            isOrderPlaced = true;
-                        }
+                        var response = await PlaceSellOrder(lotsSetAmount, targetSellPrice);
+                        ActiveSellOrderSourcePrice[response.OrderId] = lotsSetPrice;
                     }
                     // Process potential buy order
                     var rubBalanceMoneyValue = InvestApi.Operations
@@ -338,11 +333,7 @@ public class TradingService : BackgroundService
                     if (CashBalance > lotPrice)
                     {
                         var lots = (long) (CashBalance / lotPrice);
-                        var response = await TryPlaceBuyOrder(lots, bestBid);
-                        isOrderPlaced |= response != null;
-                    }
-                    if (isOrderPlaced)
-                    {
+                        var response = await PlaceBuyOrder(lots, bestBid);
                         SyncActiveOrders();
                     }
                 }
@@ -368,15 +359,10 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
                         var lotSize = CurrentInstrument.Lot;
                         var lotPrice = bestBid * lotSize;
-                        var isOrderPlaced = false;
                         if (CashBalance > lotPrice)
                         {
                             var lots = (long) (CashBalance / lotPrice);
-                            var response = await TryPlaceBuyOrder(lots, bestBid);
-                            isOrderPlaced |= response != null;
-                        }
-                        if (isOrderPlaced)
-                        {
+                            var response = await PlaceBuyOrder(lots, bestBid);
                             SyncActiveOrders();
                         }
                     }
@@ -395,6 +381,7 @@ public class TradingService : BackgroundService
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
                                 Logger.LogInformation($"initial sell order source price: {sourcePrice}");
+                                Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
                                 
                                 // Cancel order
                                 await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
@@ -408,17 +395,9 @@ public class TradingService : BackgroundService
                                 var amount = activeSellOrder.LotsRequested;
                                 Logger.LogInformation($"amount: {amount}");
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
-                                var isOrderPlaced = false;
-                                var response = await TryPlaceSellOrder(amount, targetSellPrice);
-                                if (response != null)
-                                {
-                                    ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
-                                    isOrderPlaced = true;
-                                }
-                                if (isOrderPlaced)
-                                {
-                                    SyncActiveOrders();
-                                }
+                                var response = await PlaceSellOrder(amount, targetSellPrice);
+                                ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
+                                SyncActiveOrders();
                             }
                         }
                     }
@@ -430,7 +409,7 @@ public class TradingService : BackgroundService
     private decimal GetMinimumSellPrice(decimal sourcePrice)
     {
         var minimumSellPrice = sourcePrice + Settings.MinimumProfitSteps * PriceStep;
-        Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
+        // Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
         return minimumSellPrice;
     }
     
@@ -444,10 +423,6 @@ public class TradingService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         Refresh();
-        if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
-        {
-            ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
-        }
         var tasks = new []
         {
             ReceiveTradesLoop(cancellationToken),
@@ -462,6 +437,13 @@ public class TradingService : BackgroundService
         LogActiveOrders();
         SyncLots(forceReset);
         LogLots();
+        if (forceReset)
+        {
+            if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
+            {
+                ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
+            }
+        }
     }
 
     public static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
@@ -546,7 +528,7 @@ public class TradingService : BackgroundService
         return openOperations;
     }
 
-    private async Task<PostOrderResponse?> TryPlaceSellOrder(long amount, decimal price)
+    private async Task<PostOrderResponse> PlaceSellOrder(long amount, decimal price)
     {
         PostOrderRequest sellOrderRequest = new()
         {
@@ -562,20 +544,19 @@ public class TradingService : BackgroundService
         var securityPosition = positions.Securities.SingleOrDefault(x => x.Figi == CurrentInstrument.Figi);
         if (securityPosition == null)
         {
-            return null;
+            throw new InvalidOperationException($"Position for {CurrentInstrument.Figi} not found.");
         }
         Logger.LogInformation("Security position {SecurityPosition}", securityPosition);
         if (securityPosition.Balance < amount)
         {
-            Logger.LogError($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
-            return null;
+            throw new InvalidOperationException($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
         }
         var response = await InvestApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
         Logger.LogInformation($"Sell order placed: {response}");
         return response;
     }
 
-    private async Task<PostOrderResponse?> TryPlaceBuyOrder(long amount, decimal price)
+    private async Task<PostOrderResponse> PlaceBuyOrder(long amount, decimal price)
     {
         PostOrderRequest buyOrderRequest = new()
         {
@@ -590,8 +571,7 @@ public class TradingService : BackgroundService
         var total = amount * price;
         if (CashBalance < total)
         {
-            Logger.LogError($"Not enough money to buy {CurrentInstrument.Figi} asset.");
-            return null;
+            throw new InvalidOperationException($"Not enough money to buy {CurrentInstrument.Figi} asset.");
         }
         var response = await InvestApi.Orders.PostOrderAsync(buyOrderRequest).ResponseAsync;
         Logger.LogInformation($"Buy order placed: {response}");
