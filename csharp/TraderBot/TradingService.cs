@@ -309,6 +309,7 @@ public class TradingService : BackgroundService
 
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
+                    var areOrderPlaced = false;
                     Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     // Process potential sell order
                     foreach (var lotsSet in LotsSets)
@@ -321,6 +322,7 @@ public class TradingService : BackgroundService
                         var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                         var response = await PlaceSellOrder(lotsSetAmount, targetSellPrice);
                         ActiveSellOrderSourcePrice[response.OrderId] = lotsSetPrice;
+                        areOrderPlaced = true;
                     }
                     // Process potential buy order
                     var rubBalanceMoneyValue = InvestApi.Operations
@@ -334,6 +336,10 @@ public class TradingService : BackgroundService
                     {
                         var lots = (long) (CashBalance / lotPrice);
                         var response = await PlaceBuyOrder(lots, bestBid);
+                        areOrderPlaced = true;
+                    }
+                    if (areOrderPlaced)
+                    {
                         SyncActiveOrders();
                     }
                 }
