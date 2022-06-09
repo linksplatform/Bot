@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Tinkoff.InvestApi.V1;
+using System.IO;
+using Platform.IO;
 
 namespace TraderBot
 {
@@ -11,85 +13,45 @@ namespace TraderBot
     {
         Logger<TradingService> LogProvider { get; set; }
 
-        string FileName { get; set; }
+        public readonly string FileName;
 
         public Logger(ILogger<TradingService> logger, string fileName)
         {
-            LogProvider = (Logger<TradingService>?)logger;
-            if (fileName != "")
+            if (string.IsNullOrWhiteSpace(fileName))
             {
-                FileName = fileName;
-                if (!File.Exists(fileName))
-                {
-                    var a = File.Create(fileName);
-                    a.Close();
-                }
+                throw new ArgumentOutOfRangeException(nameof(fileName), "File name is empty.");
             }
+            LogProvider = (Logger<TradingService>?)logger;
+            FileName = fileName;
         }
 
-        public void LogInformation(string strToLog)
+        public void LogInformation(string @string)
         {
-            if(FileName != null)
-            {
-                LogProvider.LogInformation(strToLog);
-                string text = File.ReadAllText(FileName);
-                using(StreamWriter sw = new StreamWriter(FileName))
-                {
-                    sw.WriteLine(text + "\n" + strToLog);
-                }
-            }
-            else
-            {
-                LogProvider.LogInformation(strToLog);
-            }
+            LogProvider.LogInformation(@string);
+            using var fileStream = Platform.IO.FileHelpers.Append(FileName);
+            using StreamWriter writer = new(fileStream);
+            writer.WriteLine(@string);
         }
-        public void LogInformation(string strToLog, PositionsSecurities positions)
+        public void LogInformation(string @string, PositionsSecurities positions)
         {
-            if (FileName != null)
-            {
-                LogProvider.LogInformation(strToLog,positions);
-                string text = File.ReadAllText(FileName);
-                using (StreamWriter sw = new StreamWriter(FileName))
-                {
-                    sw.WriteLine(text + "\n" + strToLog);
-                }
-            }
-            else
-            {
-                LogProvider.LogInformation(strToLog,positions);
-            }
+            LogProvider.LogInformation(@string, positions);
+            using var fileStream = Platform.IO.FileHelpers.Append(FileName);
+            using StreamWriter writer = new(fileStream);
+            writer.WriteLine(@string);
         }
-        public void LogError(Exception exception,string strToLog)
+        public void LogError(Exception @exception,string @string)
         {
-            if (FileName != null)
-            {
-                LogProvider.LogError(exception,strToLog);
-                string text = File.ReadAllText(FileName);
-                using (StreamWriter sw = new StreamWriter(FileName))
-                {
-                    sw.WriteLine(text + "\n" + exception.Message +  strToLog);
-                }
-            }
-            else
-            {
-                LogProvider.LogInformation(strToLog);
-            }
+            LogProvider.LogError(@string, @exception);
+            using var fileStream = Platform.IO.FileHelpers.Append(FileName);
+            using StreamWriter writer = new(fileStream);
+            writer.WriteLine(@string);
         }
-        public void LogError(string strToLog)
+        public void LogError(string @string)
         {
-            if (FileName != null)
-            {
-                LogProvider.LogError(strToLog);
-                string text = File.ReadAllText(FileName);
-                using (StreamWriter sw = new StreamWriter(FileName))
-                {
-                    sw.WriteLine(text + "\n" + strToLog);
-                }
-            }
-            else
-            {
-                LogProvider.LogError(strToLog);
-            }
+            LogProvider.LogError(@string);
+            using var fileStream = Platform.IO.FileHelpers.Append(FileName);
+            using StreamWriter writer = new(fileStream);
+            writer.WriteLine(@string);
         }
     }
 }
