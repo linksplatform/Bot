@@ -376,13 +376,28 @@ public class TradingService : BackgroundService
                 else if (ActiveSellOrders.Count == 1)
                 {
                     var activeSellOrder = ActiveSellOrders.Single().Value;
-                    var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
-                    if (bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.SecuritiesAmountThresholdForOrderPriceChange)
+                    if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
-                        if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
+                        if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (50000 + activeSellOrder.LotsRequested))
                         {
+                            Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                            Logger.LogInformation($"initial sell order price: {sourcePrice}");
+                            // Cancel order
+                            await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
+                            {
+                                OrderId = activeSellOrder.OrderId,
+                                AccountId = CurrentAccount.Id
+                            });
+                            // Place new order at best bid price
+                            Logger.LogInformation($"early sell is activated");
+                            var response = await PlaceSellOrder(activeSellOrder.LotsRequested, bestBid);
+                            SyncActiveOrders();
+                        }
+                        else
+                        {
+                            var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
                             var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
-                            if (bestAsk >= minimumSellPrice)
+                            if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.SecuritiesAmountThresholdForOrderPriceChange)
                             {
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
