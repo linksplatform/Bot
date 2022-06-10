@@ -10,4 +10,5 @@ public class TradingSettings
     public long MinimumSecuritiesAmountToBuy { get; set; }
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
+    public DateTime LoadOperationsFrom { get; set; }
 }

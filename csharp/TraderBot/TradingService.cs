@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Globalization;
+using System.Security.Principal;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 using Tinkoff.InvestApi;
@@ -35,6 +37,7 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"MinimumSecuritiesAmountToBuy: {Settings.MinimumSecuritiesAmountToBuy}");
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
+        Logger.LogInformation($"LoadOperationsFrom: {Settings.LoadOperationsFrom}");
         Logger.LogInformation("Accounts:");
         var accounts = InvestApi.Users.GetAccounts().Accounts;
         for (int i = 0; i < accounts.Count; i++)
@@ -497,14 +500,19 @@ public class TradingService : BackgroundService
     {
         List<Operation> openOperations = new ();
         long totalSoldQuantity = 0;
+
+        // DateTime from = DateTime.SpecifyKind(DateTime.Parse("2022-06-10T13:42:31.613200Z"), DateTimeKind.Utc).AddHours(-3).AddTicks(1);
+        DateTime from = DateTime.SpecifyKind(Settings.LoadOperationsFrom, DateTimeKind.Utc).AddHours(-3);
         var operations = InvestApi.Operations.GetOperations(new OperationsRequest
         {
             AccountId = CurrentAccount.Id,
             State = OperationState.Executed,
             Figi = CurrentInstrument.Figi,
-            From = CurrentAccount.OpenedDate,
+            From = Timestamp.FromDateTime(from), // CurrentAccount.OpenedDate,
             To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(4))
         }).Operations;
+        
+        // TODO: Compare Timestamp.FromDateTime(from) and CurrentAccount.OpenedDate, (use max)
         
         // log operations
         // foreach (var operation in operations)
