@@ -7,4 +7,6 @@ public class TradingSettings
     public int AccountIndex { get; set; }
     public long MinimumProfitSteps { get; set; }
     public long SecuritiesAmountThresholdForOrderPriceChange { get; set; }
+    public long EarlySellOwnedLotsDelta { get; set; }
+    public decimal EarlySellOwnedLotsMultiplier { get; set; }
 }

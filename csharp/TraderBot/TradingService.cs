@@ -32,6 +32,8 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
         Logger.LogInformation($"MinimumProfitSteps: {Settings.MinimumProfitSteps}");
         Logger.LogInformation($"SecuritiesAmountThresholdForOrderPriceChange: {Settings.SecuritiesAmountThresholdForOrderPriceChange}");
+        Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
+        Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation("Accounts:");
         var accounts = InvestApi.Users.GetAccounts().Accounts;
         for (int i = 0; i < accounts.Count; i++)
@@ -378,9 +380,15 @@ public class TradingService : BackgroundService
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
-                        if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (50000 + activeSellOrder.LotsRequested))
+                        // if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (50000 + activeSellOrder.LotsRequested))
+                        if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
                             Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                            Logger.LogInformation($"bestBidOrder.Quantity: {bestBidOrder.Quantity}");
+                            Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
+                            Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
+                            Logger.LogInformation($"LotsRequested: {activeSellOrder.LotsRequested}");
+                            Logger.LogInformation($"Threshold: {(Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier)}");
                             Logger.LogInformation($"initial sell order price: {sourcePrice}");
                             // Cancel order
                             await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
@@ -392,6 +400,7 @@ public class TradingService : BackgroundService
                             Logger.LogInformation($"early sell is activated");
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, bestBid);
                             SyncActiveOrders();
+                            SyncLots();
                         }
                         else
                         {
