@@ -458,7 +458,7 @@ public class TradingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Refresh();
+        Refresh(forceReset: true);
         var tasks = new []
         {
             ReceiveTradesLoop(cancellationToken),
