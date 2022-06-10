@@ -380,7 +380,6 @@ public class TradingService : BackgroundService
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
-                        // if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (50000 + activeSellOrder.LotsRequested))
                         if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
                             Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
