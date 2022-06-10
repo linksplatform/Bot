@@ -31,7 +31,8 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
         Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
         Logger.LogInformation($"MinimumProfitSteps: {Settings.MinimumProfitSteps}");
-        Logger.LogInformation($"SecuritiesAmountThresholdForOrderPriceChange: {Settings.SecuritiesAmountThresholdForOrderPriceChange}");
+        Logger.LogInformation($"MinimumSecuritiesAmountToChangePrice: {Settings.MinimumSecuritiesAmountToChangePrice}");
+        Logger.LogInformation($"MinimumSecuritiesAmountToBuy: {Settings.MinimumSecuritiesAmountToBuy}");
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation("Accounts:");
@@ -322,23 +323,28 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"lotsSetAmount: {lotsSetAmount}");
                         var minimumSellPrice = GetMinimumSellPrice(lotsSetPrice);
                         var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
+                        Logger.LogInformation($"sell activated");
                         var response = await PlaceSellOrder(lotsSetAmount, targetSellPrice);
                         ActiveSellOrderSourcePrice[response.OrderId] = lotsSetPrice;
                         areOrdersPlaced = true;
                     }
-                    // Process potential buy order
-                    var rubBalanceMoneyValue = InvestApi.Operations
-                        .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
-                        .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
-                    CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
-                    Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
-                    var lotSize = CurrentInstrument.Lot;
-                    var lotPrice = bestBid * lotSize;
-                    if (CashBalance > lotPrice)
+                    if (!areOrdersPlaced)
                     {
-                        var lots = (long) (CashBalance / lotPrice);
-                        var response = await PlaceBuyOrder(lots, bestBid);
-                        areOrdersPlaced = true;
+                        // Process potential buy order
+                        var rubBalanceMoneyValue = InvestApi.Operations
+                            .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
+                            .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
+                        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
+                        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
+                        var lotSize = CurrentInstrument.Lot;
+                        var lotPrice = bestBid * lotSize;
+                        if (CashBalance > lotPrice && bestBidOrder.Quantity > Settings.MinimumSecuritiesAmountToBuy)
+                        {
+                            var lots = (long) (CashBalance / lotPrice);
+                            Logger.LogInformation($"buy activated");
+                            var response = await PlaceBuyOrder(lots, bestBid);
+                            areOrdersPlaced = true;
+                        }
                     }
                     if (areOrdersPlaced)
                     {
@@ -349,10 +355,11 @@ public class TradingService : BackgroundService
                 {
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
                     var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
-                    if (initialOrderPrice < bestBid && bestBidOrder.Quantity > Settings.SecuritiesAmountThresholdForOrderPriceChange)
+                    if (initialOrderPrice < bestBid && bestBidOrder.Quantity > Settings.MinimumSecuritiesAmountToChangePrice)
                     {
                         Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                         Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
+                        Logger.LogInformation($"buy order price change activated");
                         // Cancel order
                         await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
                         {
@@ -405,13 +412,13 @@ public class TradingService : BackgroundService
                         {
                             var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
                             var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
-                            if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.SecuritiesAmountThresholdForOrderPriceChange)
+                            if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumSecuritiesAmountToChangePrice)
                             {
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
                                 Logger.LogInformation($"initial sell order source price: {sourcePrice}");
                                 Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
-                                
+                                Logger.LogInformation($"sell order price change activated");
                                 // Cancel order
                                 await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
                                 {
