@@ -33,8 +33,10 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
         Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
         Logger.LogInformation($"MinimumProfitSteps: {Settings.MinimumProfitSteps}");
-        Logger.LogInformation($"MinimumSecuritiesAmountToChangePrice: {Settings.MinimumSecuritiesAmountToChangePrice}");
-        Logger.LogInformation($"MinimumSecuritiesAmountToBuy: {Settings.MinimumSecuritiesAmountToBuy}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToChangeBuyPrice: {Settings.MinimumMarketOrderSizeToChangeBuyPrice}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToChangeSellPrice: {Settings.MinimumMarketOrderSizeToChangeSellPrice}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToBuy: {Settings.MinimumMarketOrderSizeToBuy}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToSell: {Settings.MinimumMarketOrderSizeToSell}");
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {Settings.LoadOperationsFrom}");
@@ -284,7 +286,7 @@ public class TradingService : BackgroundService
         {
             SubscribeOrderBookRequest = new SubscribeOrderBookRequest
             {
-                Instruments = {new OrderBookInstrument {Figi = CurrentInstrument.Figi, Depth = 1}},
+                Instruments = {new OrderBookInstrument {Figi = CurrentInstrument.Figi, Depth = 3 }},
                 SubscriptionAction = SubscriptionAction.Subscribe
             },
         }).ContinueWith((task) =>
@@ -302,12 +304,12 @@ public class TradingService : BackgroundService
                 var orderBook = data.Orderbook;
                 // Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
 
-                var bestAskOrder = orderBook.Asks[0];
-                var bestAskPrice = bestAskOrder.Price;
-                var bestAsk = QuotationToDecimal(bestAskPrice);
-                var bestBidOrder = orderBook.Bids[0];
+                var bestBidOrder = orderBook.Bids.First(x => x.Quantity > Settings.MinimumMarketOrderSizeToBuy);
                 var bestBidPrice = bestBidOrder.Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
+                var bestAskOrder = orderBook.Asks.First(x => x.Quantity > Settings.MinimumMarketOrderSizeToSell);
+                var bestAskPrice = bestAskOrder.Price;
+                var bestAsk = QuotationToDecimal(bestAskPrice);
                 
                 // Logger.LogInformation($"Time: {DateTime.Now}");
                 // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
@@ -341,7 +343,7 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
                         var lotSize = CurrentInstrument.Lot;
                         var lotPrice = bestBid * lotSize;
-                        if (CashBalance > lotPrice && bestBidOrder.Quantity > Settings.MinimumSecuritiesAmountToBuy)
+                        if (CashBalance > lotPrice)
                         {
                             var lots = (long) (CashBalance / lotPrice);
                             Logger.LogInformation($"buy activated");
@@ -358,7 +360,7 @@ public class TradingService : BackgroundService
                 {
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
                     var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
-                    if (initialOrderPrice < bestBid && bestBidOrder.Quantity > Settings.MinimumSecuritiesAmountToChangePrice)
+                    if (initialOrderPrice != bestBid && bestBidOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeBuyPrice)
                     {
                         Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                         Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
@@ -415,7 +417,7 @@ public class TradingService : BackgroundService
                         {
                             var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
                             var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
-                            if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumSecuritiesAmountToChangePrice)
+                            if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeSellPrice)
                             {
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
