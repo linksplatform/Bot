@@ -531,14 +531,14 @@ public class TradingService : BackgroundService
         // TODO: Compare Timestamp.FromDateTime(from) and CurrentAccount.OpenedDate, (use max)
         
         // log operations
-        // foreach (var operation in operations)
-        // {
-        //     Logger.LogInformation($"Operation \t{operation}");
-        // }
-        //
-        // Logger.LogInformation($"Total sell operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        // Logger.LogInformation($"Total buy operations quantity \t{operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        //
+        foreach (var operation in operations)
+        {
+            Logger.LogInformation($"{operation.OperationType} operation with {operation.Quantity - operation.QuantityRest} lots at {operation.Date}.");
+        }
+        
+        Logger.LogInformation($"Total sell operations quantity {operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        Logger.LogInformation($"Total buy operations quantity {operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
+        
         foreach (var operation in operations)
         {
             if (operation.OperationType == OperationType.Buy)
