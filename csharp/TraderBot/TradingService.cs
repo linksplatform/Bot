@@ -33,6 +33,7 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
         Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
         Logger.LogInformation($"MinimumProfitSteps: {Settings.MinimumProfitSteps}");
+        Logger.LogInformation($"MarketOrderBookDepth: {Settings.MarketOrderBookDepth}");
         Logger.LogInformation($"MinimumMarketOrderSizeToChangeBuyPrice: {Settings.MinimumMarketOrderSizeToChangeBuyPrice}");
         Logger.LogInformation($"MinimumMarketOrderSizeToChangeSellPrice: {Settings.MinimumMarketOrderSizeToChangeSellPrice}");
         Logger.LogInformation($"MinimumMarketOrderSizeToBuy: {Settings.MinimumMarketOrderSizeToBuy}");
@@ -286,7 +287,7 @@ public class TradingService : BackgroundService
         {
             SubscribeOrderBookRequest = new SubscribeOrderBookRequest
             {
-                Instruments = {new OrderBookInstrument {Figi = CurrentInstrument.Figi, Depth = 3 }},
+                Instruments = {new OrderBookInstrument {Figi = CurrentInstrument.Figi, Depth = Settings.MarketOrderBookDepth }},
                 SubscriptionAction = SubscriptionAction.Subscribe
             },
         }).ContinueWith((task) =>
@@ -299,8 +300,15 @@ public class TradingService : BackgroundService
         }, cancellationToken);
         await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(cancellationToken))
         {
-            if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
+            // Logger.LogInformation($"data.PayloadCase: {data.PayloadCase}");
+            if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.SubscribeOrderBookResponse)
             {
+                Logger.LogInformation($"data.SubscribeOrderBookResponse.OrderBook.Instruments.Count: {data.SubscribeOrderBookResponse.OrderBookSubscriptions}");
+            }
+            else if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.Orderbook)
+            {
+                // Logger.LogInformation($"Order book: {data.Orderbook}");
+
                 var orderBook = data.Orderbook;
                 // Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
 
@@ -310,6 +318,8 @@ public class TradingService : BackgroundService
                 var bestAskOrder = orderBook.Asks.First(x => x.Quantity > Settings.MinimumMarketOrderSizeToSell);
                 var bestAskPrice = bestAskOrder.Price;
                 var bestAsk = QuotationToDecimal(bestAskPrice);
+
+                // Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                 
                 // Logger.LogInformation($"Time: {DateTime.Now}");
                 // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");

@@ -6,6 +6,7 @@ public class TradingSettings
     public string? CashCurrency { get; set; }
     public int AccountIndex { get; set; }
     public long MinimumProfitSteps { get; set; }
+    public int MarketOrderBookDepth { get; set; }
     public long MinimumMarketOrderSizeToChangeBuyPrice { get; set; }
     public long MinimumMarketOrderSizeToChangeSellPrice { get; set; }
     public long MinimumMarketOrderSizeToBuy { get; set; }
