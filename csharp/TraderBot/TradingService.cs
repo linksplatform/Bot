@@ -312,6 +312,9 @@ public class TradingService : BackgroundService
                 var orderBook = data.Orderbook;
                 // Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
 
+                var topBidOrder = orderBook.Bids.First();
+                var topBidPrice = topBidOrder.Price;
+                var topBid = QuotationToDecimal(topBidPrice);
                 var bestBidOrder = orderBook.Bids.First(x => x.Quantity > Settings.MinimumMarketOrderSizeToBuy);
                 var bestBidPrice = bestBidOrder.Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
@@ -402,10 +405,10 @@ public class TradingService : BackgroundService
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
-                        if (bestBidPrice == sourcePrice && bestBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
+                        if (topBidPrice == sourcePrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
-                            Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
-                            Logger.LogInformation($"bestBidOrder.Quantity: {bestBidOrder.Quantity}");
+                            Logger.LogInformation($"bestAsk: {bestAsk}, topBid: {topBid}, bestBid: {bestBid}.");
+                            Logger.LogInformation($"topBidOrder.Quantity: {topBidOrder.Quantity}");
                             Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
                             Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
                             Logger.LogInformation($"LotsRequested: {activeSellOrder.LotsRequested}");
@@ -417,11 +420,12 @@ public class TradingService : BackgroundService
                                 OrderId = activeSellOrder.OrderId,
                                 AccountId = CurrentAccount.Id
                             });
-                            // Place new order at best bid price
+                            // Place new order at top bid price
                             Logger.LogInformation($"early sell is activated");
-                            var response = await PlaceSellOrder(activeSellOrder.LotsRequested, bestBid);
+                            var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
                             SyncActiveOrders();
                             SyncLots();
+                            Logger.LogInformation($"early sell is complete");
                         }
                         else
                         {
