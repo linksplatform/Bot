@@ -78,7 +78,6 @@ Configuration is located in `appsettings.json` file.
 | `TradingSettings`/`MinimumMarketOrderSizeToSell` | Minimum size of the market order to sell. The price will be not acceptable unless there is that much lots on the market at this price. |
 | `TradingSettings`/`EarlySellOwnedLotsDelta` | A constant component of the minimum number of lots that the market order placed at the buy price should have in order to trigger the immediate sell order. Complete formula: (`TradingSettings`/`EarlySellOwnedLotsDelta` + `TradingSettings`/`EarlySellOwnedLotsMultiplier` * `Lots requested to sell`). |
 | `TradingSettings`/`EarlySellOwnedLotsMultiplier` | A multiplier of lots requested to sell. A component of the minimum number of lots that the market order placed at the buy price should have in order to trigger the immediate sell order. Complete formula: (`TradingSettings`/`EarlySellOwnedLotsDelta` + `TradingSettings`/`EarlySellOwnedLotsMultiplier` * `Lots requested to sell`). |
-LoadOperationsFrom
 | `TradingSettings`/`LoadOperationsFrom` | Minimum data and time to load operations from. |
 
 ## Roadmap
