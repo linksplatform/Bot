@@ -85,6 +85,6 @@ Configuration is located in `appsettings.json` file.
 - [x] Make this bot work without restarts
 - [x] Support moving buy order up
 - [x] Optional support moving sell order down (up to equal to buy price)
-- [ ] Add short trading mode
+- [x] Add short trading mode
 - [ ] Optimize the number of requests to the API
 - [ ] Store all the data in the associative database ([Deep](https://github.com/deep-foundation) or [Doublets links storage](https://github.com/linksplatform/Data.Doublets))
