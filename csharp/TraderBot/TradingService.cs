@@ -258,9 +258,12 @@ public class TradingService : BackgroundService
             }
             catch(Exception ex)
             {
-                Logger.LogError(ex, "SendOrders exception.");
-                await Task.Delay(2500);
-                Refresh(forceReset: true);
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Logger.LogError(ex, "SendOrders exception.");
+                    await Task.Delay(2500);
+                    Refresh(forceReset: true);
+                }
             }
         }
     }
@@ -275,9 +278,12 @@ public class TradingService : BackgroundService
             }
             catch(Exception ex)
             {
-                Logger.LogError(ex, "ReceiveTrades exception.");
-                await Task.Delay(2500);
-                Refresh(forceReset: true);
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    Logger.LogError(ex, "ReceiveTrades exception.");
+                    await Task.Delay(2500);
+                    Refresh(forceReset: true);
+                }
             }
         }
     }
