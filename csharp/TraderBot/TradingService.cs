@@ -18,6 +18,7 @@ public class TradingService : BackgroundService
     protected readonly Etf CurrentInstrument;
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
+    protected DateTime LastOperationsCheckpoint;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
@@ -57,6 +58,7 @@ public class TradingService : BackgroundService
         ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
+        LastOperationsCheckpoint = Settings.LoadOperationsFrom;
     }
 
     protected async Task ReceiveTrades(CancellationToken cancellationToken)
@@ -379,25 +381,18 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
                         Logger.LogInformation($"buy order price change activated");
                         // Cancel order
-                        await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
-                        {
-                            OrderId = activeBuyOrder.OrderId,
-                            AccountId = CurrentAccount.Id
-                        });
+                        await CancelOrder(activeBuyOrder.OrderId);
                         // Place new order
-                        var rubBalanceMoneyValue = InvestApi.Operations
-                            .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
-                            .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
-                        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
-                        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
                         var lotSize = CurrentInstrument.Lot;
-                        var lotPrice = bestBid * lotSize;
-                        if (CashBalance > lotPrice)
+                        var previousOrderTotalPrice = activeBuyOrder.LotsRequested * lotSize  * initialOrderPrice;
+                        var newLotPrice = bestBid * lotSize;
+                        if (previousOrderTotalPrice > newLotPrice)
                         {
-                            var lots = (long) (CashBalance / lotPrice);
+                            var lots = (long) (previousOrderTotalPrice / newLotPrice);
                             var response = await PlaceBuyOrder(lots, bestBid);
-                            SyncActiveOrders();
                         }
+                        SyncActiveOrders();
+                        Logger.LogInformation($"buy order price change is complete");
                     }
                 }
                 else if (ActiveSellOrders.Count == 1)
@@ -415,11 +410,7 @@ public class TradingService : BackgroundService
                             Logger.LogInformation($"Threshold: {(Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier)}");
                             Logger.LogInformation($"initial sell order price: {sourcePrice}");
                             // Cancel order
-                            await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
-                            {
-                                OrderId = activeSellOrder.OrderId,
-                                AccountId = CurrentAccount.Id
-                            });
+                            await CancelOrder(activeSellOrder.OrderId);
                             // Place new order at top bid price
                             Logger.LogInformation($"early sell is activated");
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
@@ -439,20 +430,13 @@ public class TradingService : BackgroundService
                                 Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
                                 Logger.LogInformation($"sell order price change activated");
                                 // Cancel order
-                                await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
-                                {
-                                    OrderId = activeSellOrder.OrderId,
-                                    AccountId = CurrentAccount.Id
-                                });
+                                await CancelOrder(activeSellOrder.OrderId);
                                 // Place new order
-                                var price = bestAsk;
-                                Logger.LogInformation($"price: {price}");
-                                var amount = activeSellOrder.LotsRequested;
-                                Logger.LogInformation($"amount: {amount}");
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
-                                var response = await PlaceSellOrder(amount, targetSellPrice);
+                                var response = await PlaceSellOrder(activeSellOrder.LotsRequested, targetSellPrice);
                                 ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
                                 SyncActiveOrders();
+                                Logger.LogInformation($"sell order price change is complete");
                             }
                         }
                     }
@@ -515,10 +499,9 @@ public class TradingService : BackgroundService
     private List<Operation> GetOpenOperations()
     {
         List<Operation> openOperations = new ();
-        long totalSoldQuantity = 0;
 
         // DateTime from = DateTime.SpecifyKind(DateTime.Parse("2022-06-10T13:42:31.613200Z"), DateTimeKind.Utc).AddHours(-3).AddTicks(1);
-        DateTime from = DateTime.SpecifyKind(Settings.LoadOperationsFrom, DateTimeKind.Utc).AddHours(-3);
+        DateTime from = DateTime.SpecifyKind(LastOperationsCheckpoint, DateTimeKind.Utc).AddHours(-3);
         var operations = InvestApi.Operations.GetOperations(new OperationsRequest
         {
             AccountId = CurrentAccount.Id,
@@ -535,22 +518,37 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation($"{operation.OperationType} operation with {operation.Quantity - operation.QuantityRest} lots at {operation.Date}.");
         }
+
+        if (operations.Any() && operations.OrderBy(x=>x.Date).First().OperationType == OperationType.Sell)
+        {
+            throw new InvalidOperationException("Sell operation is first in list. It will not possible to correctly identify open operations.");
+        }
+
+        var totalSoldQuantity = operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity));
+        Logger.LogInformation($"Total sell operations quantity {totalSoldQuantity}");
+        var totalBoughtQuantity = operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity));
+        Logger.LogInformation($"Total buy operations quantity {totalBoughtQuantity}");
+
+        if (totalSoldQuantity > 0 && totalSoldQuantity == totalBoughtQuantity)
+        {
+            var baseDate = operations.OrderBy(x=>x.Date).Last().Date.ToDateTime().AddMilliseconds(1);
+            LastOperationsCheckpoint = baseDate.AddHours(3);
+            Logger.LogInformation($"New last operations checkpoint: {baseDate.ToString("o", System.Globalization.CultureInfo.InvariantCulture)}");
+        }
         
-        Logger.LogInformation($"Total sell operations quantity {operations.Where(o=>o.OperationType == OperationType.Sell).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        Logger.LogInformation($"Total buy operations quantity {operations.Where(o=>o.OperationType == OperationType.Buy).Sum(o=>o.Trades.Count == 0 ? o.Quantity - o.QuantityRest : o.Trades.Sum(trade => trade.Quantity))}");
-        
+        // long totalSoldQuantity = 0;
         foreach (var operation in operations)
         {
             if (operation.OperationType == OperationType.Buy)
             {
                 openOperations.Add(operation);
             }
-            else if (operation.OperationType == OperationType.Sell)
-            {
-                var operationQuantity = operation.Quantity - operation.QuantityRest;
-                var quantity = operation.Trades.Count == 0 ? operationQuantity : operation.Trades.Sum(trade => trade.Quantity);
-                totalSoldQuantity += quantity;
-            }
+            // else if (operation.OperationType == OperationType.Sell)
+            // {
+            //     var operationQuantity = operation.Quantity - operation.QuantityRest;
+            //     var quantity = operation.Trades.Count == 0 ? operationQuantity : operation.Trades.Sum(trade => trade.Quantity);
+            //     totalSoldQuantity += quantity;
+            // }
         }
         
         // Logger.LogInformation($"totalSoldQuantity: \t{totalSoldQuantity}");
@@ -600,17 +598,17 @@ public class TradingService : BackgroundService
             Quantity = amount,
             Price = DecimalToQuotation(price)
         };
-        var positions = await InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }).ResponseAsync;
-        var securityPosition = positions.Securities.SingleOrDefault(x => x.Figi == CurrentInstrument.Figi);
-        if (securityPosition == null)
-        {
-            throw new InvalidOperationException($"Position for {CurrentInstrument.Figi} not found.");
-        }
-        Logger.LogInformation("Security position {SecurityPosition}", securityPosition);
-        if (securityPosition.Balance < amount)
-        {
-            throw new InvalidOperationException($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
-        }
+        // var positions = await InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }).ResponseAsync;
+        // var securityPosition = positions.Securities.SingleOrDefault(x => x.Figi == CurrentInstrument.Figi);
+        // if (securityPosition == null)
+        // {
+        //     throw new InvalidOperationException($"Position for {CurrentInstrument.Figi} not found.");
+        // }
+        // Logger.LogInformation("Security position {SecurityPosition}", securityPosition);
+        // if (securityPosition.Balance < amount)
+        // {
+        //     throw new InvalidOperationException($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
+        // }
         var response = await InvestApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
         Logger.LogInformation($"Sell order placed: {response}");
         return response;
@@ -628,13 +626,23 @@ public class TradingService : BackgroundService
             Quantity = amount,
             Price = DecimalToQuotation(price),
         };
-        var total = amount * price;
-        if (CashBalance < total)
-        {
-            throw new InvalidOperationException($"Not enough money to buy {CurrentInstrument.Figi} asset.");
-        }
+        // var total = amount * price;
+        // if (CashBalance < total)
+        // {
+        //     throw new InvalidOperationException($"Not enough money to buy {CurrentInstrument.Figi} asset.");
+        // }
         var response = await InvestApi.Orders.PostOrderAsync(buyOrderRequest).ResponseAsync;
         Logger.LogInformation($"Buy order placed: {response}");
+        return response;
+    }
+
+    private async Task<CancelOrderResponse> CancelOrder(string orderId)
+    {
+        var response = await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
+        {
+            AccountId = CurrentAccount.Id,
+            OrderId = orderId,
+        });
         return response;
     }
 }
