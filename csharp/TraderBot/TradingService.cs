@@ -649,7 +649,7 @@ public class TradingService : BackgroundService
             AccountId = CurrentAccount.Id,
             OrderId = orderId,
         });
-        Logger.LogInformation($"Order cancelled placed: {response}");
+        Logger.LogInformation($"Order cancelled: {response}");
         return response;
     }
 }
