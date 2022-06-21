@@ -323,10 +323,20 @@ public class TradingService : BackgroundService
                 var topBidOrder = orderBook.Bids.First();
                 var topBidPrice = topBidOrder.Price;
                 var topBid = QuotationToDecimal(topBidPrice);
-                var bestBidOrder = orderBook.Bids.First(x => x.Quantity > Settings.MinimumMarketOrderSizeToBuy);
+                var bestBidOrder = orderBook.Bids.FirstOrDefault(x => x.Quantity > Settings.MinimumMarketOrderSizeToBuy);
+                if (bestBidOrder == null)
+                {
+                    Logger.LogInformation($"No best bid order, skipping.");
+                    continue;
+                }
                 var bestBidPrice = bestBidOrder.Price;
                 var bestBid = QuotationToDecimal(bestBidPrice);
-                var bestAskOrder = orderBook.Asks.First(x => x.Quantity > Settings.MinimumMarketOrderSizeToSell);
+                var bestAskOrder = orderBook.Asks.FirstOrDefault(x => x.Quantity > Settings.MinimumMarketOrderSizeToSell);
+                if (bestAskOrder == null)
+                {
+                    Logger.LogInformation($"No best ask order, skipping.");
+                    continue;
+                }
                 var bestAskPrice = bestAskOrder.Price;
                 var bestAsk = QuotationToDecimal(bestAskPrice);
 
