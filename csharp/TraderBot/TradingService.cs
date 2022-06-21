@@ -312,7 +312,12 @@ public class TradingService : BackgroundService
                 var orderBook = data.Orderbook;
                 // Logger.LogInformation("Orderbook data received from stream: {OrderBook}", orderBook);
 
-                var topBidOrder = orderBook.Bids.First();
+                var topBidOrder = orderBook.Bids.FirstOrDefault();
+                if (topBidOrder == null)
+                {
+                    Logger.LogInformation("No top bid order, skipping.");
+                    continue;
+                }
                 var topBidPrice = topBidOrder.Price;
                 var topBid = QuotationToDecimal(topBidPrice);
                 var bestBidOrder = orderBook.Bids.FirstOrDefault(x => x.Quantity > Settings.MinimumMarketOrderSizeToBuy);
