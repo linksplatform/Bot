@@ -15,7 +15,8 @@ public class TradingService : BackgroundService
     protected readonly IHostApplicationLifetime Lifetime;
     protected readonly TradingSettings Settings;
     protected readonly Account CurrentAccount;
-    protected readonly Etf CurrentInstrument;
+    protected readonly string Figi;
+    protected readonly int LotSize;
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
     protected DateTime LastOperationsCheckpoint;
@@ -30,35 +31,60 @@ public class TradingService : BackgroundService
         InvestApi = investApi;
         Lifetime = lifetime;
         Settings = settings;
-        Logger.LogInformation($"ETF ticker: {Settings.EtfTicker}");
-        Logger.LogInformation($"CashCurrency: {Settings.CashCurrency}");
-        Logger.LogInformation($"AccountIndex: {Settings.AccountIndex}");
-        Logger.LogInformation($"MinimumProfitSteps: {Settings.MinimumProfitSteps}");
-        Logger.LogInformation($"MarketOrderBookDepth: {Settings.MarketOrderBookDepth}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToChangeBuyPrice: {Settings.MinimumMarketOrderSizeToChangeBuyPrice}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToChangeSellPrice: {Settings.MinimumMarketOrderSizeToChangeSellPrice}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToBuy: {Settings.MinimumMarketOrderSizeToBuy}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToSell: {Settings.MinimumMarketOrderSizeToSell}");
-        Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
-        Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
-        Logger.LogInformation($"LoadOperationsFrom: {Settings.LoadOperationsFrom}");
+        Logger.LogInformation($"Instrument: {settings.Instrument}");
+        Logger.LogInformation($"Ticker: {settings.Ticker}");
+        Logger.LogInformation($"CashCurrency: {settings.CashCurrency}");
+        Logger.LogInformation($"AccountIndex: {settings.AccountIndex}");
+        Logger.LogInformation($"MinimumProfitSteps: {settings.MinimumProfitSteps}");
+        Logger.LogInformation($"MarketOrderBookDepth: {settings.MarketOrderBookDepth}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToChangeBuyPrice: {settings.MinimumMarketOrderSizeToChangeBuyPrice}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToChangeSellPrice: {settings.MinimumMarketOrderSizeToChangeSellPrice}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToBuy: {settings.MinimumMarketOrderSizeToBuy}");
+        Logger.LogInformation($"MinimumMarketOrderSizeToSell: {settings.MinimumMarketOrderSizeToSell}");
+        Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
+        Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
+        Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
         Logger.LogInformation("Accounts:");
         var accounts = InvestApi.Users.GetAccounts().Accounts;
         for (int i = 0; i < accounts.Count; i++)
         {
             Logger.LogInformation($"[{i}]: {accounts[i]}");
         }
-        CurrentAccount = accounts[Settings.AccountIndex];
-        Logger.LogInformation($"CurrentAccount (with {Settings.AccountIndex} index): {CurrentAccount}");
-        CurrentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == Settings.EtfTicker);
-        Logger.LogInformation($"CurrentInstrument: {CurrentInstrument}");
-        PriceStep = QuotationToDecimal(CurrentInstrument.MinPriceIncrement);
-        Logger.LogInformation($"PriceStep: {PriceStep}");
+        CurrentAccount = accounts[settings.AccountIndex];
+        Logger.LogInformation($"CurrentAccount (with {settings.AccountIndex} index): {CurrentAccount}");
+
+        if (settings.Instrument == Instrument.Etf)
+        {
+            var currentInstrument = InvestApi.Instruments.Etfs().Instruments.First(etf => etf.Ticker == settings.Ticker);
+            Logger.LogInformation($"CurrentInstrument: {currentInstrument}");
+            Figi = currentInstrument.Figi;
+            Logger.LogInformation($"Figi: {Figi}");
+            PriceStep = QuotationToDecimal(currentInstrument.MinPriceIncrement);
+            Logger.LogInformation($"PriceStep: {PriceStep}");
+            LotSize = currentInstrument.Lot;
+            Logger.LogInformation($"LotSize: {LotSize}");
+        }
+        else if (settings.Instrument == Instrument.Shares) 
+        {
+            var currentInstrument = InvestApi.Instruments.Shares().Instruments.First(etf => etf.Ticker == settings.Ticker);
+            Logger.LogInformation($"CurrentInstrument: {currentInstrument}");
+            Figi = currentInstrument.Figi;
+            Logger.LogInformation($"Figi: {Figi}");
+            PriceStep = QuotationToDecimal(currentInstrument.MinPriceIncrement);
+            Logger.LogInformation($"PriceStep: {PriceStep}");
+            LotSize = currentInstrument.Lot;
+            Logger.LogInformation($"LotSize: {LotSize}");
+        }
+        else
+        {
+            throw new InvalidOperationException("Not supported instrument type.");
+        }
+        
         ActiveBuyOrders = new ConcurrentDictionary<string, OrderState>();
         ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
-        LastOperationsCheckpoint = Settings.LoadOperationsFrom;
+        LastOperationsCheckpoint = settings.LoadOperationsFrom;
     }
 
     protected async Task ReceiveTrades(CancellationToken cancellationToken)
@@ -124,7 +150,7 @@ public class TradingService : BackgroundService
         }
         foreach (var orderState in orders)
         {
-            if (orderState.Figi == CurrentInstrument.Figi)
+            if (orderState.Figi == Figi)
             {
                 if (orderState.Direction == OrderDirection.Buy)
                 {
@@ -287,7 +313,7 @@ public class TradingService : BackgroundService
         {
             SubscribeOrderBookRequest = new SubscribeOrderBookRequest
             {
-                Instruments = {new OrderBookInstrument {Figi = CurrentInstrument.Figi, Depth = Settings.MarketOrderBookDepth }},
+                Instruments = {new OrderBookInstrument {Figi = Figi, Depth = Settings.MarketOrderBookDepth }},
                 SubscriptionAction = SubscriptionAction.Subscribe
             },
         }).ContinueWith((task) =>
@@ -369,8 +395,7 @@ public class TradingService : BackgroundService
                             .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
                         CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
                         Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
-                        var lotSize = CurrentInstrument.Lot;
-                        var lotPrice = bestBid * lotSize;
+                        var lotPrice = bestBid * LotSize;
                         if (CashBalance > lotPrice)
                         {
                             var lots = (long) (CashBalance / lotPrice);
@@ -396,9 +421,8 @@ public class TradingService : BackgroundService
                         // Cancel order
                         await CancelOrder(activeBuyOrder.OrderId);
                         // Place new order
-                        var lotSize = CurrentInstrument.Lot;
-                        var previousOrderTotalPrice = activeBuyOrder.LotsRequested * lotSize  * initialOrderPrice;
-                        var newLotPrice = bestBid * lotSize;
+                        var previousOrderTotalPrice = activeBuyOrder.LotsRequested * LotSize * initialOrderPrice;
+                        var newLotPrice = bestBid * LotSize;
                         if (previousOrderTotalPrice > newLotPrice)
                         {
                             var lots = (long) (previousOrderTotalPrice / newLotPrice);
@@ -519,7 +543,7 @@ public class TradingService : BackgroundService
         {
             AccountId = CurrentAccount.Id,
             State = OperationState.Executed,
-            Figi = CurrentInstrument.Figi,
+            Figi = Figi,
             From = Timestamp.FromDateTime(from), // CurrentAccount.OpenedDate,
             To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(4))
         }).Operations;
@@ -605,7 +629,7 @@ public class TradingService : BackgroundService
             AccountId = CurrentAccount.Id,
             Direction = OrderDirection.Sell,
             OrderType = OrderType.Limit,
-            Figi = CurrentInstrument.Figi,
+            Figi = Figi,
             Quantity = amount,
             Price = DecimalToQuotation(price)
         };
@@ -633,7 +657,7 @@ public class TradingService : BackgroundService
             AccountId = CurrentAccount.Id,
             Direction = OrderDirection.Buy,
             OrderType = OrderType.Limit,
-            Figi = CurrentInstrument.Figi,
+            Figi = Figi,
             Quantity = amount,
             Price = DecimalToQuotation(price),
         };

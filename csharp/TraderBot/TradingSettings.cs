@@ -2,7 +2,8 @@ namespace TraderBot;
 
 public class TradingSettings
 {
-    public string? EtfTicker { get; set; }
+    public Instrument Instrument { get; set; }
+    public string? Ticker { get; set; }
     public string? CashCurrency { get; set; }
     public int AccountIndex { get; set; }
     public long MinimumProfitSteps { get; set; }
