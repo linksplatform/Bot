@@ -8,6 +8,8 @@ using Tinkoff.InvestApi.V1;
 
 namespace TraderBot;
 
+using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, decimal Price)>;
+
 public class TradingService : BackgroundService
 {
     protected readonly InvestApiClient InvestApi;
@@ -533,72 +535,50 @@ public class TradingService : BackgroundService
         return new Quotation { Units = units, Nano = nano };
     }
 
-    private List<Operation> GetOpenOperations()
+    private OperationsList GetOpenOperations()
     {
-        List<Operation> openOperations = new ();
-
-        // DateTime from = DateTime.SpecifyKind(DateTime.Parse("2022-06-10T13:42:31.613200Z"), DateTimeKind.Utc).AddHours(-3).AddTicks(1);
-        DateTime from = DateTime.SpecifyKind(LastOperationsCheckpoint, DateTimeKind.Utc).AddHours(-3);
+        DateTime accountOpenDate =  DateTime.SpecifyKind(CurrentAccount.OpenedDate.ToDateTime(), DateTimeKind.Utc).AddHours(-3);
+        DateTime lastCheckpoint = DateTime.SpecifyKind(LastOperationsCheckpoint, DateTimeKind.Utc).AddHours(-3);
+        DateTime from = new [] { accountOpenDate, lastCheckpoint }.Max();
         var operations = InvestApi.Operations.GetOperations(new OperationsRequest
         {
             AccountId = CurrentAccount.Id,
             State = OperationState.Executed,
             Figi = Figi,
-            From = Timestamp.FromDateTime(from), // CurrentAccount.OpenedDate,
+            From = Timestamp.FromDateTime(from),
             To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(4))
-        }).Operations;
+        }).Operations.Select<Operation, (OperationType Type, DateTime Date, long Quantity, decimal Price)>(o => (o.OperationType, o.Date.ToDateTime(), o.GetActualQuantity(), o.Price)).OrderBy(x => x.Date).ToList();
         
-        // TODO: Compare Timestamp.FromDateTime(from) and CurrentAccount.OpenedDate, (use max)
-        
-        // log operations
+        // Log operations
         foreach (var operation in operations)
         {
-            Logger.LogInformation($"{operation.OperationType} operation with {operation.Quantity - operation.QuantityRest} lots at {operation.Date}.");
+            Logger.LogInformation($"{operation.Type} operation with {operation.Quantity} lots at {operation.Price} price on {operation.Date}.");
         }
 
-        if (operations.Any() && operations.OrderBy(x => x.Date).First().OperationType == OperationType.Sell)
+        if (operations.Any() && operations.First().Type == OperationType.Sell)
         {
             throw new InvalidOperationException("Sell operation is first in list. It will not possible to correctly identify open operations.");
         }
 
-        var totalSoldQuantity = operations.Where(o => o.OperationType == OperationType.Sell).Sum(o => o.GetActualQuantity());
+        var totalSoldQuantity = operations.Where(o => o.Type == OperationType.Sell).Sum(o => o.Quantity);
         Logger.LogInformation($"Total sell operations quantity {totalSoldQuantity}");
-        var totalBoughtQuantity = operations.Where(o => o.OperationType == OperationType.Buy).Sum(o => o.GetActualQuantity());
+
+        var openOperations = operations.Where(o => o.Type == OperationType.Buy).ToList();
+
+        var totalBoughtQuantity = openOperations.Sum(o => o.Quantity);
         Logger.LogInformation($"Total buy operations quantity {totalBoughtQuantity}");
 
         if (totalSoldQuantity > 0 && totalSoldQuantity == totalBoughtQuantity)
         {
-            var baseDate = operations.OrderBy(x => x.Date).Last().Date.ToDateTime().AddMilliseconds(1);
+            var baseDate = operations.Last().Date.AddMilliseconds(1);
             LastOperationsCheckpoint = baseDate.AddHours(3);
             Logger.LogInformation($"New last operations checkpoint: {baseDate.ToString("o", System.Globalization.CultureInfo.InvariantCulture)}");
         }
-        
-        // long totalSoldQuantity = 0;
-        foreach (var operation in operations)
+
+        for (var i = 0; totalSoldQuantity > 0 && i < openOperations.Count; i++)
         {
-            if (operation.OperationType == OperationType.Buy)
-            {
-                openOperations.Add(operation);
-            }
-            // else if (operation.OperationType == OperationType.Sell)
-            // {
-            //     totalSoldQuantity += operation.GetActualQuantity();
-            // }
-        }
-        
-        // Logger.LogInformation($"totalSoldQuantity: \t{totalSoldQuantity}");
-        //
-        // Logger.LogInformation($"Total buy operations quantity after filter \t{openOperations.Sum(o => o.GetActualQuantity())}");
-        //
-        openOperations.Sort((operation, operation1) => (operation.Date).CompareTo(operation1.Date));
-        for (var i = 0; i < openOperations.Count; i++)
-        {
-            if (totalSoldQuantity == 0)
-            {
-                break;
-            }
             var openOperation = openOperations[i];
-            var actualQuantity = openOperation.GetActualQuantity();
+            var actualQuantity = openOperation.Quantity;
             if (totalSoldQuantity < actualQuantity)
             {
                 Logger.LogInformation($"final totalSoldQuantity: \t{totalSoldQuantity}");
