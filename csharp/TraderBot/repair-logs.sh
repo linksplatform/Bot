@@ -1,0 +1,1 @@
+find . -type f -name "*.log" -print0 | xargs -0 sed -i -e 's/\[40m\[32minfo\[39m\[22m\[49m/info/g' -e 's/\[41m\[30mfail\[39m\[22m\[49m/fail/g'
