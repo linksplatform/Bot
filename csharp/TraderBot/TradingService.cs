@@ -376,33 +376,32 @@ public class TradingService : BackgroundService
                     var areOrdersPlaced = false;
                     Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     // Process potential sell order
-                    foreach (var lotsSet in LotsSets)
+                    SyncLots();
+                    if (LotsSets.Count > 0) 
                     {
-                        var lotsSetPrice = lotsSet.Key;
-                        Logger.LogInformation($"lotsSetPrice: {lotsSetPrice}");
-                        var lotsSetAmount = lotsSet.Value;
-                        Logger.LogInformation($"lotsSetAmount: {lotsSetAmount}");
-                        var minimumSellPrice = GetMinimumSellPrice(lotsSetPrice);
-                        var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                         Logger.LogInformation($"sell activated");
-                        var response = await PlaceSellOrder(lotsSetAmount, targetSellPrice);
-                        ActiveSellOrderSourcePrice[response.OrderId] = lotsSetPrice;
+                        var maxPrice = LotsSets.Keys.Max();
+                        Logger.LogInformation($"maxPrice: {maxPrice}");
+                        var totalAmount = LotsSets.Values.Sum();
+                        Logger.LogInformation($"totalAmount: {totalAmount}");
+                        var minimumSellPrice = GetMinimumSellPrice(maxPrice);
+                        var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
+                        var response = await PlaceSellOrder(totalAmount, targetSellPrice);
+                        ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
+                        Logger.LogInformation($"sell complete");
                         areOrdersPlaced = true;
                     }
                     if (!areOrdersPlaced)
                     {
                         // Process potential buy order
-                        var rubBalanceMoneyValue = InvestApi.Operations
-                            .GetPositionsAsync(new PositionsRequest {AccountId = CurrentAccount.Id}).ResponseAsync.Result.Money
-                            .First(moneyValue => moneyValue.Currency == Settings.CashCurrency);
-                        CashBalance = MoneyValueToDecimal(rubBalanceMoneyValue);
-                        Logger.LogInformation($"Cash ({Settings.CashCurrency}) amount: {CashBalance}");
+                        CashBalance = await GetCashBalance();
                         var lotPrice = bestBid * LotSize;
                         if (CashBalance > lotPrice)
                         {
-                            var lots = (long) (CashBalance / lotPrice);
                             Logger.LogInformation($"buy activated");
+                            var lots = (long)(CashBalance / lotPrice);
                             var response = await PlaceBuyOrder(lots, bestBid);
+                            Logger.LogInformation($"buy complete");
                             areOrdersPlaced = true;
                         }
                     }
@@ -423,11 +422,11 @@ public class TradingService : BackgroundService
                         // Cancel order
                         await CancelOrder(activeBuyOrder.OrderId);
                         // Place new order
-                        var previousOrderTotalPrice = activeBuyOrder.LotsRequested * LotSize * initialOrderPrice;
-                        var newLotPrice = bestBid * LotSize;
-                        if (previousOrderTotalPrice > newLotPrice)
+                        CashBalance = await GetCashBalance();
+                        var lotPrice = bestBid * LotSize;
+                        if (CashBalance > lotPrice)
                         {
-                            var lots = (long) (previousOrderTotalPrice / newLotPrice);
+                            var lots = (long)(CashBalance / lotPrice);
                             var response = await PlaceBuyOrder(lots, bestBid);
                         }
                         SyncActiveOrders();
@@ -482,6 +481,14 @@ public class TradingService : BackgroundService
                 }
             }
         }
+    }
+
+    private async Task<decimal> GetCashBalance()
+    {
+        var response = (await InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }));
+        var balance = (decimal)response.Money.First(m => m.Currency == Settings.CashCurrency);
+        Logger.LogInformation($"Cash balance, {Settings.CashCurrency}: {balance}");
+        return balance;
     }
 
     private decimal GetMinimumSellPrice(decimal sourcePrice)
