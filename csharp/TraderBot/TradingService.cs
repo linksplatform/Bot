@@ -12,6 +12,8 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 
 public class TradingService : BackgroundService
 {
+    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(10);
+
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
@@ -185,6 +187,30 @@ public class TradingService : BackgroundService
         // Logger.LogInformation($"Open operations count: {openOperations.Count}");
         var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
 
+        // Get positions
+        var securitiesPositions = InvestApi.Operations.GetPositions(new PositionsRequest { AccountId = CurrentAccount.Id }).Securities;
+        var currentInstrumentPosition = securitiesPositions.Where(p => p.Figi == Figi).FirstOrDefault();
+        if (currentInstrumentPosition == null)
+        {
+            Logger.LogInformation($"Current instrument not found in positions.");
+        }
+        else
+        {
+            Logger.LogInformation($"Current instrument found in positions: {currentInstrumentPosition}");
+        }
+
+        // Get portfolio
+        var portfolio = InvestApi.Operations.GetPortfolio(new PortfolioRequest { AccountId = CurrentAccount.Id }).Positions;
+        var currentInstrumentPortfolio = portfolio.Where(p => p.Figi == Figi).FirstOrDefault();
+        if (currentInstrumentPortfolio == null)
+        {
+            Logger.LogInformation($"Current instrument not found in portfolio.");
+        }
+        else
+        {
+            Logger.LogInformation($"Current instrument found in portfolio: {currentInstrumentPortfolio}");
+        }
+
         var deletedLotsSets = new List<decimal>();
         foreach (var lotsSet in LotsSets)
         {
@@ -281,7 +307,7 @@ public class TradingService : BackgroundService
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Logger.LogError(ex, "SendOrders exception.");
-                    await Task.Delay(2500);
+                    await Task.Delay(RecoveryInterval);
                     Refresh(forceReset: true);
                 }
             }
@@ -301,7 +327,7 @@ public class TradingService : BackgroundService
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Logger.LogError(ex, "ReceiveTrades exception.");
-                    await Task.Delay(2500);
+                    await Task.Delay(RecoveryInterval);
                     Refresh(forceReset: true);
                 }
             }
@@ -386,6 +412,8 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"totalAmount: {totalAmount}");
                         var minimumSellPrice = GetMinimumSellPrice(maxPrice);
                         var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
+                        var lotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
+                        Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
                         var response = await PlaceSellOrder(totalAmount, targetSellPrice);
                         ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
                         Logger.LogInformation($"sell complete");
@@ -400,6 +428,8 @@ public class TradingService : BackgroundService
                         {
                             Logger.LogInformation($"buy activated");
                             var lots = (long)(CashBalance / lotPrice);
+                            var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                            Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
                             var response = await PlaceBuyOrder(lots, bestBid);
                             Logger.LogInformation($"buy complete");
                             areOrdersPlaced = true;
@@ -408,6 +438,10 @@ public class TradingService : BackgroundService
                     if (areOrdersPlaced)
                     {
                         SyncActiveOrders();
+                    }
+                    else
+                    {
+                        throw new InvalidOperationException("No orders placed");
                     }
                 }
                 else if (ActiveBuyOrders.Count == 1)
@@ -427,6 +461,8 @@ public class TradingService : BackgroundService
                         if (CashBalance > lotPrice)
                         {
                             var lots = (long)(CashBalance / lotPrice);
+                            var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                            Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
                             var response = await PlaceBuyOrder(lots, bestBid);
                         }
                         SyncActiveOrders();
@@ -462,15 +498,17 @@ public class TradingService : BackgroundService
                             var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
                             if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeSellPrice)
                             {
+                                Logger.LogInformation($"sell order price change activated");
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
                                 Logger.LogInformation($"initial sell order source price: {sourcePrice}");
                                 Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
-                                Logger.LogInformation($"sell order price change activated");
                                 // Cancel order
                                 await CancelOrder(activeSellOrder.OrderId);
                                 // Place new order
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
+                                var lotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
+                                Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
                                 var response = await PlaceSellOrder(activeSellOrder.LotsRequested, targetSellPrice);
                                 ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
                                 SyncActiveOrders();
