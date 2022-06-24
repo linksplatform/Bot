@@ -46,8 +46,8 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
-        Logger.LogInformation("Accounts:");
         var accounts = InvestApi.Users.GetAccounts().Accounts;
+        Logger.LogInformation("Accounts:");
         for (int i = 0; i < accounts.Count; i++)
         {
             Logger.LogInformation($"[{i}]: {accounts[i]}");
