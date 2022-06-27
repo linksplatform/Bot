@@ -611,7 +611,7 @@ public class TradingService : BackgroundService
             throw new InvalidOperationException("Sell operation is first in list. It will not possible to correctly identify open operations.");
         }
 
-        if (operations.Any(o => o.Price == 0))
+        if (operations.Any(o => o.Price == 0m))
         {
             throw new InvalidOperationException("Operation with price 0 is found. It will not possible to correctly identify open operations.");
         }
