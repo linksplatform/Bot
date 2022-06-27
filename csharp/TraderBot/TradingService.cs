@@ -24,6 +24,7 @@ public class TradingService : BackgroundService
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
     protected DateTime LastOperationsCheckpoint;
+    protected volatile int IsRefreshActive = 0;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
@@ -300,15 +301,15 @@ public class TradingService : BackgroundService
         {
             try
             {
+                Refresh(forceReset: true);
                 await SendOrders(cancellationToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Logger.LogError(ex, "SendOrders exception.");
                     await Task.Delay(RecoveryInterval);
-                    Refresh(forceReset: true);
                 }
             }
         }
@@ -320,15 +321,15 @@ public class TradingService : BackgroundService
         {
             try
             {
+                Refresh(forceReset: true);
                 await ReceiveTrades(cancellationToken);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Logger.LogError(ex, "ReceiveTrades exception.");
                     await Task.Delay(RecoveryInterval);
-                    Refresh(forceReset: true);
                 }
             }
         }
@@ -545,7 +546,6 @@ public class TradingService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
-        Refresh(forceReset: true);
         var tasks = new []
         {
             ReceiveTradesLoop(cancellationToken),
@@ -556,6 +556,10 @@ public class TradingService : BackgroundService
 
     protected void Refresh(bool forceReset = false)
     {
+        if (Interlocked.Exchange(ref IsRefreshActive, 1) == 1)
+        {
+            return;
+        }
         SyncActiveOrders(forceReset);
         LogActiveOrders();
         SyncLots(forceReset);
@@ -567,6 +571,7 @@ public class TradingService : BackgroundService
                 ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
             }
         }
+        Interlocked.Exchange(ref IsRefreshActive, 0);
     }
 
     public static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
