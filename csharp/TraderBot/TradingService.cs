@@ -13,7 +13,7 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 public class TradingService : BackgroundService
 {
     protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(10);
-
+    protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
@@ -24,7 +24,7 @@ public class TradingService : BackgroundService
     protected readonly decimal PriceStep;
     protected decimal CashBalance;
     protected DateTime LastOperationsCheckpoint;
-    protected volatile int IsRefreshActive = 0;
+    protected long LastRefreshTicks;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
@@ -556,7 +556,9 @@ public class TradingService : BackgroundService
 
     protected void Refresh(bool forceReset = false)
     {
-        if (Interlocked.Exchange(ref IsRefreshActive, 1) == 1)
+        var nowTicks = DateTime.UtcNow.Ticks;
+        var originalValue = Interlocked.Exchange(ref LastRefreshTicks, nowTicks);
+        if (nowTicks - originalValue < RefreshInterval.Ticks)
         {
             return;
         }
@@ -571,7 +573,6 @@ public class TradingService : BackgroundService
                 ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
             }
         }
-        Interlocked.Exchange(ref IsRefreshActive, 0);
     }
 
     public static decimal MoneyValueToDecimal(MoneyValue value) => value.Units + value.Nano / 1000000000m;
