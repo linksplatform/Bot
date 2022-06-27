@@ -476,6 +476,7 @@ public class TradingService : BackgroundService
                     {
                         if (topBidPrice == sourcePrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
+                            Logger.LogInformation($"early sell is activated");
                             Logger.LogInformation($"bestAsk: {bestAsk}, topBid: {topBid}, bestBid: {bestBid}.");
                             Logger.LogInformation($"topBidOrder.Quantity: {topBidOrder.Quantity}");
                             Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
@@ -486,7 +487,6 @@ public class TradingService : BackgroundService
                             // Cancel order
                             await CancelOrder(activeSellOrder.OrderId);
                             // Place new order at top bid price
-                            Logger.LogInformation($"early sell is activated");
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
                             SyncActiveOrders();
                             SyncLots();
@@ -603,6 +603,11 @@ public class TradingService : BackgroundService
         if (operations.Any() && operations.First().Type == OperationType.Sell)
         {
             throw new InvalidOperationException("Sell operation is first in list. It will not possible to correctly identify open operations.");
+        }
+
+        if (operations.Any(o => o.Price == 0))
+        {
+            throw new InvalidOperationException("Operation with price 0 is found. It will not possible to correctly identify open operations.");
         }
 
         var totalSoldQuantity = operations.Where(o => o.Type == OperationType.Sell).Sum(o => o.Quantity);
