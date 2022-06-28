@@ -611,11 +611,6 @@ public class TradingService : BackgroundService
             throw new InvalidOperationException("Sell operation is first in list. It will not possible to correctly identify open operations.");
         }
 
-        if (operations.Any(o => o.Price == 0m))
-        {
-            throw new InvalidOperationException("Operation with price 0 is found. It will not possible to correctly identify open operations.");
-        }
-
         var totalSoldQuantity = operations.Where(o => o.Type == OperationType.Sell).Sum(o => o.Quantity);
         Logger.LogInformation($"Total sell operations quantity {totalSoldQuantity}");
 
@@ -654,6 +649,12 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation($"Open operation \t{openOperation}");
         }
+
+        if (openOperations.Any(o => o.Price == 0m))
+        {
+            throw new InvalidOperationException("Open operation with price 0 is found.");
+        }
+
         return openOperations;
     }
 
