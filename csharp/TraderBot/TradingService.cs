@@ -184,9 +184,6 @@ public class TradingService : BackgroundService
         {
             LotsSets.Clear();
         }
-        var openOperations = GetOpenOperations();
-        // Logger.LogInformation($"Open operations count: {openOperations.Count}");
-        var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
 
         // Get positions
         var securitiesPositions = InvestApi.Operations.GetPositions(new PositionsRequest { AccountId = CurrentAccount.Id }).Securities;
@@ -211,6 +208,10 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation($"Current instrument found in portfolio: {currentInstrumentPortfolio}");
         }
+
+        var openOperations = GetOpenOperations();
+        // Logger.LogInformation($"Open operations count: {openOperations.Count}");
+        var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
 
         var deletedLotsSets = new List<decimal>();
         foreach (var lotsSet in LotsSets)
