@@ -604,7 +604,7 @@ public class TradingService : BackgroundService
         // Log operations
         foreach (var operation in operations)
         {
-            Logger.LogInformation($"{operation.Type} operation with {operation.Quantity} lots at {operation.Price} price on {operation.Date}.");
+            Logger.LogInformation($"{operation.Type} operation with {operation.Quantity} lots at {operation.Price} price on {operation.Date.ToString("o", System.Globalization.CultureInfo.InvariantCulture)}.");
         }
 
         if (operations.Any() && operations.First().Type == OperationType.Sell)
