@@ -635,7 +635,7 @@ public class TradingService : BackgroundService
             {
                 Logger.LogInformation($"final totalSoldQuantity: \t{totalSoldQuantity}");
                 Logger.LogInformation($"final actualQuantity: \t{actualQuantity}");
-                openOperation.Quantity = actualQuantity - totalSoldQuantity;
+                openOperations[i] = (openOperation.Type, openOperation.Date, actualQuantity - totalSoldQuantity, openOperation.Price);
                 Logger.LogInformation($"openOperation.Quantity: \t{openOperation.Quantity}");
                 totalSoldQuantity = 0;
                 continue;
