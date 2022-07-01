@@ -14,7 +14,8 @@ public class TradingService : BackgroundService
 {
     protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
-    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(60);
+    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(120);
+    protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(10);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
@@ -27,6 +28,7 @@ public class TradingService : BackgroundService
     protected DateTime LastOperationsCheckpoint;
     protected long LastRefreshTicks;
     protected long LastSyncTicks;
+    protected long LastWaitOutputTicks;
     protected TimeSpan MinimumTimeToBuy;
     protected TimeSpan MaximumTimeToBuy;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
@@ -414,17 +416,18 @@ public class TradingService : BackgroundService
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
                     var areOrdersPlaced = false;
-                    Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     // Process potential sell order
                     var nowTicks = DateTime.UtcNow.Ticks;
-                    var originalValue = Interlocked.Exchange(ref LastSyncTicks, nowTicks);
+                    var originalValue = Interlocked.Read(ref LastSyncTicks);
                     if (nowTicks - originalValue > SyncInterval.Ticks)
                     {
+                        Interlocked.Exchange(ref LastSyncTicks, nowTicks);
                         SyncLots();
                     }
                     if (LotsSets.Count > 0) 
                     {
                         Logger.LogInformation($"sell activated");
+                        Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                         var maxPrice = LotsSets.Keys.Max();
                         Logger.LogInformation($"maxPrice: {maxPrice}");
                         var totalAmount = LotsSets.Values.Sum();
@@ -448,6 +451,7 @@ public class TradingService : BackgroundService
                             if (CashBalance > lotPrice)
                             {
                                 Logger.LogInformation($"buy activated");
+                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                                 var lots = (long)(CashBalance / lotPrice);
                                 var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
                                 Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
@@ -459,7 +463,14 @@ public class TradingService : BackgroundService
                         else
                         {
                             var currentTime = DateTime.UtcNow.TimeOfDay;
-                            Logger.LogInformation($"Buy order will be placed from {Settings.MinimumTimeToBuy} to {Settings.MaximumTimeToBuy}. Now it is {currentTime}.");
+
+                            nowTicks = DateTime.UtcNow.Ticks;
+                            originalValue = Interlocked.Read(ref LastWaitOutputTicks);
+                            if (nowTicks - originalValue > WaitOutputInterval.Ticks)
+                            {
+                                Interlocked.Exchange(ref LastWaitOutputTicks, nowTicks);
+                                Logger.LogInformation($"Buy order will be placed from {Settings.MinimumTimeToBuy} to {Settings.MaximumTimeToBuy}. Now it is {currentTime:hh\\:mm\\:ss}.");
+                            }
                             continue;
                         }
                     }
