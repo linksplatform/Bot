@@ -14,6 +14,7 @@ public class TradingService : BackgroundService
 {
     protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
+    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(60);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
@@ -25,6 +26,7 @@ public class TradingService : BackgroundService
     protected decimal CashBalance;
     protected DateTime LastOperationsCheckpoint;
     protected long LastRefreshTicks;
+    protected long LastSyncTicks;
     protected TimeSpan MinimumTimeToBuy;
     protected TimeSpan MaximumTimeToBuy;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
@@ -414,7 +416,12 @@ public class TradingService : BackgroundService
                     var areOrdersPlaced = false;
                     Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
                     // Process potential sell order
-                    SyncLots();
+                    var nowTicks = DateTime.UtcNow.Ticks;
+                    var originalValue = Interlocked.Exchange(ref LastSyncTicks, nowTicks);
+                    if (nowTicks - originalValue > SyncInterval.Ticks)
+                    {
+                        SyncLots();
+                    }
                     if (LotsSets.Count > 0) 
                     {
                         Logger.LogInformation($"sell activated");
@@ -453,6 +460,7 @@ public class TradingService : BackgroundService
                         {
                             var currentTime = DateTime.UtcNow.TimeOfDay;
                             Logger.LogInformation($"Buy order will be placed from {Settings.MinimumTimeToBuy} to {Settings.MaximumTimeToBuy}. Now it is {currentTime}.");
+                            continue;
                         }
                     }
                     if (areOrdersPlaced)
