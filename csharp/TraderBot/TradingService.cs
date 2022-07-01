@@ -12,7 +12,7 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 
 public class TradingService : BackgroundService
 {
-    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
@@ -25,6 +25,8 @@ public class TradingService : BackgroundService
     protected decimal CashBalance;
     protected DateTime LastOperationsCheckpoint;
     protected long LastRefreshTicks;
+    protected TimeSpan MinimumTimeToBuy;
+    protected TimeSpan MaximumTimeToBuy;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
@@ -46,9 +48,17 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"MinimumMarketOrderSizeToChangeSellPrice: {settings.MinimumMarketOrderSizeToChangeSellPrice}");
         Logger.LogInformation($"MinimumMarketOrderSizeToBuy: {settings.MinimumMarketOrderSizeToBuy}");
         Logger.LogInformation($"MinimumMarketOrderSizeToSell: {settings.MinimumMarketOrderSizeToSell}");
+        MinimumTimeToBuy = TimeSpan.Parse(settings.MinimumTimeToBuy ?? "00:00:00", CultureInfo.InvariantCulture);
+        Logger.LogInformation($"MinimumTimeToBuy: {MinimumTimeToBuy}");
+        MaximumTimeToBuy = TimeSpan.Parse(settings.MaximumTimeToBuy ?? "23:59:59", CultureInfo.InvariantCulture);
+        Logger.LogInformation($"MaximumTimeToBuy: {MaximumTimeToBuy}");
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
+
+        var currentTime = DateTime.UtcNow.TimeOfDay;
+        Logger.LogInformation($"Current time: {currentTime}");
+
         var accounts = InvestApi.Users.GetAccounts().Accounts;
         Logger.LogInformation("Accounts:");
         for (int i = 0; i < accounts.Count; i++)
@@ -423,18 +433,26 @@ public class TradingService : BackgroundService
                     }
                     if (!areOrdersPlaced)
                     {
-                        // Process potential buy order
-                        CashBalance = await GetCashBalance();
-                        var lotPrice = bestBid * LotSize;
-                        if (CashBalance > lotPrice)
+                        if (IsTimeToBuy())
                         {
-                            Logger.LogInformation($"buy activated");
-                            var lots = (long)(CashBalance / lotPrice);
-                            var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
-                            Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
-                            var response = await PlaceBuyOrder(lots, bestBid);
-                            Logger.LogInformation($"buy complete");
-                            areOrdersPlaced = true;
+                            // Process potential buy order
+                            CashBalance = await GetCashBalance();
+                            var lotPrice = bestBid * LotSize;
+                            if (CashBalance > lotPrice)
+                            {
+                                Logger.LogInformation($"buy activated");
+                                var lots = (long)(CashBalance / lotPrice);
+                                var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                                Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
+                                var response = await PlaceBuyOrder(lots, bestBid);
+                                Logger.LogInformation($"buy complete");
+                                areOrdersPlaced = true;
+                            }
+                        }
+                        else
+                        {
+                            var currentTime = DateTime.UtcNow.TimeOfDay;
+                            Logger.LogInformation($"Buy order will be placed from {Settings.MinimumTimeToBuy} to {Settings.MaximumTimeToBuy}. Now it is {currentTime}.");
                         }
                     }
                     if (areOrdersPlaced)
@@ -522,6 +540,12 @@ public class TradingService : BackgroundService
             }
         }
     }
+
+    private bool IsTimeToBuy() 
+    {
+       var currentTime = DateTime.UtcNow.TimeOfDay;
+       return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
+    } 
 
     private async Task<decimal> GetCashBalance()
     {

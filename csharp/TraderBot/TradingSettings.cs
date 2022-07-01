@@ -12,6 +12,8 @@ public class TradingSettings
     public long MinimumMarketOrderSizeToChangeSellPrice { get; set; }
     public long MinimumMarketOrderSizeToBuy { get; set; }
     public long MinimumMarketOrderSizeToSell { get; set; }
+    public string? MinimumTimeToBuy { get; set; }
+    public string? MaximumTimeToBuy { get; set; }
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
     public DateTime LoadOperationsFrom { get; set; }
