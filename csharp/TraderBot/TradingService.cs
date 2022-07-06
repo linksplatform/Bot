@@ -487,25 +487,40 @@ public class TradingService : BackgroundService
                 {
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
                     var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
-                    if (initialOrderPrice != bestBid && bestBidOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeBuyPrice)
+                    if (LotsSets.TryGetValue(initialOrderPrice, out var boughtLots) || LotsSets.Count == 0)
                     {
-                        Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
-                        Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
-                        Logger.LogInformation($"buy order price change activated");
+                        if (initialOrderPrice != bestBid && bestBidOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeBuyPrice)
+                        {
+                            if (boughtLots > 0)
+                            {
+                                Logger.LogInformation($"buy trades are in progress");
+                                continue;
+                            }
+                            Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                            Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
+                            Logger.LogInformation($"buy order price change activated");
+                            // Cancel order
+                            await CancelOrder(activeBuyOrder.OrderId);
+                            // Place new order
+                            CashBalance = await GetCashBalance();
+                            var lotPrice = bestBid * LotSize;
+                            if (CashBalance > lotPrice)
+                            {
+                                var lots = (long)(CashBalance / lotPrice);
+                                var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                                Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
+                                var response = await PlaceBuyOrder(lots, bestBid);
+                            }
+                            SyncActiveOrders();
+                            Logger.LogInformation($"buy order price change is complete");
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogInformation($"bought lots found, cancelling buy order");
                         // Cancel order
                         await CancelOrder(activeBuyOrder.OrderId);
-                        // Place new order
-                        CashBalance = await GetCashBalance();
-                        var lotPrice = bestBid * LotSize;
-                        if (CashBalance > lotPrice)
-                        {
-                            var lots = (long)(CashBalance / lotPrice);
-                            var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
-                            Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
-                            var response = await PlaceBuyOrder(lots, bestBid);
-                        }
-                        SyncActiveOrders();
-                        Logger.LogInformation($"buy order price change is complete");
+                        Logger.LogInformation($"buy order cancelled");
                     }
                 }
                 else if (ActiveSellOrders.Count == 1)
