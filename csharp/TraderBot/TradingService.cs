@@ -520,6 +520,7 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"bought lots found, cancelling buy order");
                         // Cancel order
                         await CancelOrder(activeBuyOrder.OrderId);
+                        SyncActiveOrders();
                         Logger.LogInformation($"buy order cancelled");
                     }
                 }
