@@ -618,7 +618,7 @@ public class TradingService : BackgroundService
     {
         var response = (await InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }));
         var balanceFree = (decimal)response.Money.First(m => m.Currency == Settings.CashCurrency);
-        var balanceLocked = (decimal)response.Blocked.First(m => m.Currency == Settings.CashCurrency);
+        var balanceLocked = response.Blocked.Any() ? (decimal)response.Blocked.First(m => m.Currency == Settings.CashCurrency) : 0;
         Logger.LogInformation($"Local cash balance, {Settings.CashCurrency}: {CashBalanceFree} ({CashBalanceLocked} locked)");
         Logger.LogInformation($"Remote cash balance, {Settings.CashCurrency}: {balanceFree} ({balanceLocked} locked)");
         return PreferLocalCashBalance ? (CashBalanceFree, CashBalanceLocked) : (balanceFree, balanceLocked);
