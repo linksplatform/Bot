@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Globalization;
-using System.Security.Principal;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 using Tinkoff.InvestApi;
@@ -12,6 +11,7 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 
 public class TradingService : BackgroundService
 {
+    protected const bool PreferLocalCashBalance = false;
     protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
     protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(120);
@@ -24,7 +24,8 @@ public class TradingService : BackgroundService
     protected readonly string Figi;
     protected readonly int LotSize;
     protected readonly decimal PriceStep;
-    protected decimal CashBalance;
+    protected decimal CashBalanceFree;
+    protected decimal CashBalanceLocked;
     protected DateTime LastOperationsCheckpoint;
     protected long LastRefreshTicks;
     protected long LastSyncTicks;
@@ -118,6 +119,7 @@ public class TradingService : BackgroundService
             if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.OrderTrades)
             {
                 var orderTrades = data.OrderTrades;
+                UpdateCashBalance(orderTrades);
                 TryUpdateLots(orderTrades);
                 TrySubtractTradesFromOrder(ActiveBuyOrders, orderTrades);
                 TrySubtractTradesFromOrder(ActiveSellOrders, orderTrades);
@@ -126,6 +128,22 @@ public class TradingService : BackgroundService
             {
                 SyncActiveOrders();
                 SyncLots();
+            }
+        }
+    }
+
+    protected void UpdateCashBalance(OrderTrades orderTrades)
+    {
+        foreach (var trade in orderTrades.Trades)
+        {
+            var cashBalanceDelta = trade.Quantity * trade.Price;
+            if(orderTrades.Direction == OrderDirection.Buy)
+            {
+                SetCashBalance(CashBalanceFree, CashBalanceLocked - cashBalanceDelta);
+            }
+            else if (orderTrades.Direction == OrderDirection.Sell)
+            {
+                SetCashBalance(CashBalanceFree + cashBalanceDelta, CashBalanceLocked);
             }
         }
     }
@@ -190,6 +208,11 @@ public class TradingService : BackgroundService
             ActiveSellOrders.TryRemove(orderId, out OrderState? orderState);
             ActiveSellOrderSourcePrice.TryRemove(orderId, out decimal sourcePrice);
         }
+        if (ActiveBuyOrders.Count == 0 && CashBalanceLocked > 0)
+        {
+            Logger.LogInformation("No active orders.");
+            SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
+        }
     }
 
     protected void SyncLots(bool forceReset = false)
@@ -198,7 +221,6 @@ public class TradingService : BackgroundService
         {
             LotsSets.Clear();
         }
-
         // Get positions
         var securitiesPositions = InvestApi.Operations.GetPositions(new PositionsRequest { AccountId = CurrentAccount.Id }).Securities;
         var currentInstrumentPosition = securitiesPositions.Where(p => p.Figi == Figi).FirstOrDefault();
@@ -210,7 +232,6 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation($"Current instrument found in positions: {currentInstrumentPosition}");
         }
-
         // Get portfolio
         var portfolio = InvestApi.Operations.GetPortfolio(new PortfolioRequest { AccountId = CurrentAccount.Id }).Positions;
         var currentInstrumentPortfolio = portfolio.Where(p => p.Figi == Figi).FirstOrDefault();
@@ -316,7 +337,7 @@ public class TradingService : BackgroundService
         {
             try
             {
-                Refresh(forceReset: true);
+                await Refresh(forceReset: true);
                 await SendOrders(cancellationToken);
             }
             catch (Exception ex)
@@ -336,7 +357,7 @@ public class TradingService : BackgroundService
         {
             try
             {
-                Refresh(forceReset: true);
+                await Refresh(forceReset: true);
                 await ReceiveTrades(cancellationToken);
             }
             catch (Exception ex)
@@ -434,8 +455,8 @@ public class TradingService : BackgroundService
                         Logger.LogInformation($"totalAmount: {totalAmount}");
                         var minimumSellPrice = GetMinimumSellPrice(maxPrice);
                         var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
-                        var lotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
-                        Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
+                        var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
+                        Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
                         var response = await PlaceSellOrder(totalAmount, targetSellPrice);
                         ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
                         Logger.LogInformation($"sell complete");
@@ -446,15 +467,15 @@ public class TradingService : BackgroundService
                         if (IsTimeToBuy())
                         {
                             // Process potential buy order
-                            CashBalance = await GetCashBalance();
+                            var (cashBalance, _) = await GetCashBalance();
                             var lotPrice = bestBid * LotSize;
-                            if (CashBalance > lotPrice)
+                            if (cashBalance > lotPrice)
                             {
                                 Logger.LogInformation($"buy activated");
                                 Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
-                                var lots = (long)(CashBalance / lotPrice);
-                                var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
-                                Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
+                                var lots = (long)(cashBalance / lotPrice);
+                                var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                                Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
                                 var response = await PlaceBuyOrder(lots, bestBid);
                                 Logger.LogInformation($"buy complete");
                                 areOrdersPlaced = true;
@@ -502,14 +523,15 @@ public class TradingService : BackgroundService
                                 Logger.LogInformation($"buy order price change activated");
                                 // Cancel order
                                 await CancelOrder(activeBuyOrder.OrderId);
+                                SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
                                 // Place new order
-                                CashBalance = await GetCashBalance();
+                                var (cashBalance, _) = await GetCashBalance();
                                 var lotPrice = bestBid * LotSize;
-                                if (CashBalance > lotPrice)
+                                if (cashBalance > lotPrice)
                                 {
-                                    var lots = (long)(CashBalance / lotPrice);
-                                    var lotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
-                                    Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
+                                    var lots = (long)(cashBalance / lotPrice);
+                                    var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                                    Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
                                     var response = await PlaceBuyOrder(lots, bestBid);
                                 }
                                 SyncActiveOrders();
@@ -539,7 +561,8 @@ public class TradingService : BackgroundService
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
-                        if (topBidPrice == sourcePrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
+                        var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
+                        if (topBidPrice <= sourcePrice && topBidPrice >= minimumSellPrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
                             Logger.LogInformation($"early sell is activated");
                             Logger.LogInformation($"bestAsk: {bestAsk}, topBid: {topBid}, bestBid: {bestBid}.");
@@ -560,7 +583,6 @@ public class TradingService : BackgroundService
                         else
                         {
                             var initialOrderPrice = MoneyValueToDecimal(activeSellOrder.InitialSecurityPrice);
-                            var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
                             if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeSellPrice)
                             {
                                 Logger.LogInformation($"sell order price change activated");
@@ -572,8 +594,8 @@ public class TradingService : BackgroundService
                                 await CancelOrder(activeSellOrder.OrderId);
                                 // Place new order
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
-                                var lotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
-                                Logger.LogInformation($"lotsAtTargetPrice: {lotsAtTargetPrice}");
+                                var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
+                                Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
                                 var response = await PlaceSellOrder(activeSellOrder.LotsRequested, targetSellPrice);
                                 ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
                                 SyncActiveOrders();
@@ -592,12 +614,21 @@ public class TradingService : BackgroundService
        return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
     } 
 
-    private async Task<decimal> GetCashBalance()
+    private async Task<(decimal, decimal)> GetCashBalance()
     {
         var response = (await InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }));
-        var balance = (decimal)response.Money.First(m => m.Currency == Settings.CashCurrency);
-        Logger.LogInformation($"Cash balance, {Settings.CashCurrency}: {balance}");
-        return balance;
+        var balanceFree = (decimal)response.Money.First(m => m.Currency == Settings.CashCurrency);
+        var balanceLocked = (decimal)response.Blocked.First(m => m.Currency == Settings.CashCurrency);
+        Logger.LogInformation($"Local cash balance, {Settings.CashCurrency}: {CashBalanceFree} ({CashBalanceLocked} locked)");
+        Logger.LogInformation($"Remote cash balance, {Settings.CashCurrency}: {balanceFree} ({balanceLocked} locked)");
+        return PreferLocalCashBalance ? (CashBalanceFree, CashBalanceLocked) : (balanceFree, balanceLocked);
+    }
+
+    private void SetCashBalance(decimal free, decimal locked)
+    {
+        CashBalanceFree = free;
+        CashBalanceLocked = locked;
+        Logger.LogInformation($"New local cash balance, {Settings.CashCurrency}: {CashBalanceFree} ({CashBalanceLocked} locked)");
     }
 
     private decimal GetMinimumSellPrice(decimal sourcePrice)
@@ -624,7 +655,7 @@ public class TradingService : BackgroundService
         await Task.WhenAll(tasks);
     }
 
-    protected void Refresh(bool forceReset = false)
+    protected async Task Refresh(bool forceReset = false)
     {
         var nowTicks = DateTime.UtcNow.Ticks;
         var originalValue = Interlocked.Exchange(ref LastRefreshTicks, nowTicks);
@@ -638,6 +669,8 @@ public class TradingService : BackgroundService
         LogLots();
         if (forceReset)
         {
+            var cashBalance = await GetCashBalance();
+            SetCashBalance(cashBalance.Item1, cashBalance.Item2);
             if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
             {
                 ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
@@ -768,7 +801,8 @@ public class TradingService : BackgroundService
             Quantity = amount,
             Price = DecimalToQuotation(price),
         };
-        // var total = amount * price;
+        var total = amount * price;
+        SetCashBalance(CashBalanceFree - total, CashBalanceLocked + total);
         // if (CashBalance < total)
         // {
         //     throw new InvalidOperationException($"Not enough money to buy {CurrentInstrument.Figi} asset.");
