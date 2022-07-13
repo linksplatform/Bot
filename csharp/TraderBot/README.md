@@ -80,6 +80,12 @@ Configuration is located in `appsettings.json` file.
 | `TradingSettings`/`EarlySellOwnedLotsMultiplier` | A multiplier of lots requested to sell. A component of the minimum number of lots that the market order placed at the buy price should have in order to trigger the immediate sell order. Complete formula: (`TradingSettings`/`EarlySellOwnedLotsDelta` + `TradingSettings`/`EarlySellOwnedLotsMultiplier` * `Lots requested to sell`). |
 | `TradingSettings`/`LoadOperationsFrom` | Minimum data and time to load operations from. |
 
+## Current default trading time-frame
+
+At the moment, the bot trades only starting 12:00:00 till 17:00:00 Moscow time. This corresponds to the UTC time-frame: `09:00:00` till `14:00:00` settings in the `appsettings.json` file.
+
+[![Trading with bot](day-volatility.png)](day-volatility.png)
+
 ## Roadmap
 - [x] Make a bot that can place buy and sell orders at best price on a single run
 - [x] Make this bot work without restarts
