@@ -11,7 +11,7 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 
 public class TradingService : BackgroundService
 {
-    protected const bool PreferLocalCashBalance = false;
+    protected const bool PreferLocalCashBalance = true;
     protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
     protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(120);
@@ -614,14 +614,14 @@ public class TradingService : BackgroundService
        return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
     } 
 
-    private async Task<(decimal, decimal)> GetCashBalance()
+    private async Task<(decimal, decimal)> GetCashBalance(bool forceRemote = false)
     {
         var response = (await InvestApi.Operations.GetPositionsAsync(new PositionsRequest { AccountId = CurrentAccount.Id }));
         var balanceFree = (decimal)response.Money.First(m => m.Currency == Settings.CashCurrency);
         var balanceLocked = response.Blocked.Any() ? (decimal)response.Blocked.First(m => m.Currency == Settings.CashCurrency) : 0;
         Logger.LogInformation($"Local cash balance, {Settings.CashCurrency}: {CashBalanceFree} ({CashBalanceLocked} locked)");
         Logger.LogInformation($"Remote cash balance, {Settings.CashCurrency}: {balanceFree} ({balanceLocked} locked)");
-        return PreferLocalCashBalance ? (CashBalanceFree, CashBalanceLocked) : (balanceFree, balanceLocked);
+        return (!forceRemote && PreferLocalCashBalance) ? (CashBalanceFree, CashBalanceLocked) : (balanceFree, balanceLocked);
     }
 
     private void SetCashBalance(decimal free, decimal locked)
@@ -669,7 +669,7 @@ public class TradingService : BackgroundService
         LogLots();
         if (forceReset)
         {
-            var cashBalance = await GetCashBalance();
+            var cashBalance = await GetCashBalance(forceRemote: true);
             SetCashBalance(cashBalance.Item1, cashBalance.Item2);
             if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
             {
