@@ -1,4 +1,4 @@
-name: cppWorkflow
+name: cpp
 
 on:
   push:
