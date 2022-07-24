@@ -71,6 +71,10 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation($"[{i}]: {accounts[i]}");
         }
+        if (settings.AccountIndex < 0 || settings.AccountIndex >= accounts.Count)
+        {
+            throw new ArgumentException($"Account index {settings.AccountIndex} is out of range. Please select a valid account index ({0}-{accounts.Count - 1}).");
+        }
         CurrentAccount = accounts[settings.AccountIndex];
         Logger.LogInformation($"CurrentAccount (with {settings.AccountIndex} index): {CurrentAccount}");
 
