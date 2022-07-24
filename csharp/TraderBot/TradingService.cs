@@ -12,7 +12,8 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 public class TradingService : BackgroundService
 {
     protected const bool PreferLocalCashBalance = true;
-    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
+    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan FailedCancelOrderInterval = TimeSpan.FromSeconds(5);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
     protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(120);
     protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(10);
@@ -522,7 +523,11 @@ public class TradingService : BackgroundService
                                 Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
                                 Logger.LogInformation($"buy order price change activated");
                                 // Cancel order
-                                await CancelOrder(activeBuyOrder.OrderId);
+                                if (!await TryCancelOrder(activeBuyOrder.OrderId))
+                                {
+                                    Logger.LogInformation($"failed to cancel buy order.");
+                                    continue;
+                                }
                                 SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
                                 // Place new order
                                 var (cashBalance, _) = await GetCashBalance();
@@ -540,9 +545,13 @@ public class TradingService : BackgroundService
                         }
                         else
                         {
-                            Logger.LogInformation($"bought lots found, cancelling buy order");
+                            Logger.LogInformation($"bought lots with other prices found, cancelling buy order");
                             // Cancel order
-                            await CancelOrder(activeBuyOrder.OrderId);
+                            if (!await TryCancelOrder(activeBuyOrder.OrderId))
+                            {
+                                Logger.LogInformation($"failed to cancel buy order.");
+                                continue;
+                            }
                             SyncActiveOrders();
                             Logger.LogInformation($"buy order cancelled");
                         }
@@ -551,7 +560,11 @@ public class TradingService : BackgroundService
                     {
                         Logger.LogInformation($"It is not time to buy, cancelling buy order");
                         // Cancel order
-                        await CancelOrder(activeBuyOrder.OrderId);
+                        if (!await TryCancelOrder(activeBuyOrder.OrderId))
+                        {
+                            Logger.LogInformation($"failed to cancel buy order.");
+                            continue;
+                        }
                         SyncActiveOrders();
                         Logger.LogInformation($"buy order cancelled");
                     }
@@ -573,7 +586,11 @@ public class TradingService : BackgroundService
                             Logger.LogInformation($"Threshold: {(Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier)}");
                             Logger.LogInformation($"initial sell order price: {sourcePrice}");
                             // Cancel order
-                            await CancelOrder(activeSellOrder.OrderId);
+                            if (!await TryCancelOrder(activeSellOrder.OrderId))
+                            {
+                                Logger.LogInformation($"failed to cancel sell order.");
+                                continue;
+                            }
                             // Place new order at top bid price
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
                             SyncActiveOrders();
@@ -591,7 +608,11 @@ public class TradingService : BackgroundService
                                 Logger.LogInformation($"initial sell order source price: {sourcePrice}");
                                 Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
                                 // Cancel order
-                                await CancelOrder(activeSellOrder.OrderId);
+                                if (!await TryCancelOrder(activeSellOrder.OrderId))
+                                {
+                                    Logger.LogInformation($"failed to cancel sell order.");
+                                    continue;
+                                }
                                 // Place new order
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                                 var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
@@ -821,5 +842,30 @@ public class TradingService : BackgroundService
         });
         Logger.LogInformation($"Order cancelled: {response}");
         return response;
+    }
+
+    private async Task<bool> TryCancelOrder(string orderId)
+    {
+        try
+        {
+            await CancelOrder(orderId);
+            return true;
+        }
+        catch (RpcException ex)
+        {
+            await Task.Delay(FailedCancelOrderInterval);
+            if (ex.StatusCode == StatusCode.NotFound)
+            {
+                return false;
+            }
+            Logger.LogError(ex, "Error while cancelling order");
+            return false;
+        }
+        catch (Exception e)
+        {
+            await Task.Delay(FailedCancelOrderInterval);
+            Logger.LogError(e, "Error while cancelling order");
+            return false;
+        }
     }
 }
