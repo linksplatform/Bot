@@ -15,7 +15,7 @@ public class TradingService : BackgroundService
     protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(10);
     protected static readonly TimeSpan FailedCancelOrderInterval = TimeSpan.FromSeconds(5);
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
-    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(120);
+    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(10);
     protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(10);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
@@ -443,14 +443,7 @@ public class TradingService : BackgroundService
                 {
                     var areOrdersPlaced = false;
                     // Process potential sell order
-                    var nowTicks = DateTime.UtcNow.Ticks;
-                    var originalValue = Interlocked.Read(ref LastSyncTicks);
-                    if (nowTicks - originalValue > SyncInterval.Ticks)
-                    {
-                        Interlocked.Exchange(ref LastSyncTicks, nowTicks);
-                        SyncLots();
-                    }
-                    if (LotsSets.Count > 0) 
+                    if (LotsSets.Count > 0)
                     {
                         Logger.LogInformation($"sell activated");
                         Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
@@ -489,8 +482,8 @@ public class TradingService : BackgroundService
                         else
                         {
                             var currentTime = DateTime.UtcNow.TimeOfDay;
-                            nowTicks = DateTime.UtcNow.Ticks;
-                            originalValue = Interlocked.Read(ref LastWaitOutputTicks);
+                            var nowTicks = DateTime.UtcNow.Ticks;
+                            var originalValue = Interlocked.Read(ref LastWaitOutputTicks);
                             if (nowTicks - originalValue > WaitOutputInterval.Ticks)
                             {
                                 Interlocked.Exchange(ref LastWaitOutputTicks, nowTicks);
@@ -505,7 +498,13 @@ public class TradingService : BackgroundService
                     }
                     else
                     {
-                        throw new InvalidOperationException("No orders placed");
+                        var nowTicks = DateTime.UtcNow.Ticks;
+                        var originalValue = Interlocked.Read(ref LastSyncTicks);
+                        if (nowTicks - originalValue > SyncInterval.Ticks)
+                        {
+                            Interlocked.Exchange(ref LastSyncTicks, nowTicks);
+                            SyncLots();
+                        }
                     }
                 }
                 else if (ActiveBuyOrders.Count == 1)
@@ -598,7 +597,6 @@ public class TradingService : BackgroundService
                             // Place new order at top bid price
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
                             SyncActiveOrders();
-                            SyncLots();
                             Logger.LogInformation($"early sell is complete");
                         }
                         else
