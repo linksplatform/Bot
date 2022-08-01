@@ -577,6 +577,12 @@ public class TradingService : BackgroundService
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
+                        var initialLots = activeSellOrder.InitialOrderPrice / activeSellOrder.InitialSecurityPrice;
+                        if (activeSellOrder.LotsRequested < initialLots)
+                        {
+                            Logger.LogInformation($"sell trades are in progress");
+                            continue;
+                        }
                         var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
                         if (topBidPrice <= sourcePrice && topBidPrice >= minimumSellPrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
