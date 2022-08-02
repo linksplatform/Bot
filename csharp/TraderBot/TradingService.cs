@@ -218,6 +218,10 @@ public class TradingService : BackgroundService
             Logger.LogInformation("No active orders.");
             SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
         }
+        if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
+        {
+            ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
+        }
     }
 
     protected void SyncLots(bool forceReset = false)
@@ -700,10 +704,6 @@ public class TradingService : BackgroundService
         {
             var cashBalance = await GetCashBalance(forceRemote: true);
             SetCashBalance(cashBalance.Item1, cashBalance.Item2);
-            if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
-            {
-                ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
-            }
         }
     }
 
