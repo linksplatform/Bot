@@ -654,6 +654,12 @@ public class TradingService : BackgroundService
         var balanceLocked = response.Blocked.Any() ? (decimal)response.Blocked.First(m => m.Currency == Settings.CashCurrency) : 0;
         Logger.LogInformation($"Local cash balance, {Settings.CashCurrency}: {CashBalanceFree} ({CashBalanceLocked} locked)");
         Logger.LogInformation($"Remote cash balance, {Settings.CashCurrency}: {balanceFree} ({balanceLocked} locked)");
+        // If remote balance is greater than local balance, update local balance
+        if (balanceFree > CashBalanceFree)
+        {
+            SetCashBalance(balanceFree, balanceLocked);
+            return (CashBalanceFree, CashBalanceLocked);
+        }
         return (!forceRemote && PreferLocalCashBalance) ? (CashBalanceFree, CashBalanceLocked) : (balanceFree, balanceLocked);
     }
 
