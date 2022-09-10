@@ -3,3 +3,4 @@ services:
   trader-bot:
     build: .
     env_file: .env
+    restart: on-failure

@@ -51,4 +51,6 @@ jq -n \
       "EarlySellOwnedLotsMultiplier": $earlySellOwnedLotsMultiplier,
       "LoadOperationsFrom": $loadOperationsFrom
     }
-  }'
+  }' > appsettings.json
+
+dotnet TraderBot.dll
