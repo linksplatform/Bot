@@ -6,7 +6,7 @@ set +e
 jq -n \
   --arg logLevelDefault "$LOG_LEVEL_DEFAULT" \
   --arg microsoftHostingLifetime "$MICROSOFT_HOSTING_LIFETIME" \
-  --arg accessToken "$ACESS_TOKEN" \
+  --arg accessToken "$ACCESS_TOKEN" \
   --arg appName "$APP_NAME" \
   --arg instrument "$INSTRUMENT" \
   --arg ticker "$TICKER" \
