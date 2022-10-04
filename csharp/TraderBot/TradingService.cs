@@ -437,7 +437,7 @@ public class TradingService : BackgroundService
                 var bestAskPrice = bestAskOrder.Price;
                 var bestAsk = QuotationToDecimal(bestAskPrice);
 
-                // Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                // Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                 
                 // Logger.LogInformation($"Time: {DateTime.Now}");
                 // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
@@ -450,7 +450,7 @@ public class TradingService : BackgroundService
                     if (LotsSets.Count > 0)
                     {
                         Logger.LogInformation($"sell activated");
-                        Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                        Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                         var maxPrice = LotsSets.Keys.Max();
                         Logger.LogInformation($"maxPrice: {maxPrice}");
                         var totalAmount = LotsSets.Values.Sum();
@@ -474,7 +474,7 @@ public class TradingService : BackgroundService
                             if (cashBalance > lotPrice)
                             {
                                 Logger.LogInformation($"buy activated");
-                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                                 var lots = (long)(cashBalance / lotPrice);
                                 var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
                                 Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
@@ -526,12 +526,13 @@ public class TradingService : BackgroundService
                                     Logger.LogInformation($"buy trades are in progress");
                                     continue;
                                 }
-                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                                 Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
                                 Logger.LogInformation($"buy order price change activated");
                                 // Cancel order
                                 if (!await TryCancelOrder(activeBuyOrder.OrderId))
                                 {
+                                    ActiveBuyOrders.Clear();
                                     Logger.LogInformation($"failed to cancel buy order.");
                                     continue;
                                 }
@@ -556,6 +557,7 @@ public class TradingService : BackgroundService
                             // Cancel order
                             if (!await TryCancelOrder(activeBuyOrder.OrderId))
                             {
+                                ActiveBuyOrders.Clear();
                                 Logger.LogInformation($"failed to cancel buy order.");
                                 continue;
                             }
@@ -569,6 +571,7 @@ public class TradingService : BackgroundService
                         // Cancel order
                         if (!await TryCancelOrder(activeBuyOrder.OrderId))
                         {
+                            ActiveBuyOrders.Clear();
                             Logger.LogInformation($"failed to cancel buy order.");
                             continue;
                         }
@@ -591,7 +594,7 @@ public class TradingService : BackgroundService
                                 continue;
                             }
                             Logger.LogInformation($"early sell is activated");
-                            Logger.LogInformation($"bestAsk: {bestAsk}, topBid: {topBid}, bestBid: {bestBid}.");
+                            Logger.LogInformation($"topBid: {topBid}, bestBid: {bestBid}, bestAsk: {bestAsk}.");
                             Logger.LogInformation($"topBidOrder.Quantity: {topBidOrder.Quantity}");
                             Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
                             Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
@@ -601,6 +604,7 @@ public class TradingService : BackgroundService
                             // Cancel order
                             if (!await TryCancelOrder(activeSellOrder.OrderId))
                             {
+                                ActiveSellOrders.Clear();
                                 Logger.LogInformation($"failed to cancel sell order.");
                                 continue;
                             }
@@ -615,13 +619,14 @@ public class TradingService : BackgroundService
                             if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeSellPrice)
                             {
                                 Logger.LogInformation($"sell order price change activated");
-                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
                                 Logger.LogInformation($"initial sell order source price: {sourcePrice}");
                                 Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
                                 // Cancel order
                                 if (!await TryCancelOrder(activeSellOrder.OrderId))
                                 {
+                                    ActiveSellOrders.Clear();
                                     Logger.LogInformation($"failed to cancel sell order.");
                                     continue;
                                 }
