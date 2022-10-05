@@ -12,11 +12,11 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 public class TradingService : BackgroundService
 {
     protected const bool PreferLocalCashBalance = true;
-    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(10);
-    protected static readonly TimeSpan FailedCancelOrderInterval = TimeSpan.FromSeconds(5);
-    protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
-    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(10);
-    protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(20);
+    protected static readonly TimeSpan FailedCancelOrderInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(20);
+    protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(20);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
