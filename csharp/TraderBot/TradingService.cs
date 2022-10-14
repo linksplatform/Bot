@@ -12,10 +12,11 @@ using OperationsList = List<(OperationType Type, DateTime Date, long Quantity, d
 public class TradingService : BackgroundService
 {
     protected const bool PreferLocalCashBalance = true;
-    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(15);
-    protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(5);
-    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(120);
-    protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan RecoveryInterval = TimeSpan.FromSeconds(20);
+    protected static readonly TimeSpan FailedCancelOrderInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
+    protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(20);
+    protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(20);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
@@ -69,6 +70,10 @@ public class TradingService : BackgroundService
         for (int i = 0; i < accounts.Count; i++)
         {
             Logger.LogInformation($"[{i}]: {accounts[i]}");
+        }
+        if (settings.AccountIndex < 0 || settings.AccountIndex >= accounts.Count)
+        {
+            throw new ArgumentException($"Account index {settings.AccountIndex} is out of range. Please select a valid account index ({0}-{accounts.Count - 1}).");
         }
         CurrentAccount = accounts[settings.AccountIndex];
         Logger.LogInformation($"CurrentAccount (with {settings.AccountIndex} index): {CurrentAccount}");
@@ -212,6 +217,10 @@ public class TradingService : BackgroundService
         {
             Logger.LogInformation("No active orders.");
             SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
+        }
+        if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
+        {
+            ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
         }
     }
 
@@ -428,7 +437,7 @@ public class TradingService : BackgroundService
                 var bestAskPrice = bestAskOrder.Price;
                 var bestAsk = QuotationToDecimal(bestAskPrice);
 
-                // Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                // Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                 
                 // Logger.LogInformation($"Time: {DateTime.Now}");
                 // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
@@ -438,17 +447,10 @@ public class TradingService : BackgroundService
                 {
                     var areOrdersPlaced = false;
                     // Process potential sell order
-                    var nowTicks = DateTime.UtcNow.Ticks;
-                    var originalValue = Interlocked.Read(ref LastSyncTicks);
-                    if (nowTicks - originalValue > SyncInterval.Ticks)
-                    {
-                        Interlocked.Exchange(ref LastSyncTicks, nowTicks);
-                        SyncLots();
-                    }
-                    if (LotsSets.Count > 0) 
+                    if (LotsSets.Count > 0)
                     {
                         Logger.LogInformation($"sell activated");
-                        Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                        Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                         var maxPrice = LotsSets.Keys.Max();
                         Logger.LogInformation($"maxPrice: {maxPrice}");
                         var totalAmount = LotsSets.Values.Sum();
@@ -472,7 +474,7 @@ public class TradingService : BackgroundService
                             if (cashBalance > lotPrice)
                             {
                                 Logger.LogInformation($"buy activated");
-                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                                 var lots = (long)(cashBalance / lotPrice);
                                 var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
                                 Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
@@ -484,8 +486,8 @@ public class TradingService : BackgroundService
                         else
                         {
                             var currentTime = DateTime.UtcNow.TimeOfDay;
-                            nowTicks = DateTime.UtcNow.Ticks;
-                            originalValue = Interlocked.Read(ref LastWaitOutputTicks);
+                            var nowTicks = DateTime.UtcNow.Ticks;
+                            var originalValue = Interlocked.Read(ref LastWaitOutputTicks);
                             if (nowTicks - originalValue > WaitOutputInterval.Ticks)
                             {
                                 Interlocked.Exchange(ref LastWaitOutputTicks, nowTicks);
@@ -500,7 +502,13 @@ public class TradingService : BackgroundService
                     }
                     else
                     {
-                        throw new InvalidOperationException("No orders placed");
+                        var nowTicks = DateTime.UtcNow.Ticks;
+                        var originalValue = Interlocked.Read(ref LastSyncTicks);
+                        if (nowTicks - originalValue > SyncInterval.Ticks)
+                        {
+                            Interlocked.Exchange(ref LastSyncTicks, nowTicks);
+                            SyncLots();
+                        }
                     }
                 }
                 else if (ActiveBuyOrders.Count == 1)
@@ -518,11 +526,16 @@ public class TradingService : BackgroundService
                                     Logger.LogInformation($"buy trades are in progress");
                                     continue;
                                 }
-                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                                 Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
                                 Logger.LogInformation($"buy order price change activated");
                                 // Cancel order
-                                await CancelOrder(activeBuyOrder.OrderId);
+                                if (!await TryCancelOrder(activeBuyOrder.OrderId))
+                                {
+                                    ActiveBuyOrders.Clear();
+                                    Logger.LogInformation($"failed to cancel buy order.");
+                                    continue;
+                                }
                                 SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
                                 // Place new order
                                 var (cashBalance, _) = await GetCashBalance();
@@ -540,9 +553,14 @@ public class TradingService : BackgroundService
                         }
                         else
                         {
-                            Logger.LogInformation($"bought lots found, cancelling buy order");
+                            Logger.LogInformation($"bought lots with other prices found, cancelling buy order");
                             // Cancel order
-                            await CancelOrder(activeBuyOrder.OrderId);
+                            if (!await TryCancelOrder(activeBuyOrder.OrderId))
+                            {
+                                ActiveBuyOrders.Clear();
+                                Logger.LogInformation($"failed to cancel buy order.");
+                                continue;
+                            }
                             SyncActiveOrders();
                             Logger.LogInformation($"buy order cancelled");
                         }
@@ -551,7 +569,12 @@ public class TradingService : BackgroundService
                     {
                         Logger.LogInformation($"It is not time to buy, cancelling buy order");
                         // Cancel order
-                        await CancelOrder(activeBuyOrder.OrderId);
+                        if (!await TryCancelOrder(activeBuyOrder.OrderId))
+                        {
+                            ActiveBuyOrders.Clear();
+                            Logger.LogInformation($"failed to cancel buy order.");
+                            continue;
+                        }
                         SyncActiveOrders();
                         Logger.LogInformation($"buy order cancelled");
                     }
@@ -561,11 +584,17 @@ public class TradingService : BackgroundService
                     var activeSellOrder = ActiveSellOrders.Single().Value;
                     if (ActiveSellOrderSourcePrice.TryGetValue(activeSellOrder.OrderId, out var sourcePrice))
                     {
+                        var initialLots = activeSellOrder.InitialOrderPrice / activeSellOrder.InitialSecurityPrice;
                         var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
                         if (topBidPrice <= sourcePrice && topBidPrice >= minimumSellPrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
+                            if (activeSellOrder.LotsRequested < initialLots)
+                            {
+                                Logger.LogInformation($"sell trades are in progress");
+                                continue;
+                            }
                             Logger.LogInformation($"early sell is activated");
-                            Logger.LogInformation($"bestAsk: {bestAsk}, topBid: {topBid}, bestBid: {bestBid}.");
+                            Logger.LogInformation($"topBid: {topBid}, bestBid: {bestBid}, bestAsk: {bestAsk}.");
                             Logger.LogInformation($"topBidOrder.Quantity: {topBidOrder.Quantity}");
                             Logger.LogInformation($"EarlySellOwnedLotsDelta: {Settings.EarlySellOwnedLotsDelta}");
                             Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {Settings.EarlySellOwnedLotsMultiplier}");
@@ -573,11 +602,15 @@ public class TradingService : BackgroundService
                             Logger.LogInformation($"Threshold: {(Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier)}");
                             Logger.LogInformation($"initial sell order price: {sourcePrice}");
                             // Cancel order
-                            await CancelOrder(activeSellOrder.OrderId);
+                            if (!await TryCancelOrder(activeSellOrder.OrderId))
+                            {
+                                ActiveSellOrders.Clear();
+                                Logger.LogInformation($"failed to cancel sell order.");
+                                continue;
+                            }
                             // Place new order at top bid price
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
                             SyncActiveOrders();
-                            SyncLots();
                             Logger.LogInformation($"early sell is complete");
                         }
                         else
@@ -586,12 +619,17 @@ public class TradingService : BackgroundService
                             if (bestAsk >= minimumSellPrice && bestAsk != initialOrderPrice && bestAskOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeSellPrice)
                             {
                                 Logger.LogInformation($"sell order price change activated");
-                                Logger.LogInformation($"ask: {bestAsk}, bid: {bestBid}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                                 Logger.LogInformation($"initial sell order price: {initialOrderPrice}");
                                 Logger.LogInformation($"initial sell order source price: {sourcePrice}");
                                 Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
                                 // Cancel order
-                                await CancelOrder(activeSellOrder.OrderId);
+                                if (!await TryCancelOrder(activeSellOrder.OrderId))
+                                {
+                                    ActiveSellOrders.Clear();
+                                    Logger.LogInformation($"failed to cancel sell order.");
+                                    continue;
+                                }
                                 // Place new order
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                                 var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
@@ -621,6 +659,12 @@ public class TradingService : BackgroundService
         var balanceLocked = response.Blocked.Any() ? (decimal)response.Blocked.First(m => m.Currency == Settings.CashCurrency) : 0;
         Logger.LogInformation($"Local cash balance, {Settings.CashCurrency}: {CashBalanceFree} ({CashBalanceLocked} locked)");
         Logger.LogInformation($"Remote cash balance, {Settings.CashCurrency}: {balanceFree} ({balanceLocked} locked)");
+        // If remote balance is greater than local balance, update local balance
+        if (balanceFree > CashBalanceFree)
+        {
+            SetCashBalance(balanceFree, balanceLocked);
+            return (CashBalanceFree, CashBalanceLocked);
+        }
         return (!forceRemote && PreferLocalCashBalance) ? (CashBalanceFree, CashBalanceLocked) : (balanceFree, balanceLocked);
     }
 
@@ -671,10 +715,6 @@ public class TradingService : BackgroundService
         {
             var cashBalance = await GetCashBalance(forceRemote: true);
             SetCashBalance(cashBalance.Item1, cashBalance.Item2);
-            if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
-            {
-                ActiveSellOrderSourcePrice[ActiveSellOrders.Single().Value.OrderId] = LotsSets.Single().Key;
-            }
         }
     }
 
@@ -821,5 +861,30 @@ public class TradingService : BackgroundService
         });
         Logger.LogInformation($"Order cancelled: {response}");
         return response;
+    }
+
+    private async Task<bool> TryCancelOrder(string orderId)
+    {
+        try
+        {
+            await CancelOrder(orderId);
+            return true;
+        }
+        catch (RpcException ex)
+        {
+            await Task.Delay(FailedCancelOrderInterval);
+            if (ex.StatusCode == StatusCode.NotFound)
+            {
+                return false;
+            }
+            Logger.LogError(ex, "Error while cancelling order");
+            return false;
+        }
+        catch (Exception e)
+        {
+            await Task.Delay(FailedCancelOrderInterval);
+            Logger.LogError(e, "Error while cancelling order");
+            return false;
+        }
     }
 }
