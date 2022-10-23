@@ -468,8 +468,10 @@ checksum = "329c933548736bc49fd575ee68c89e8be4d260064184389a5b77517cddd99ffb"
 name = "linksplatform-bot"
 version = "0.1.0"
 dependencies = [
+ "async-trait",
  "octocrab",
  "regex",
+ "serde_json",
  "tokio",
  "walkdir",
 ]

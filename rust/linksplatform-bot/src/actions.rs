@@ -6,18 +6,6 @@ use octocrab::models::Repository;
 use octocrab::Octocrab;
 use regex::Regex;
 use walkdir::WalkDir;
-use crate::is_file_exists;
-
-pub fn remove_language_specific_github_workflows_if_folders_do_not_exist(github_storage: &Octocrab, repository_owner: &str, repository: &Repository, r#ref: &str) {
-    // github_storage
-    //     .repos(repository_owner, &repository.name)
-    //     ;
-    // github_storage
-    //     .post()
-    // if(!is_file_exists(github_storage, repository_owner, repository, r#ref, language)) {
-    //     println!("{language} folder does not exist");
-    // }
-}
 
 pub fn set_https_git_clone_url_instead_of_ssh(repositoryPath: &Path, remoteName: &str) {
     let git_config_path = repositoryPath.join(".git").join("config");
