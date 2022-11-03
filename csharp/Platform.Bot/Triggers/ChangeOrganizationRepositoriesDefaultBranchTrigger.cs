@@ -36,7 +36,7 @@ public class ChangeOrganizationRepositoriesDefaultBranchTrigger : ITrigger<Issue
             }
             var oldDefaultBranchSha = _githubStorage.GetBranch(repository.Id, repository.DefaultBranch).Result.Commit.Sha;
             _githubStorage.CreateReference(repository.Id, new NewReference($"refs/heads/{newDefaultBranch}", oldDefaultBranchSha));
-            var repositoryUpdateQuery = new RepositoryUpdate(repository.Name) { DefaultBranch = newDefaultBranch };
+            var repositoryUpdateQuery = new RepositoryUpdate() { Name = repository.Name,DefaultBranch = newDefaultBranch };
             _githubStorage.Client.Repository.Edit(repository.Id, repositoryUpdateQuery).ContinueWith(task =>
             {
                 if (task.IsCompletedSuccessfully)
