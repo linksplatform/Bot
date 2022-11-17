@@ -182,11 +182,12 @@ class Commands:
             utcnow = datetime.utcnow()
 
             # Downvotes disabled for users with negative karma
-            if operator == "-" and self.current_user.karma < 0:
+            negative_operators = ['-', 'False', 'No']
+            if operator in negative_operators and self.current_user.karma < 0:
                 self.vk_instance.delete_message(self.peer_id, self.msg_id)
                 self.vk_instance.send_msg(
-                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
-                    self.peer_id)
+                CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
+                self.peer_id)
                 return
 
             # Collective votes limit
@@ -255,12 +256,15 @@ class Commands:
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
                 user_karma_change = self.apply_user_karma(self.current_user, -amount)
-                amount = -amount if operator == "-" else amount
-                selected_user_karma_change = self.apply_user_karma(self.user, amount)
+                negative_operators = ['-', 'False', 'No']
+                if operator in negative_operators:
+                    amount = -amount if operator == "-" else amount
+                    selected_user_karma_change = self.apply_user_karma(self.user, amount)
 
         # Collective vote
         elif amount == 0:
-            if operator == "+":
+            positive_operators = ['Thank you', 'Спасибо', 'Благодарю', '+', 'True', 'Yes']
+            if operator in positive_operators:
                 selected_user_karma_change, voters, collective_vote_applied = self.apply_collective_vote("supporters",
                                                                                                          config.POSITIVE_VOTES_PER_KARMA,
                                                                                                          +1)
