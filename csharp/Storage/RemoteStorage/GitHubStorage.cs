@@ -304,5 +304,46 @@ namespace Storage.Remote.GitHub
 
         #endregion
 
+        #region Workflow
+
+        public void RemoveLanguageSpecificWorkflowIfFolderDoesNotExist(long repositoryId, string branchName, List<string> languages)
+        {
+            var branch = Client.Repository.Branch.Get(repositoryId, branchName).Result;
+            var treeResponse = Client.Git.Tree.GetRecursive(repositoryId, branch.Commit.Sha).Result;
+            List<string> languageWithoutFolderList = languages;
+            Dictionary<string, string?> languageWorkflowShaDictionary = new ();
+            foreach (var treeItem in treeResponse.Tree)
+            {
+                for (var i = 0; i < languageWithoutFolderList.Count; i++)
+                {
+                    var languageWithoutFolder = languageWithoutFolderList[i];
+                    var hasFolder = treeItem.Path.StartsWith($"{languageWithoutFolder}/");
+                    if (hasFolder)
+                    {
+                        languageWithoutFolderList.Remove(languageWithoutFolder);
+                        --i;
+                        continue;
+                    }
+                    var workflowPath = $".github/workflows/{languageWithoutFolder}.yml";
+                    if (treeItem.Path == workflowPath)
+                    {
+                        languageWorkflowShaDictionary[languageWithoutFolder] = treeItem.Sha;
+                        continue;
+                    }
+                }
+            }
+            foreach (var languageWithoutFolder in languageWithoutFolderList)
+            {
+                languageWorkflowShaDictionary.TryGetValue(languageWithoutFolder, out var workflowSha);
+                if (workflowSha == null)
+                {
+                    continue;
+                }
+                var blob = Client.Git.Blob.Get(repositoryId, languageWorkflowShaDictionary[languageWithoutFolder]).Result;
+                Client.Repository.Content.DeleteFile(repositoryId, $".github/workflows/{languageWithoutFolder}.yml", new DeleteFileRequest("Remove redundand workflow cause of its folder lack.", blob.Sha)).Wait();
+            }
+        }
+
+        #endregion
     }
 }
