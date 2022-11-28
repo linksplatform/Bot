@@ -215,7 +215,7 @@ public class TradingService : BackgroundService
         }
         if (ActiveBuyOrders.Count == 0 && CashBalanceLocked > 0)
         {
-            Logger.LogInformation("No active orders.");
+            Logger.LogInformation("No active buy orders, locked cash balance will be reset.");
             SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
         }
         if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
