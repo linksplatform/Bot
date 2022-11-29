@@ -2,8 +2,8 @@
 """Provides config around bot.
 """
 
-NEGATIVE_OPERATORS = ['-', 'False', 'No']
-POSITIVE_OPERATORS = ['Thank you', 'Спасибо', 'Благодарю', '+', 'True', 'Yes']
+NEGATIVE_OPERATORS = ['-', 'False', 'No', '👎']
+POSITIVE_OPERATORS = ['Thank you', 'Спасибо', 'Благодарю', '+', 'True', 'Yes', '👍']
 
 # Bot's VK group id (change it to your group id)
 BOT_GROUP_ID = 190877945

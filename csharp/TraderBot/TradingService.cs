@@ -215,7 +215,7 @@ public class TradingService : BackgroundService
         }
         if (ActiveBuyOrders.Count == 0 && CashBalanceLocked > 0)
         {
-            Logger.LogInformation("No active orders.");
+            Logger.LogInformation("No active buy orders, locked cash balance will be reset.");
             SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
         }
         if (LotsSets.Count == 1 && ActiveSellOrders.Count == 1)
@@ -841,13 +841,13 @@ public class TradingService : BackgroundService
             Quantity = amount,
             Price = DecimalToQuotation(price),
         };
-        var total = amount * price;
-        SetCashBalance(CashBalanceFree - total, CashBalanceLocked + total);
         // if (CashBalance < total)
         // {
         //     throw new InvalidOperationException($"Not enough money to buy {CurrentInstrument.Figi} asset.");
         // }
         var response = await InvestApi.Orders.PostOrderAsync(buyOrderRequest).ResponseAsync;
+        var total = amount * price;
+        SetCashBalance(CashBalanceFree - total, CashBalanceLocked + total);
         Logger.LogInformation($"Buy order placed: {response}");
         return response;
     }
