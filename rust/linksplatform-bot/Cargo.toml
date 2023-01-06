@@ -13,6 +13,6 @@ octorust = "0.2.1"
 sodiumoxide = "0.2.7"
 regex = "1.6.0"
 walkdir = "2"
-tokio = { version = "1.21.2", features = ["full"] }
+tokio = { version = "1.23.1", features = ["full"] }
 serde_json = "1.0"
 async-trait = "0.1.57"
