@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.1" />
+    <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.2" />
   </ItemGroup>
 
 </Project>
