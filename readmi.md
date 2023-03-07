@@ -13,3 +13,4 @@ for line in inFile:
 ....line1 = line.split()
 ....SchoolList[int(line1[-2])] += 1
 inFile.close()
+вот и все изменения
