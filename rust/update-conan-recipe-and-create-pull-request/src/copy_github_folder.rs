@@ -4,7 +4,6 @@ use octorust::Client;
 use octorust::types::{GitCreateCommitRequest, GitCreateTreeRequest, GitCreateTreeRequestData, GitCreateTreeRequestMode, GitTree, GitUpdateRefRequest, ReposCreateUpdateFileContentsRequest};
 use regex::{Captures, Regex, RegexBuilder};
 use crate::add_version_to_conandata_yml::AddVersionToConandataYmlArgument;
-use crate::parse_github_tree_mode::parse_github_tree_mode;
 
 pub struct CopyGithubFolder<'a> {
     pub github_client: &'a Client,
