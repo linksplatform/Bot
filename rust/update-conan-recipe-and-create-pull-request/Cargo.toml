@@ -1,5 +1,7 @@
 [package]
 name = "update-conan-recipe-and-create-pull-request"
+description = "A command line application to update your conan recipe and create a ull request"
+license = "Unlicense"
 version = "0.1.0"
 edition = "2021"
 
