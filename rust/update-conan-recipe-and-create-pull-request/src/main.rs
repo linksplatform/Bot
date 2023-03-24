@@ -9,6 +9,7 @@ use octorust::{auth::Credentials, Client};
 use octorust::types::{GitCreateBlobRequest, GitCreateCommitRequest, GitCreateTreeRequest, GitCreateTreeRequestData, GitCreateTreeRequestMode, GitUpdateRefRequest, PullsCreateRequest, ReposCreateUpdateFileContentsRequest};
 
 use crate::add_version_to_conandata_yml::{add_version_to_conandata_yml, AddVersionToConandataYmlArgument};
+use crate::add_version_to_config_yml::{add_version_to_config_yml, AddVersionToConfigYmlArgument};
 use crate::copy_github_folder::{copy_github_folder, CopyGithubFolder};
 use crate::replace_requirements_to_conanfile_py::{add_requirements_to_conanfile_py, AddRequirementsToConanfilePyArgument};
 
@@ -103,6 +104,15 @@ async fn main() -> Result<(), Box<dyn Error>> {
         folder_path: &format!("recipes/{}/{}", recipe_name, previous_version),
         commit_message: &format!("Copy {} version folder for {} version", previous_version, new_version),
     }).await.unwrap();
+    
+    add_version_to_config_yml(&AddVersionToConfigYmlArgument {
+        github_client: &github_client,
+        source_repo_owner_login: &source_repo_owner_login,
+        source_repo_name: &source_repo_name,
+        source_repo_branch_name: &source_repo_branch_name,
+        config_yml_file_path: &format!("recipes/{recipe_name}/config.yml"),
+        new_version: &new_version,
+    });
 
     add_version_to_conandata_yml(&AddVersionToConandataYmlArgument {
         github_client: &github_client,
