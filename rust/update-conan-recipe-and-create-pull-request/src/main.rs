@@ -1,4 +1,6 @@
-extern crate core;
+#![deny(clippy::all, clippy::perf)] // `clippy::perf` will teach you to write good code always
+
+pub(crate) use anyhow::Result;
 
 use std::error::Error;
 use std::iter::zip;
