@@ -7,9 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.9.1" />
     <PackageReference Include="Octokit" Version="2.0.0" />
     <PackageReference Include="Platform.Communication.Protocol.Lino" Version="0.4.0" />
     <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.1" />
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta4.22272.1" />
+    <PackageReference Include="System.CommandLine.Parser" Version="0.1.1" />
   </ItemGroup>
 
   <ItemGroup>
