@@ -1,5 +1,6 @@
 using Interfaces;
 using System;
+using System.Threading.Tasks;
 
 namespace FileManager
 {
@@ -26,7 +27,7 @@ namespace FileManager
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context context) => context.Args[0].ToLower() == "getfilesbyfilessetname";
+        public async Task<bool> Condition(Context context) => context.Args[0].ToLower() == "getfilesbyfilessetname";
 
         /// <summary>
         /// <para>
@@ -38,7 +39,7 @@ namespace FileManager
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context context)
+        public async Task Action(Context context)
         {
             var files = context.FileStorage.GetFilesFromSet(context.Args[1]);
             foreach (var file in files)

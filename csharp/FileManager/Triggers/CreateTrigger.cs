@@ -1,6 +1,7 @@
 using Interfaces;
 using System;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace FileManager
 {
@@ -27,7 +28,7 @@ namespace FileManager
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context context) => context.Args[0].ToLower() == "create";
+        public async Task<bool> Condition(Context context) => context.Args[0].ToLower() == "create";
 
         /// <summary>
         /// <para>
@@ -39,6 +40,6 @@ namespace FileManager
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context context) => Console.WriteLine(context.FileStorage.AddFile(File.ReadAllText(context.Args[2])));
+        public async Task Action(Context context) => Console.WriteLine(context.FileStorage.AddFile(File.ReadAllText(context.Args[2])));
     }
 }

@@ -83,7 +83,7 @@ namespace Platform.Bot
                 minimumInteractionIntervalOption
             };
 
-            rootCommand.SetHandler((githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval) => 
+            rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval) => 
             {
                 Debug.WriteLine($"Nickname: {githubUserName}");
                 Debug.WriteLine($"GitHub API Token: {githubApiToken}");
@@ -103,8 +103,8 @@ namespace Platform.Bot
                 {
                     try
                     {
-                        issueTracker.Start(cancellation.Token);
-                        pullRequenstTracker.Start(cancellation.Token);
+                        await issueTracker.Start(cancellation.Token);
+                        await pullRequenstTracker.Start(cancellation.Token);
                         // timestampTracker.Start(cancellation.Token);
                         Thread.Sleep(minimumInteractionInterval);
                     }

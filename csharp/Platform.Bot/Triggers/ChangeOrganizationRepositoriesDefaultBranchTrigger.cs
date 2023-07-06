@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Threading.Tasks;
 using Interfaces;
 using Octokit;
 using Storage.Local;
@@ -18,12 +19,12 @@ public class ChangeOrganizationRepositoriesDefaultBranchTrigger : ITrigger<Issue
         _githubStorage = githubStorage;
         _linksStorage = linksStorage;
     }
-    public bool Condition(Issue issue)
+    public async Task<bool> Condition(Issue issue)
     {
         return issue.Title.ToLower().Contains("Change default branch in organization repositories to".ToLower());
     }
 
-    public void Action(Issue context)
+    public async Task Action(Issue context)
     {
         var newDefaultBranch = context.Title.Substring("Change default branch in organization repositories to ".Length);
         var repositories = _githubStorage.GetAllRepositories(context.Repository.Owner.Login).Result;

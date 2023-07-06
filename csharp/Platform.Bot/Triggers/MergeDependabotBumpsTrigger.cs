@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using Interfaces;
 using Octokit;
 using Platform.Threading;
@@ -14,7 +15,7 @@ namespace Platform.Bot.Triggers
             _githubStorage = storage;
         }
 
-        public bool Condition(PullRequest pullRequest)
+        public async Task<bool> Condition(PullRequest pullRequest)
         {
             var isDependabotAuthor = GitHubStorage.DependabotId == pullRequest.User.Id;
             if (!isDependabotAuthor)
@@ -40,7 +41,7 @@ namespace Platform.Bot.Triggers
             return (isDeployCheckCompleted || !hasDeployCheck) && isMergable;
         }
 
-        public void Action(PullRequest pullRequest)
+        public async Task Action(PullRequest pullRequest)
         {
             var repositoryId = pullRequest.Base.Repository.Id;
             var prMerge = _githubStorage.Client.PullRequest.Merge(repositoryId, pullRequest.Number, new MergePullRequest()).AwaitResult();

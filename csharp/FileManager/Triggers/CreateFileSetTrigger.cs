@@ -2,6 +2,7 @@ using Interfaces;
 using Storage.Local;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FileManager
 {
@@ -28,7 +29,7 @@ namespace FileManager
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context context) => context.Args[0].ToLower() == "createfileset";
+        public async Task<bool> Condition(Context context) => context.Args[0].ToLower() == "createfileset";
 
         /// <summary>
         /// <para>
@@ -40,7 +41,7 @@ namespace FileManager
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context context)
+        public async Task Action(Context context)
         {
             List<File> files = new();
             for (var i = 2; i < context.Args.Length - 1; i += 2)

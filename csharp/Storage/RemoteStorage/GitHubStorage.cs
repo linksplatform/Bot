@@ -233,6 +233,12 @@ namespace Storage.Remote.GitHub
         }
 
         #region Repository
+        
+        public async Task<List<int>> GetAuthorIdsOfCommits(long repositoryId, CommitRequest commitRequest)
+        {
+            var commits = await Client.Repository.Commit.GetAll(repositoryId, commitRequest);
+            return commits.Select(commit => commit.Author.Id).ToList();
+        }
 
         public Task<IReadOnlyList<Repository>> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName);
         
@@ -343,6 +349,43 @@ namespace Storage.Remote.GitHub
                 Client.Repository.Content.DeleteFile(repositoryId, $".github/workflows/{languageWithoutFolder}.yml", new DeleteFileRequest("Remove redundand workflow cause of its folder lack.", blob.Sha)).Wait();
             }
         }
+
+        #endregion
+
+        #region Organization
+
+        #region Member
+
+        public async Task<List<User>> GetAllOrganizationMembers(string organizationName)
+        {
+            var allMembers = new List<User>();
+            var options = new ApiOptions
+            {
+                // Here you can specify the number of items per page (up to 100).
+                // You may want to tweak this to balance between the number of requests and the memory consumption.
+                PageSize = 100,
+                PageCount = 1,
+                StartPage = 1,
+            };
+
+            while (true)
+            {
+                var pageOfUsers = await Client.Organization.Member.GetAll(organizationName, OrganizationMembersRole.All, options);
+
+                if (!pageOfUsers.Any())
+                {
+                    break;
+                }
+
+                allMembers.AddRange(pageOfUsers);
+                options.StartPage++;
+            }
+
+            return allMembers;
+        }
+
+
+        #endregion
 
         #endregion
     }

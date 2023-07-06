@@ -3,6 +3,7 @@ using Octokit;
 using Storage.Remote.GitHub;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Platform.Collections.Lists;
 using Platform.Threading;
 
@@ -62,7 +63,7 @@ namespace Platform.Bot.Trackers
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start(CancellationToken cancellationToken)
+        public async Task Start(CancellationToken cancellationToken)
         {
             foreach (var trigger in _triggers)
             {
@@ -75,9 +76,9 @@ namespace Platform.Bot.Trackers
                             return;
                         }
                         var detailedPullRequest = _storage.Client.PullRequest.Get(repository.Id, pullRequest.Number).AwaitResult();
-                        if (trigger.Condition(detailedPullRequest))
+                        if (await trigger.Condition(detailedPullRequest))
                         {
-                            trigger.Action(detailedPullRequest);
+                            await trigger.Action(detailedPullRequest);
                         }
                     }
                 }

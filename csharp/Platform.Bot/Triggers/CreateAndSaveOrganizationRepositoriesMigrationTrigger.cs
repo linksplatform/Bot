@@ -29,7 +29,7 @@ public class CreateAndSaveOrganizationRepositoriesMigrationTrigger : ITrigger<Da
         _directoryPath = directoryPath;
 
     }
-    public bool Condition(DateTime? dateTime)
+    public async Task<bool> Condition(DateTime? dateTime)
     {
         var allMigrations = _githubStorage.GetAllMigrations("linksplatform");
         if (allMigrations.Count == 0)
@@ -41,7 +41,7 @@ public class CreateAndSaveOrganizationRepositoriesMigrationTrigger : ITrigger<Da
         return timeAfterLastMigration.Days > 1;
     }
 
-    public async void Action(DateTime? dateTime)
+    public async Task Action(DateTime? dateTime)
     {
         var repositoryNames = _githubStorage.GetAllRepositories("linksplatform").Result.Select(repository => repository.Name).ToList();
         var createMigrationResult = await _githubStorage.CreateMigration("linksplatform", repositoryNames);

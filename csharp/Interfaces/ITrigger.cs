@@ -1,4 +1,6 @@
 
+using System.Threading.Tasks;
+
 namespace Interfaces
 {
     /// <summary>
@@ -23,7 +25,7 @@ namespace Interfaces
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(TContext context);
+        public Task<bool> Condition(TContext context);
 
         /// <summary>
         /// <para>
@@ -35,6 +37,6 @@ namespace Interfaces
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(TContext context);
+        public Task Action(TContext context);
     }
 }

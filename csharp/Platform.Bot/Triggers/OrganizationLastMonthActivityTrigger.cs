@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Interfaces;
 using Octokit;
 using Platform.Communication.Protocol.Lino;
@@ -47,7 +48,7 @@ namespace Platform.Bot.Triggers
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(TContext context) => context.Title.ToLower() == "organization last month activity";
+        public async Task<bool> Condition(TContext context) => context.Title.ToLower() == "organization last month activity";
 
         /// <summary>
         /// <para>
@@ -59,7 +60,7 @@ namespace Platform.Bot.Triggers
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(TContext context)
+        public async Task Action(TContext context)
         {
             var issueService = _storage.Client.Issue;
             var owner = context.Repository.Owner.Login;
