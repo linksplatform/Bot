@@ -21,8 +21,8 @@ namespace Storage.Remote.GitHub
     /// </summary>
     public class GitHubStorage
     {
-        public ProductHeaderValue ProductInformation;
-        public Connection GraphQlClient;
+        public Octokit.GraphQL.ProductHeaderValue ProductInformation;
+        public Octokit.GraphQL.Connection GraphQlClient;
         
         /// <summary>
         /// <para>
@@ -80,8 +80,8 @@ namespace Storage.Remote.GitHub
                 Credentials = credentials
             };
             MinimumInteractionInterval = new(0, 0, 0, 0, 1200);
-            ProductInformation = new ProductHeaderValue("LinksPlatform", "1.0.0");
-            GraphQlClient = new Connection(ProductInformation, credentialStore: new InMemoryCredentialStore(credentials));
+            ProductInformation = new Octokit.GraphQL.ProductHeaderValue("LinksPlatform", "1.0.0");
+            GraphQlClient = new Octokit.GraphQL.Connection(ProductInformation, token);
         }
 
         /// <summary>
