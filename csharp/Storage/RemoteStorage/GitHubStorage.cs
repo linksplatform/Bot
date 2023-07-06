@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Octokit.Internal;
 using Platform.Threading;
 using File = Storage.Local.File;
 
@@ -20,6 +21,9 @@ namespace Storage.Remote.GitHub
     /// </summary>
     public class GitHubStorage
     {
+        ProductHeaderValue ProductInformation;
+        Connection GraphQlClient;
+        
         /// <summary>
         /// <para>
         /// The client.
@@ -37,6 +41,7 @@ namespace Storage.Remote.GitHub
         public readonly string Owner;
 
         public const int DependabotId = 49699333;
+        
 
 
         /// <summary>
@@ -69,11 +74,14 @@ namespace Storage.Remote.GitHub
         public GitHubStorage(string owner, string token, string name)
         {
             Owner = owner;
+            var credentials = new Credentials(token);
             Client = new GitHubClient(new ProductHeaderValue(name))
             {
-                Credentials = new Credentials(token)
+                Credentials = credentials
             };
             MinimumInteractionInterval = new(0, 0, 0, 0, 1200);
+            ProductInformation = new ProductHeaderValue("LinksPlatform", "1.0.0");
+            GraphQlClient = new Connection(ProductInformation, credentialStore: new InMemoryCredentialStore(credentials));
         }
 
         /// <summary>
