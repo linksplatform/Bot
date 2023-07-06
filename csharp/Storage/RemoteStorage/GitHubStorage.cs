@@ -21,8 +21,8 @@ namespace Storage.Remote.GitHub
     /// </summary>
     public class GitHubStorage
     {
-        ProductHeaderValue ProductInformation;
-        Connection GraphQlClient;
+        public ProductHeaderValue ProductInformation;
+        public Connection GraphQlClient;
         
         /// <summary>
         /// <para>
