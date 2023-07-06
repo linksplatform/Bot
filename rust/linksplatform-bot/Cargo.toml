@@ -1,0 +1,18 @@
+[package]
+name = "linksplatform-bot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+anyhow = "1.0.66"
+base64 = "0.13.1"
+octocrab = "0.17.0"
+octorust = "0.2.1"
+sodiumoxide = "0.2.7"
+regex = "1.6.0"
+walkdir = "2"
+tokio = { version = "1.24.2", features = ["full"] }
+serde_json = "1.0"
+async-trait = "0.1.57"

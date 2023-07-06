@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
@@ -12,9 +13,9 @@ namespace Platform.Bot.Triggers
     {
         public readonly GitHubStorage GithubStorage;
         public ProtectDefaultBranchTrigger(GitHubStorage storage) => GithubStorage = storage;
-        public bool Condition(TContext context) => context.Title.ToLower() == "protect default branch in all organization's repositories";
+        public async Task<bool> Condition(TContext context) => context.Title.ToLower() == "protect default branch in all organization's repositories";
 
-        public void Action(TContext context)
+        public async Task Action(TContext context)
         {
             var repositories = GithubStorage.Client.Repository.GetAllForOrg(context.Repository.Owner.Login).Result;
             var results = UpdateRepositoriesDefaultBranchProtection(repositories);

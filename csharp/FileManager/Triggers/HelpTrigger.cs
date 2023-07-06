@@ -1,5 +1,6 @@
 using Interfaces;
 using System;
+using System.Threading.Tasks;
 
 namespace FileManager
 {
@@ -26,7 +27,7 @@ namespace FileManager
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context context) => context.Args[0].ToLower() == "help";
+        public async Task<bool> Condition(Context context) => context.Args[0].ToLower() == "help";
 
         /// <summary>
         /// <para>
@@ -38,7 +39,7 @@ namespace FileManager
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context context) => Console.WriteLine(@"Use this program to manage links in your links repository. For close just press CTRL+C. 
+        public async Task Action(Context context) => Console.WriteLine(@"Use this program to manage links in your links repository. For close just press CTRL+C. 
 Avalible commands:
 1. Delete [address]
 2. Create [address] [path to file]

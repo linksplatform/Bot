@@ -4,6 +4,7 @@ using Platform.IO;
 using Storage.Local;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace FileManager
 {
@@ -32,7 +33,7 @@ namespace FileManager
             new CreateFileSetTrigger(),
             new GetFilesByFileSetNameTrigger()
         };
-        private static void Main(string[] args)
+        private static async Task Main(string[] args)
         {
             using ConsoleCancellation cancellation = new();
             var dbContext = new FileStorage(ConsoleHelpers.GetOrReadArgument(0, "Database file name", args));
@@ -45,7 +46,7 @@ namespace FileManager
                     var Context = new Context { FileStorage = dbContext, Args = input.Split() };
                     foreach (var handler in Handlers)
                     {
-                        if (handler.Condition(Context))
+                        if (await handler.Condition(Context))
                         {
                             handler.Action(Context);
                         }

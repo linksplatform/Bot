@@ -1,4 +1,5 @@
-﻿using Interfaces;
+﻿using System.Threading.Tasks;
+using Interfaces;
 using Octokit;
 using Storage.Local;
 using Storage.Remote.GitHub;
@@ -56,7 +57,7 @@ namespace Platform.Bot.Triggers
         /// <para></para>
         /// </param>
 
-        public void Action(TContext context)
+        public async Task Action(TContext context)
         {
             foreach (var file in _fileStorage.GetFilesFromSet(_fileSetName))
             {
@@ -80,6 +81,6 @@ namespace Platform.Bot.Triggers
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(TContext context) => context.Title.ToLower() == "hello world";
+        public async Task<bool> Condition(TContext context) => context.Title.ToLower() == "hello world";
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Octokit;
 using Storage.Remote.GitHub;
 
@@ -24,6 +25,6 @@ namespace Interfaces
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start(CancellationToken cancellationToken);
+        public Task Start(CancellationToken cancellationToken);
     }
 }

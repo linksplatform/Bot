@@ -3,6 +3,7 @@ using Octokit;
 using Storage.Remote.GitHub;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Platform.Bot.Trackers
 {
@@ -60,7 +61,7 @@ namespace Platform.Bot.Trackers
         /// <para>The cancellation token.</para>
         /// <para></para>
         /// </param>
-        public void Start(CancellationToken cancellationToken)
+        public async Task Start(CancellationToken cancellationToken)
         {
             var allIssues = _storage.GetIssues();
             foreach (var issue in allIssues)
@@ -71,9 +72,9 @@ namespace Platform.Bot.Trackers
                     {
                         return;
                     }
-                    if (trigger.Condition(issue))
+                    if (await trigger.Condition(issue))
                     {
-                        trigger.Action(issue);
+                        await trigger.Action(issue);
                     }
                 }
             }

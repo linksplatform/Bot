@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Interfaces;
 
 namespace FileManager
@@ -25,7 +26,7 @@ namespace FileManager
         /// <para>The bool</para>
         /// <para></para>
         /// </returns>
-        public bool Condition(Context context) => context.Args[0].ToLower() == "delete";
+        public async Task<bool> Condition(Context context) => context.Args[0].ToLower() == "delete";
 
         /// <summary>
         /// <para>
@@ -37,6 +38,6 @@ namespace FileManager
         /// <para>The context.</para>
         /// <para></para>
         /// </param>
-        public void Action(Context context) => context.FileStorage.Delete(ulong.Parse(context.Args[1]));
+        public async Task Action(Context context) => context.FileStorage.Delete(ulong.Parse(context.Args[1]));
     }
 }

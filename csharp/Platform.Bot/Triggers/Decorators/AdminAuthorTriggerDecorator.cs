@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Interfaces;
 using Octokit;
 using Storage.Remote.GitHub;
@@ -14,15 +15,15 @@ public class AdminAuthorIssueTriggerDecorator : ITrigger<Issue>
         GithubStorage = githubStorage;
     }
 
-    public virtual bool Condition(Issue issue)
+    public virtual async Task<bool> Condition(Issue issue)
     {
-        var authorPermission = GithubStorage.Client.Repository.Collaborator.ReviewPermission(issue.Repository.Id, issue.User.Login).Result;
-        var isAdmin = authorPermission.Permission.Value == PermissionLevel.Admin;
-        return isAdmin && Trigger.Condition(issue);
+        var authorPermission = await GithubStorage.Client.Repository.Collaborator.ReviewPermission(issue.Repository.Id, issue.User.Login);
+        var isAdmin = authorPermission.Permission == "admin";
+        return isAdmin && await Trigger.Condition(issue);
     }
 
-    public virtual void Action(Issue issue)
+    public virtual async Task Action(Issue issue)
     {
-        Trigger.Action(issue);
+        await Trigger.Action(issue);
     }
 }

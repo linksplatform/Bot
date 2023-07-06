@@ -7,6 +7,7 @@ using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Octokit.Internal;
 using Platform.Threading;
 using File = Storage.Local.File;
 
@@ -20,6 +21,9 @@ namespace Storage.Remote.GitHub
     /// </summary>
     public class GitHubStorage
     {
+        public Octokit.GraphQL.ProductHeaderValue ProductInformation;
+        public Octokit.GraphQL.Connection GraphQlClient;
+        
         /// <summary>
         /// <para>
         /// The client.
@@ -37,6 +41,7 @@ namespace Storage.Remote.GitHub
         public readonly string Owner;
 
         public const int DependabotId = 49699333;
+        
 
 
         /// <summary>
@@ -69,11 +74,14 @@ namespace Storage.Remote.GitHub
         public GitHubStorage(string owner, string token, string name)
         {
             Owner = owner;
+            var credentials = new Credentials(token);
             Client = new GitHubClient(new ProductHeaderValue(name))
             {
-                Credentials = new Credentials(token)
+                Credentials = credentials
             };
             MinimumInteractionInterval = new(0, 0, 0, 0, 1200);
+            ProductInformation = new Octokit.GraphQL.ProductHeaderValue("LinksPlatform", "1.0.0");
+            GraphQlClient = new Octokit.GraphQL.Connection(ProductInformation, token);
         }
 
         /// <summary>
@@ -233,6 +241,12 @@ namespace Storage.Remote.GitHub
         }
 
         #region Repository
+        
+        public async Task<List<int>> GetAuthorIdsOfCommits(long repositoryId, CommitRequest commitRequest)
+        {
+            var commits = await Client.Repository.Commit.GetAll(repositoryId, commitRequest);
+            return commits.Select(commit => commit.Author.Id).ToList();
+        }
 
         public Task<IReadOnlyList<Repository>> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName);
         
@@ -304,5 +318,83 @@ namespace Storage.Remote.GitHub
 
         #endregion
 
+        #region Workflow
+
+        public void RemoveLanguageSpecificWorkflowIfFolderDoesNotExist(long repositoryId, string branchName, List<string> languages)
+        {
+            var branch = Client.Repository.Branch.Get(repositoryId, branchName).Result;
+            var treeResponse = Client.Git.Tree.GetRecursive(repositoryId, branch.Commit.Sha).Result;
+            List<string> languageWithoutFolderList = languages;
+            Dictionary<string, string?> languageWorkflowShaDictionary = new ();
+            foreach (var treeItem in treeResponse.Tree)
+            {
+                for (var i = 0; i < languageWithoutFolderList.Count; i++)
+                {
+                    var languageWithoutFolder = languageWithoutFolderList[i];
+                    var hasFolder = treeItem.Path.StartsWith($"{languageWithoutFolder}/");
+                    if (hasFolder)
+                    {
+                        languageWithoutFolderList.Remove(languageWithoutFolder);
+                        --i;
+                        continue;
+                    }
+                    var workflowPath = $".github/workflows/{languageWithoutFolder}.yml";
+                    if (treeItem.Path == workflowPath)
+                    {
+                        languageWorkflowShaDictionary[languageWithoutFolder] = treeItem.Sha;
+                        continue;
+                    }
+                }
+            }
+            foreach (var languageWithoutFolder in languageWithoutFolderList)
+            {
+                languageWorkflowShaDictionary.TryGetValue(languageWithoutFolder, out var workflowSha);
+                if (workflowSha == null)
+                {
+                    continue;
+                }
+                var blob = Client.Git.Blob.Get(repositoryId, languageWorkflowShaDictionary[languageWithoutFolder]).Result;
+                Client.Repository.Content.DeleteFile(repositoryId, $".github/workflows/{languageWithoutFolder}.yml", new DeleteFileRequest("Remove redundand workflow cause of its folder lack.", blob.Sha)).Wait();
+            }
+        }
+
+        #endregion
+
+        #region Organization
+
+        #region Member
+
+        public async Task<List<User>> GetAllOrganizationMembers(string organizationName)
+        {
+            var allMembers = new List<User>();
+            var options = new ApiOptions
+            {
+                // Here you can specify the number of items per page (up to 100).
+                // You may want to tweak this to balance between the number of requests and the memory consumption.
+                PageSize = 100,
+                PageCount = 1,
+                StartPage = 1,
+            };
+
+            while (true)
+            {
+                var pageOfUsers = await Client.Organization.Member.GetAll(organizationName, OrganizationMembersRole.All, options);
+
+                if (!pageOfUsers.Any())
+                {
+                    break;
+                }
+
+                allMembers.AddRange(pageOfUsers);
+                options.StartPage++;
+            }
+
+            return allMembers;
+        }
+
+
+        #endregion
+
+        #endregion
     }
 }

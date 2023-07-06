@@ -1,0 +1,17 @@
+{
+  "name": "linksplatform-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "FreePhoenix888",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "octokit": "^2.0.9"
+  },
+  "devDependencies": {
+    "typescript": "^4.8.4"
+  }
+}

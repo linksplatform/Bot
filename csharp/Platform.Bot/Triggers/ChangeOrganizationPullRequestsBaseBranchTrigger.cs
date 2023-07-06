@@ -1,6 +1,7 @@
 using System;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using Interfaces;
 using Octokit;
 using Storage.Local;
@@ -19,9 +20,9 @@ public class ChangeOrganizationPullRequestsBaseBranchTrigger : ITrigger<Issue>
         _githubStorage = githubStorage;
         _linksStorage = linksStorage;
     }
-    public bool Condition(Issue issue) => issue.Title.Contains("Change organization pull requests base branch");
+    public async Task<bool> Condition(Issue issue) => issue.Title.Contains("Change organization pull requests base branch");
 
-    public void Action(Issue issue)
+    public async Task Action(Issue issue)
     {
         var regexMatch = Regex.Match(issue.Title, @"Change organization pull requests base branch from (?<oldBaseBranch>\S+) to (?<newBaseBranch>\S+)");
         if (regexMatch.Groups.Count != 3)

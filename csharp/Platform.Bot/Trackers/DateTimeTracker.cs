@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Interfaces;
 using Platform.Timestamps;
 using Storage.Remote.GitHub;
@@ -19,7 +20,7 @@ public class DateTimeTracker : ITracker<DateTime?>
         _triggers = triggers;
     }
 
-    public void Start(CancellationToken cancellationToken)
+    public async Task Start(CancellationToken cancellationToken)
     {
         foreach (var trigger in _triggers)
         {
@@ -27,9 +28,9 @@ public class DateTimeTracker : ITracker<DateTime?>
             {
                 return;
             }
-            if (trigger.Condition(null))
+            if (await trigger.Condition(null))
             {
-                trigger.Action(null);
+                await trigger.Action(null);
             }
         }
     }
