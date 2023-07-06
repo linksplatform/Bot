@@ -17,8 +17,8 @@ public class AdminAuthorIssueTriggerDecorator : ITrigger<Issue>
 
     public virtual async Task<bool> Condition(Issue issue)
     {
-        var authorPermission = GithubStorage.Client.Repository.Collaborator.ReviewPermission(issue.Repository.Id, issue.User.Login).Result;
-        var isAdmin = authorPermission.Permission.Value == PermissionLevel.Admin;
+        var authorPermission = await GithubStorage.Client.Repository.Collaborator.ReviewPermission(issue.Repository.Id, issue.User.Login);
+        var isAdmin = authorPermission.Permission == "admin";
         return isAdmin && await Trigger.Condition(issue);
     }
 
