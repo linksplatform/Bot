@@ -11,5 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@octokit/graphql": "^6.0.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.1.6"
   }
 }
