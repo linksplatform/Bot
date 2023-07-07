@@ -55,21 +55,21 @@ namespace Platform.Bot.Triggers
                     return dictionary;
                 });
             StringBuilder messageSb = new();
-            var tldrMessage = GetTldrMessage(commitsPerUserInLast3Months.Select(pair => pair.Key).ToList());
-            messageSb.Append(tldrMessage);
+            var ShortSummaryMessage = GetShortSummaryMessage(commitsPerUserInLast3Months.Select(pair => pair.Key).ToList());
+            messageSb.Append(ShortSummaryMessage);
             messageSb.AppendLine("---");
             var detailedMessage = await GetDetailedMessage(commitsPerUserInLast3Months);
             messageSb.Append(detailedMessage);
             var message = messageSb.ToString();
             await _githubStorage.CreateIssueComment(issue.Repository.Id, issue.Number, message);
-            Console.WriteLine($"Issue {issue.Title} is processed: {issue.Url}");
+            Console.WriteLine($"Issue {issue.Title} is processed: {issue.HtmlUrl}");
             await _githubStorage.Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, new IssueUpdate() { State = ItemState.Closed });
         }
 
-        private string GetTldrMessage(List<User> users)
+        private string GetShortSummaryMessage(List<User> users)
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine("# TLDR:");
+            stringBuilder.AppendLine("# Short Summary:");
             users.All(user =>
             {
                 stringBuilder.AppendLine($"- [{user.Login}]({user.Url})");
@@ -89,7 +89,7 @@ namespace Platform.Bot.Triggers
                 commits
                     .ForEach(commit =>
                     {
-                        Regex regex = new Regex(@"\n*");
+                        Regex regex = new Regex(@"\n+");
                         var commitMessage = commit.Commit.Message;
                         var commitMesasgeWithoutNewLines = regex.Replace(commitMessage, " ");
                         stringBuilder.AppendLine($"- [{commitMesasgeWithoutNewLines}]({commit.Url})");
