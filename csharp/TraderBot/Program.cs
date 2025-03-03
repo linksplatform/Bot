@@ -1,3 +1,6 @@
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
 using Tinkoff.InvestApi;
 using TraderBot;
@@ -22,4 +25,5 @@ var host = builder
         });
     })
     .Build();
+
 await host.RunAsync();

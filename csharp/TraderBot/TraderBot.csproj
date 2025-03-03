@@ -1,7 +1,8 @@
-<Project Sdk="Microsoft.NET.Sdk.Worker">
+<Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net8</TargetFramework>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <RootNamespace>TraderBot</RootNamespace>
@@ -9,7 +10,9 @@
 
     <ItemGroup>
         <PackageReference Include="GraphQL.Client.Serializer.Newtonsoft" Version="6.0.0" />
-        <PackageReference Include="Microsoft.Extensions.Hosting" Version="7.0.1" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
         <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.1" />
         <PackageReference Include="Tinkoff.InvestApi" Version="0.6.1" />
     </ItemGroup>

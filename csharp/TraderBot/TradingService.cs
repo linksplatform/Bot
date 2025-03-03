@@ -1,5 +1,7 @@
 using System.Collections.Concurrent;
 using System.Globalization;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 using Tinkoff.InvestApi;
