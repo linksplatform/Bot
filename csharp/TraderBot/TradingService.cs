@@ -63,6 +63,9 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
+        Logger.LogInformation($"EnableCustomBuyPrice: {settings.EnableCustomBuyPrice}");
+        Logger.LogInformation($"CustomBuyPriceSpreadPercentage: {settings.CustomBuyPriceSpreadPercentage}");
+        Logger.LogInformation($"MaxCustomBuyPriceSteps: {settings.MaxCustomBuyPriceSteps}");
 
         var currentTime = DateTime.UtcNow.TimeOfDay;
         Logger.LogInformation($"Current time: {currentTime}");
@@ -472,15 +475,16 @@ public class TradingService : BackgroundService
                         {
                             // Process potential buy order
                             var (cashBalance, _) = await GetCashBalance();
-                            var lotPrice = bestBid * LotSize;
+                            var customBuyPrice = GetCustomBuyPrice(bestBid, bestAsk);
+                            var lotPrice = customBuyPrice * LotSize;
                             if (cashBalance > lotPrice)
                             {
                                 Logger.LogInformation($"buy activated");
-                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}, customBuyPrice: {customBuyPrice}.");
                                 var lots = (long)(cashBalance / lotPrice);
-                                var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                                var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == customBuyPrice)?.Quantity ?? 0;
                                 Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
-                                var response = await PlaceBuyOrder(lots, bestBid);
+                                var response = await PlaceBuyOrder(lots, customBuyPrice);
                                 Logger.LogInformation($"buy complete");
                                 areOrdersPlaced = true;
                             }
@@ -519,16 +523,17 @@ public class TradingService : BackgroundService
                     if (IsTimeToBuy())
                     {
                         var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
+                        var customBuyPrice = GetCustomBuyPrice(bestBid, bestAsk);
                         if (LotsSets.TryGetValue(initialOrderPrice, out var boughtLots) || LotsSets.Count == 0)
                         {
-                            if (initialOrderPrice != bestBid && bestBidOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeBuyPrice)
+                            if (initialOrderPrice != customBuyPrice && bestBidOrder.Quantity > Settings.MinimumMarketOrderSizeToChangeBuyPrice)
                             {
                                 if (boughtLots > 0)
                                 {
                                     Logger.LogInformation($"buy trades are in progress");
                                     continue;
                                 }
-                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
+                                Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}, customBuyPrice: {customBuyPrice}.");
                                 Logger.LogInformation($"initial buy order price: {initialOrderPrice}");
                                 Logger.LogInformation($"buy order price change activated");
                                 // Cancel order
@@ -541,13 +546,13 @@ public class TradingService : BackgroundService
                                 SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
                                 // Place new order
                                 var (cashBalance, _) = await GetCashBalance();
-                                var lotPrice = bestBid * LotSize;
+                                var lotPrice = customBuyPrice * LotSize;
                                 if (cashBalance > lotPrice)
                                 {
                                     var lots = (long)(cashBalance / lotPrice);
-                                    var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
+                                    var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == customBuyPrice)?.Quantity ?? 0;
                                     Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
-                                    var response = await PlaceBuyOrder(lots, bestBid);
+                                    var response = await PlaceBuyOrder(lots, customBuyPrice);
                                 }
                                 SyncActiveOrders();
                                 Logger.LogInformation($"buy order price change is complete");
@@ -689,6 +694,28 @@ public class TradingService : BackgroundService
         var targetSellPrice = Math.Max(minimumSellPrice, bestAsk);
         Logger.LogInformation($"targetSellPrice: {targetSellPrice}");
         return targetSellPrice;
+    }
+
+    private decimal GetCustomBuyPrice(decimal bestBid, decimal bestAsk)
+    {
+        if (!Settings.EnableCustomBuyPrice)
+        {
+            return bestBid;
+        }
+
+        var spread = bestAsk - bestBid;
+        var customBuyPrice = bestBid + (spread * Settings.CustomBuyPriceSpreadPercentage / 100m);
+        
+        var maxPriceIncrease = Settings.MaxCustomBuyPriceSteps * PriceStep;
+        var maxAllowedPrice = bestBid + maxPriceIncrease;
+        
+        customBuyPrice = Math.Min(customBuyPrice, maxAllowedPrice);
+        customBuyPrice = Math.Min(customBuyPrice, bestAsk);
+        
+        customBuyPrice = Math.Max(customBuyPrice, bestBid);
+        
+        Logger.LogInformation($"CustomBuyPrice calculation: bestBid={bestBid}, bestAsk={bestAsk}, spread={spread}, customBuyPrice={customBuyPrice}");
+        return customBuyPrice;
     }
 
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
