@@ -19,6 +19,7 @@ public class TradingService : BackgroundService
     protected static readonly TimeSpan RefreshInterval = TimeSpan.FromSeconds(10);
     protected static readonly TimeSpan SyncInterval = TimeSpan.FromSeconds(20);
     protected static readonly TimeSpan WaitOutputInterval = TimeSpan.FromSeconds(20);
+    protected static readonly TimeSpan SubscriptionTimeoutInterval = TimeSpan.FromMinutes(5);
     protected readonly InvestApiClient InvestApi;
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
@@ -33,6 +34,8 @@ public class TradingService : BackgroundService
     protected long LastRefreshTicks;
     protected long LastSyncTicks;
     protected long LastWaitOutputTicks;
+    protected long LastTradesDataTicks;
+    protected long LastMarketDataTicks;
     protected TimeSpan MinimumTimeToBuy;
     protected TimeSpan MaximumTimeToBuy;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
@@ -112,6 +115,9 @@ public class TradingService : BackgroundService
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
         LastOperationsCheckpoint = settings.LoadOperationsFrom;
+        var nowTicks = DateTime.UtcNow.Ticks;
+        LastTradesDataTicks = nowTicks;
+        LastMarketDataTicks = nowTicks;
     }
 
     protected async Task ReceiveTrades(CancellationToken cancellationToken)
@@ -122,6 +128,7 @@ public class TradingService : BackgroundService
         });
         await foreach (var data in tradesStream.ResponseStream.ReadAllAsync(cancellationToken))
         {
+            Interlocked.Exchange(ref LastTradesDataTicks, DateTime.UtcNow.Ticks);
             Logger.LogInformation($"Trade: {data}");
             if (data.PayloadCase == TradesStreamResponse.PayloadOneofCase.OrderTrades)
             {
@@ -349,14 +356,40 @@ public class TradingService : BackgroundService
             try
             {
                 await Refresh(forceReset: true);
-                await SendOrders(cancellationToken);
+                
+                using var timeoutCancellationTokenSource = new CancellationTokenSource();
+                using var combinedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCancellationTokenSource.Token);
+                
+                var sendOrdersTask = SendOrders(combinedCancellationTokenSource.Token);
+                var timeoutTask = CheckMarketDataTimeout(timeoutCancellationTokenSource, cancellationToken);
+                
+                await Task.WhenAny(sendOrdersTask, timeoutTask);
+                
+                if (timeoutTask.IsCompleted && !timeoutTask.IsCanceled)
+                {
+                    Logger.LogWarning("Market data subscription timeout detected, restarting subscription.");
+                    timeoutCancellationTokenSource.Cancel();
+                }
+                
+                try
+                {
+                    await sendOrdersTask;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInformation("Market data subscription cancelled due to timeout, will restart.");
+                }
             }
             catch (Exception ex)
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Logger.LogError(ex, "SendOrders exception.");
-                    await Task.Delay(RecoveryInterval);
+                    await Task.Delay(RecoveryInterval, cancellationToken);
                 }
             }
         }
@@ -369,16 +402,76 @@ public class TradingService : BackgroundService
             try
             {
                 await Refresh(forceReset: true);
-                await ReceiveTrades(cancellationToken);
+                
+                using var timeoutCancellationTokenSource = new CancellationTokenSource();
+                using var combinedCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCancellationTokenSource.Token);
+                
+                var receiveTradesTask = ReceiveTrades(combinedCancellationTokenSource.Token);
+                var timeoutTask = CheckTradesTimeout(timeoutCancellationTokenSource, cancellationToken);
+                
+                await Task.WhenAny(receiveTradesTask, timeoutTask);
+                
+                if (timeoutTask.IsCompleted && !timeoutTask.IsCanceled)
+                {
+                    Logger.LogWarning("Trades subscription timeout detected, restarting subscription.");
+                    timeoutCancellationTokenSource.Cancel();
+                }
+                
+                try
+                {
+                    await receiveTradesTask;
+                }
+                catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+                {
+                    throw;
+                }
+                catch (OperationCanceledException)
+                {
+                    Logger.LogInformation("Trades subscription cancelled due to timeout, will restart.");
+                }
             }
             catch (Exception ex)
             {
                 if (!cancellationToken.IsCancellationRequested)
                 {
                     Logger.LogError(ex, "ReceiveTrades exception.");
-                    await Task.Delay(RecoveryInterval);
+                    await Task.Delay(RecoveryInterval, cancellationToken);
                 }
             }
+        }
+    }
+
+    protected async Task CheckTradesTimeout(CancellationTokenSource timeoutCancellationTokenSource, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested && !timeoutCancellationTokenSource.Token.IsCancellationRequested)
+        {
+            var nowTicks = DateTime.UtcNow.Ticks;
+            var lastDataTicks = Interlocked.Read(ref LastTradesDataTicks);
+            
+            if (nowTicks - lastDataTicks > SubscriptionTimeoutInterval.Ticks)
+            {
+                Logger.LogWarning($"No trades data received for {SubscriptionTimeoutInterval.TotalMinutes} minutes, triggering restart.");
+                return;
+            }
+            
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
+        }
+    }
+    
+    protected async Task CheckMarketDataTimeout(CancellationTokenSource timeoutCancellationTokenSource, CancellationToken cancellationToken)
+    {
+        while (!cancellationToken.IsCancellationRequested && !timeoutCancellationTokenSource.Token.IsCancellationRequested)
+        {
+            var nowTicks = DateTime.UtcNow.Ticks;
+            var lastDataTicks = Interlocked.Read(ref LastMarketDataTicks);
+            
+            if (nowTicks - lastDataTicks > SubscriptionTimeoutInterval.Ticks)
+            {
+                Logger.LogWarning($"No market data received for {SubscriptionTimeoutInterval.TotalMinutes} minutes, triggering restart.");
+                return;
+            }
+            
+            await Task.Delay(TimeSpan.FromSeconds(30), cancellationToken);
         }
     }
 
@@ -402,6 +495,7 @@ public class TradingService : BackgroundService
         }, cancellationToken);
         await foreach (var data in marketDataStream.ResponseStream.ReadAllAsync(cancellationToken))
         {
+            Interlocked.Exchange(ref LastMarketDataTicks, DateTime.UtcNow.Ticks);
             // Logger.LogInformation($"data.PayloadCase: {data.PayloadCase}");
             if (data.PayloadCase == MarketDataResponse.PayloadOneofCase.SubscribeOrderBookResponse)
             {
