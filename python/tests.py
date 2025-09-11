@@ -7,7 +7,7 @@ from unittest import (
 
 from modules import (
     BetterBotBaseDataService, DataBuilder,
-    VkInstance, Commands
+    VkInstance, Commands, CodeVerifier
 )
 import patterns
 import config
@@ -221,6 +221,130 @@ class Test3Commands(TestCase):
     ) -> NoReturn:
         self.commands.apply_karma_change('-', 6)
         self.commands.karma_message()
+
+
+class Test4CodeVerifier(TestCase):
+    """TestCase for code_verifier.py"""
+    
+    def setUp(self):
+        self.verifier = CodeVerifier(max_attempts=3)
+    
+    @ordered
+    def test_execute_simple_code_success(self) -> NoReturn:
+        """Test executing simple successful code"""
+        code = "print('Hello, World!')"
+        success, output, exception = self.verifier.execute_code(code)
+        
+        assert success is True
+        assert "Hello, World!" in output
+        assert exception is None
+    
+    @ordered
+    def test_execute_code_with_variables(self) -> NoReturn:
+        """Test executing code with variables and multiple statements"""
+        code = """
+x = 10
+y = 20
+result = x + y
+print(f"Result: {result}")
+"""
+        success, output, exception = self.verifier.execute_code(code)
+        
+        assert success is True
+        assert "Result: 30" in output
+        assert exception is None
+    
+    @ordered
+    def test_execute_code_with_error(self) -> NoReturn:
+        """Test executing code that raises an exception"""
+        code = "print(undefined_variable)"
+        success, output, exception = self.verifier.execute_code(code)
+        
+        assert success is False
+        assert "NameError" in output
+        assert "undefined_variable" in output
+        assert exception is not None
+    
+    @ordered
+    def test_execute_code_syntax_error(self) -> NoReturn:
+        """Test executing code with syntax error"""
+        code = "print('unclosed string"
+        success, output, exception = self.verifier.execute_code(code)
+        
+        assert success is False
+        assert "SyntaxError" in output or "EOL" in output
+        assert exception is not None
+    
+    @ordered
+    def test_environment_persistence(self) -> NoReturn:
+        """Test that variables persist between executions"""
+        # Set a variable
+        code1 = "test_var = 42"
+        success1, output1, _ = self.verifier.execute_code(code1)
+        assert success1 is True
+        
+        # Use the variable
+        code2 = "print(f'Variable value: {test_var}')"
+        success2, output2, _ = self.verifier.execute_code(code2)
+        assert success2 is True
+        assert "Variable value: 42" in output2
+    
+    @ordered
+    def test_reset_environment(self) -> NoReturn:
+        """Test environment reset functionality"""
+        # Set a variable
+        code1 = "reset_test_var = 100"
+        self.verifier.execute_code(code1)
+        
+        # Reset environment
+        self.verifier.reset_environment()
+        
+        # Try to access the variable (should fail)
+        code2 = "print(reset_test_var)"
+        success, output, _ = self.verifier.execute_code(code2)
+        assert success is False
+        assert "NameError" in output
+    
+    @ordered
+    def test_global_variable_management(self) -> NoReturn:
+        """Test global variable management methods"""
+        # Set global variable
+        self.verifier.set_global_variable('test_global', 'Hello')
+        
+        # Get global variable
+        value = self.verifier.get_global_variable('test_global')
+        assert value == 'Hello'
+        
+        # Use in code
+        code = "print(f'Global: {test_global}')"
+        success, output, _ = self.verifier.execute_code(code)
+        assert success is True
+        assert "Global: Hello" in output
+    
+    @ordered
+    def test_verify_and_fix_code_no_callback(self) -> NoReturn:
+        """Test verify_and_fix_code without fix callback"""
+        code = "print(undefined_var)"
+        success, output, attempts = self.verifier.verify_and_fix_code(code)
+        
+        assert success is False
+        assert attempts == 1
+        assert "NameError" in output
+    
+    @ordered
+    def test_verify_and_fix_code_with_callback(self) -> NoReturn:
+        """Test verify_and_fix_code with working fix callback"""
+        def fix_callback(code, error):
+            if "undefined_var" in error:
+                return code.replace("undefined_var", "'Fixed variable'")
+            return code
+        
+        code = "print(undefined_var)"
+        success, output, attempts = self.verifier.verify_and_fix_code(code, fix_callback)
+        
+        assert success is True
+        assert attempts == 2
+        assert "Fixed variable" in output
 
 
 if __name__ == '__main__':

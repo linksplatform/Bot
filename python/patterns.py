@@ -65,3 +65,11 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+# code - Python code to verify and execute
+VERIFY_CODE = recompile(
+    r'\A\s*(verify|проверить|выполнить)\s+(?P<code>[\S\s]+)\Z', IGNORECASE)
+
+# reset code execution environment
+RESET_CODE_ENV = recompile(
+    r'\A\s*(reset\s*code|сбросить\s*код|reset\s*env|сбросить\s*среду)\s*\Z', IGNORECASE)
