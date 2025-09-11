@@ -39,13 +39,15 @@ public class TradingService : BackgroundService
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
     protected readonly ConcurrentDictionary<string, decimal> ActiveSellOrderSourcePrice;
+    protected readonly ProfitCalculationService ProfitService;
 
-    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
+    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings, ProfitCalculationService profitService)
     {
         Logger = logger;
         InvestApi = investApi;
         Lifetime = lifetime;
         Settings = settings;
+        ProfitService = profitService;
         Logger.LogInformation($"Instrument: {settings.Instrument}");
         Logger.LogInformation($"Ticker: {settings.Ticker}");
         Logger.LogInformation($"CashCurrency: {settings.CashCurrency}");
@@ -257,6 +259,13 @@ public class TradingService : BackgroundService
 
         var openOperations = GetOpenOperations();
         // Logger.LogInformation($"Open operations count: {openOperations.Count}");
+        
+        // Calculate and log profit analysis
+        var allOperations = GetAllOperations();
+        var currentPrice = GetCurrentMarketPrice();
+        var profitAnalysis = ProfitService.CalculateProfit(allOperations, currentPrice);
+        ProfitService.LogProfitAnalysis(profitAnalysis);
+        
         var openOperationsGroupedByPrice = openOperations.GroupBy(operation => operation.Price).ToList();
 
         var deletedLotsSets = new List<decimal>();
@@ -801,6 +810,56 @@ public class TradingService : BackgroundService
         }
 
         return openOperations;
+    }
+
+    private OperationsList GetAllOperations()
+    {
+        DateTime accountOpenDate =  DateTime.SpecifyKind(CurrentAccount.OpenedDate.ToDateTime(), DateTimeKind.Utc).AddHours(-3);
+        DateTime lastCheckpoint = DateTime.SpecifyKind(LastOperationsCheckpoint, DateTimeKind.Utc).AddHours(-3);
+        DateTime from = new [] { accountOpenDate, lastCheckpoint }.Max();
+        var operations = InvestApi.Operations.GetOperations(new OperationsRequest
+        {
+            AccountId = CurrentAccount.Id,
+            State = OperationState.Executed,
+            Figi = Figi,
+            From = Timestamp.FromDateTime(from),
+            To = Timestamp.FromDateTime(DateTime.UtcNow.AddDays(4))
+        }).Operations.Select<Operation, (OperationType Type, DateTime Date, long Quantity, decimal Price)>(o => (o.OperationType, o.Date.ToDateTime(), o.GetActualQuantity(), o.Price)).OrderBy(x => x.Date).ToList();
+        
+        return operations;
+    }
+
+    private decimal GetCurrentMarketPrice()
+    {
+        try
+        {
+            var orderBook = InvestApi.MarketData.GetOrderBook(new GetOrderBookRequest
+            {
+                Figi = Figi,
+                Depth = 1
+            });
+            
+            if (orderBook.Bids.Count > 0 && orderBook.Asks.Count > 0)
+            {
+                var bestBid = QuotationToDecimal(orderBook.Bids.First().Price);
+                var bestAsk = QuotationToDecimal(orderBook.Asks.First().Price);
+                return (bestBid + bestAsk) / 2; // Mid price
+            }
+            else if (orderBook.Bids.Count > 0)
+            {
+                return QuotationToDecimal(orderBook.Bids.First().Price);
+            }
+            else if (orderBook.Asks.Count > 0)
+            {
+                return QuotationToDecimal(orderBook.Asks.First().Price);
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning($"Failed to get current market price: {ex.Message}");
+        }
+        
+        return 0; // Return 0 if unable to get current price
     }
 
     private async Task<PostOrderResponse> PlaceSellOrder(long amount, decimal price)

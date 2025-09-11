@@ -14,6 +14,7 @@ var host = builder
             var section = context.Configuration.GetSection(nameof(TradingSettings));
             return section.Get<TradingSettings>();
         });
+        services.AddSingleton<ProfitCalculationService>();
         services.AddHostedService<TradingService>();
         services.AddInvestApiClient((_, settings) =>
         {
