@@ -35,6 +35,7 @@ public class TradingService : BackgroundService
     protected long LastWaitOutputTicks;
     protected TimeSpan MinimumTimeToBuy;
     protected TimeSpan MaximumTimeToBuy;
+    protected TimeSpan AutoSellMarketCloseTime;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveBuyOrders;
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
@@ -60,6 +61,11 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"MinimumTimeToBuy: {MinimumTimeToBuy}");
         MaximumTimeToBuy = TimeSpan.Parse(settings.MaximumTimeToBuy ?? "23:59:59", CultureInfo.InvariantCulture);
         Logger.LogInformation($"MaximumTimeToBuy: {MaximumTimeToBuy}");
+        AutoSellMarketCloseTime = TimeSpan.Parse(settings.AutoSellMarketCloseTime ?? "23:50:00", CultureInfo.InvariantCulture);
+        Logger.LogInformation($"AutoSellMarketCloseTime: {AutoSellMarketCloseTime}");
+        Logger.LogInformation($"EnableAutoSellBeforeMarketClose: {settings.EnableAutoSellBeforeMarketClose}");
+        Logger.LogInformation($"MaxProfitPercent: {settings.MaxProfitPercent}");
+        Logger.LogInformation($"MaxLossPercent: {settings.MaxLossPercent}");
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
@@ -451,20 +457,50 @@ public class TradingService : BackgroundService
                     // Process potential sell order
                     if (LotsSets.Count > 0)
                     {
-                        Logger.LogInformation($"sell activated");
-                        Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                         var maxPrice = LotsSets.Keys.Max();
-                        Logger.LogInformation($"maxPrice: {maxPrice}");
                         var totalAmount = LotsSets.Values.Sum();
-                        Logger.LogInformation($"totalAmount: {totalAmount}");
-                        var minimumSellPrice = GetMinimumSellPrice(maxPrice);
-                        var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
-                        var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
-                        Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
-                        var response = await PlaceSellOrder(totalAmount, targetSellPrice);
-                        ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
-                        Logger.LogInformation($"sell complete");
-                        areOrdersPlaced = true;
+                        var shouldSellBeforeClose = ShouldAutoSellBeforeMarketClose();
+                        var shouldSellDueToProfitLoss = ShouldSellDueToProfitLossLimits(maxPrice, bestBid);
+
+                        if (shouldSellBeforeClose)
+                        {
+                            Logger.LogInformation($"Auto-sell activated before market close");
+                            Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
+                            Logger.LogInformation($"maxPrice: {maxPrice}");
+                            Logger.LogInformation($"totalAmount: {totalAmount}");
+                            // Sell at current bid price to ensure execution before market close
+                            var response = await PlaceSellOrder(totalAmount, bestBid);
+                            ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
+                            Logger.LogInformation($"Auto-sell before market close complete");
+                            areOrdersPlaced = true;
+                        }
+                        else if (shouldSellDueToProfitLoss)
+                        {
+                            Logger.LogInformation($"Sell activated due to profit/loss limits");
+                            Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
+                            Logger.LogInformation($"maxPrice: {maxPrice}");
+                            Logger.LogInformation($"totalAmount: {totalAmount}");
+                            // Sell at current bid price to ensure quick execution
+                            var response = await PlaceSellOrder(totalAmount, bestBid);
+                            ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
+                            Logger.LogInformation($"Profit/loss limit sell complete");
+                            areOrdersPlaced = true;
+                        }
+                        else
+                        {
+                            Logger.LogInformation($"sell activated");
+                            Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
+                            Logger.LogInformation($"maxPrice: {maxPrice}");
+                            Logger.LogInformation($"totalAmount: {totalAmount}");
+                            var minimumSellPrice = GetMinimumSellPrice(maxPrice);
+                            var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
+                            var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
+                            Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
+                            var response = await PlaceSellOrder(totalAmount, targetSellPrice);
+                            ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
+                            Logger.LogInformation($"sell complete");
+                            areOrdersPlaced = true;
+                        }
                     }
                     if (!areOrdersPlaced)
                     {
@@ -588,7 +624,30 @@ public class TradingService : BackgroundService
                     {
                         var initialLots = activeSellOrder.InitialOrderPrice / activeSellOrder.InitialSecurityPrice;
                         var minimumSellPrice = GetMinimumSellPrice(sourcePrice);
-                        if (topBidPrice <= sourcePrice && topBidPrice >= minimumSellPrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
+                        var shouldSellBeforeClose = ShouldAutoSellBeforeMarketClose();
+                        var shouldSellDueToProfitLoss = ShouldSellDueToProfitLossLimits(sourcePrice, bestBid);
+
+                        if (shouldSellBeforeClose || shouldSellDueToProfitLoss)
+                        {
+                            var reason = shouldSellBeforeClose ? "market close approaching" : "profit/loss limits";
+                            Logger.LogInformation($"Canceling sell order due to {reason}");
+                            Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
+                            Logger.LogInformation($"sourcePrice: {sourcePrice}");
+                            
+                            // Cancel current order
+                            if (!await TryCancelOrder(activeSellOrder.OrderId))
+                            {
+                                ActiveSellOrders.Clear();
+                                Logger.LogInformation($"Failed to cancel sell order for {reason}.");
+                                continue;
+                            }
+                            
+                            // Place new order at current bid price for immediate execution
+                            var response = await PlaceSellOrder(activeSellOrder.LotsRequested, bestBid);
+                            SyncActiveOrders();
+                            Logger.LogInformation($"Emergency sell complete due to {reason}");
+                        }
+                        else if (topBidPrice <= sourcePrice && topBidPrice >= minimumSellPrice && topBidOrder.Quantity < (Settings.EarlySellOwnedLotsDelta + activeSellOrder.LotsRequested * Settings.EarlySellOwnedLotsMultiplier))
                         {
                             if (activeSellOrder.LotsRequested < initialLots)
                             {
@@ -652,6 +711,36 @@ public class TradingService : BackgroundService
     {
        var currentTime = DateTime.UtcNow.TimeOfDay;
        return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
+    }
+
+    private bool ShouldAutoSellBeforeMarketClose()
+    {
+        if (!Settings.EnableAutoSellBeforeMarketClose)
+            return false;
+
+        var currentTime = DateTime.UtcNow.TimeOfDay;
+        return currentTime >= AutoSellMarketCloseTime;
+    }
+
+    private bool ShouldSellDueToProfitLossLimits(decimal sourcePrice, decimal currentPrice)
+    {
+        if (sourcePrice <= 0) return false;
+
+        var profitLossPercent = ((currentPrice - sourcePrice) / sourcePrice) * 100;
+        
+        if (Settings.MaxProfitPercent.HasValue && profitLossPercent >= Settings.MaxProfitPercent.Value)
+        {
+            Logger.LogInformation($"Max profit limit reached: {profitLossPercent:F2}% >= {Settings.MaxProfitPercent.Value:F2}%");
+            return true;
+        }
+        
+        if (Settings.MaxLossPercent.HasValue && profitLossPercent <= -Settings.MaxLossPercent.Value)
+        {
+            Logger.LogInformation($"Max loss limit reached: {profitLossPercent:F2}% <= -{Settings.MaxLossPercent.Value:F2}%");
+            return true;
+        }
+        
+        return false;
     } 
 
     private async Task<(decimal, decimal)> GetCashBalance(bool forceRemote = false)
