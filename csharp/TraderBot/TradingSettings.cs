@@ -17,4 +17,5 @@ public class TradingSettings
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
     public DateTime LoadOperationsFrom { get; set; }
+    public decimal? MaximumLossPercentage { get; set; }
 }
