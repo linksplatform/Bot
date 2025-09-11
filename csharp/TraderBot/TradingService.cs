@@ -63,6 +63,8 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
+        Logger.LogInformation($"MaxSpreadPercentToBuy: {settings.MaxSpreadPercentToBuy}");
+        Logger.LogInformation($"MinimumCombinedLiquidityToBuy: {settings.MinimumCombinedLiquidityToBuy}");
 
         var currentTime = DateTime.UtcNow.TimeOfDay;
         Logger.LogInformation($"Current time: {currentTime}");
@@ -468,7 +470,7 @@ public class TradingService : BackgroundService
                     }
                     if (!areOrdersPlaced)
                     {
-                        if (IsTimeToBuy())
+                        if (IsTimeToBuy() && IsMarketConditionsSuitableForBuying(bestBid, bestAsk, orderBook))
                         {
                             // Process potential buy order
                             var (cashBalance, _) = await GetCashBalance();
@@ -516,7 +518,7 @@ public class TradingService : BackgroundService
                 else if (ActiveBuyOrders.Count == 1)
                 {
                     var activeBuyOrder = ActiveBuyOrders.Single().Value;
-                    if (IsTimeToBuy())
+                    if (IsTimeToBuy() && IsMarketConditionsSuitableForBuying(bestBid, bestAsk, orderBook))
                     {
                         var initialOrderPrice = MoneyValueToDecimal(activeBuyOrder.InitialSecurityPrice);
                         if (LotsSets.TryGetValue(initialOrderPrice, out var boughtLots) || LotsSets.Count == 0)
@@ -569,7 +571,7 @@ public class TradingService : BackgroundService
                     }
                     else
                     {
-                        Logger.LogInformation($"It is not time to buy, cancelling buy order");
+                        Logger.LogInformation($"Conditions not suitable for buying, cancelling buy order");
                         // Cancel order
                         if (!await TryCancelOrder(activeBuyOrder.OrderId))
                         {
@@ -652,6 +654,30 @@ public class TradingService : BackgroundService
     {
        var currentTime = DateTime.UtcNow.TimeOfDay;
        return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
+    }
+
+    private bool IsMarketConditionsSuitableForBuying(decimal bestBid, decimal bestAsk, OrderBook orderBook)
+    {
+        // Check if spread is not too wide
+        var spread = bestAsk - bestBid;
+        var spreadPercent = (spread / bestBid) * 100;
+        if (spreadPercent > Settings.MaxSpreadPercentToBuy)
+        {
+            Logger.LogInformation($"Spread too wide for buying: {spreadPercent:F2}% (max allowed: {Settings.MaxSpreadPercentToBuy}%)");
+            return false;
+        }
+
+        // Check combined liquidity at best bid and ask
+        var bestBidOrder = orderBook.Bids.FirstOrDefault();
+        var bestAskOrder = orderBook.Asks.FirstOrDefault();
+        var combinedLiquidity = (bestBidOrder?.Quantity ?? 0) + (bestAskOrder?.Quantity ?? 0);
+        if (combinedLiquidity < Settings.MinimumCombinedLiquidityToBuy)
+        {
+            Logger.LogInformation($"Insufficient liquidity for buying: {combinedLiquidity} (minimum required: {Settings.MinimumCombinedLiquidityToBuy})");
+            return false;
+        }
+
+        return true;
     } 
 
     private async Task<(decimal, decimal)> GetCashBalance(bool forceRemote = false)
