@@ -10,12 +10,14 @@ use octorust::types::{GitCreateBlobRequest, GitCreateCommitRequest, GitCreateTre
 
 use crate::add_version_to_conandata_yml::{add_version_to_conandata_yml, AddVersionToConandataYmlArgument};
 use crate::add_version_to_config_yml::{add_version_to_config_yml, AddVersionToConfigYmlArgument};
+use crate::change_license_in_conanfile_py::{change_license_in_conanfile_py, ChangeLicenseInConanfilePyArgument};
 use crate::copy_github_folder::{copy_github_folder, CopyGithubFolder};
 use crate::replace_requirements_to_conanfile_py::{add_requirements_to_conanfile_py, AddRequirementsToConanfilePyArgument};
 
 mod replace_requirements_to_conanfile_py;
 mod add_version_to_conandata_yml;
 mod add_version_to_config_yml;
+mod change_license_in_conanfile_py;
 mod copy_github_folder;
 mod decode_github_content;
 
@@ -82,12 +84,16 @@ struct Args {
     /// Previous version
     #[arg(long)]
     previous_version: String,
+
+    /// New license to set in conanfile.py (optional)
+    #[arg(long)]
+    new_license: Option<String>,
 }
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let Args {
-        github_authentication_token, new_version, recipe_name, source_repo_owner_login, source_repo_name, source_repo_branch_name, destination_repo_owner_login, destination_repo_name, destination_repo_branch_name, lib_zip_url, sha256hash, dependencies, pull_request_title, pull_request_body, previous_version
+        github_authentication_token, new_version, recipe_name, source_repo_owner_login, source_repo_name, source_repo_branch_name, destination_repo_owner_login, destination_repo_name, destination_repo_branch_name, lib_zip_url, sha256hash, dependencies, pull_request_title, pull_request_body, previous_version, new_license
     } = Args::parse();
 
     let github_client = Client::new(
@@ -136,6 +142,22 @@ async fn main() -> Result<(), Box<dyn Error>> {
         commit_message: &"Add requirements".to_string(),
         dependencies: &Some(dependencies),
     }).await.unwrap();
+
+    // Change license if new_license is provided and recipe matches platform pattern
+    if let Some(license) = &new_license {
+        let platform_regex = regex::Regex::new(r"^platform\..+").unwrap();
+        if platform_regex.is_match(&recipe_name.to_lowercase()) {
+            change_license_in_conanfile_py(&ChangeLicenseInConanfilePyArgument {
+                github_client: &github_client,
+                source_repo_owner_login: &source_repo_owner_login,
+                source_repo_name: &source_repo_name,
+                source_repo_branch_name: &source_repo_branch_name,
+                conanfile_py_file_path: &format!("recipes/{recipe_name}/{new_version}/conanfile.py"),
+                new_license: license,
+                commit_message: &format!("Update license to {}", license),
+            }).await.unwrap();
+        }
+    }
 
     github_client.pulls().create(
         &destination_repo_owner_login,
