@@ -17,4 +17,7 @@ public class TradingSettings
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
     public DateTime LoadOperationsFrom { get; set; }
+    public bool EnableCustomBuyPrice { get; set; }
+    public decimal CustomBuyPriceSpreadPercentage { get; set; }
+    public long MaxCustomBuyPriceSteps { get; set; }
 }
