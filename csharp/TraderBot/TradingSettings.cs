@@ -17,4 +17,8 @@ public class TradingSettings
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
     public DateTime LoadOperationsFrom { get; set; }
+    public bool EnableAutoSellBeforeMarketClose { get; set; }
+    public string? AutoSellMarketCloseTime { get; set; }
+    public decimal? MaxProfitPercent { get; set; }
+    public decimal? MaxLossPercent { get; set; }
 }
