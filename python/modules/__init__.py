@@ -4,6 +4,7 @@ from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
 from .data_builder import DataBuilder
 from .vk_instance import VkInstance
+from .code_verifier import CodeVerifier
 from .utils import (
     get_default_programming_language,
     contains_string,

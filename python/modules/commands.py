@@ -13,6 +13,7 @@ import wikipedia
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
 from .data_builder import DataBuilder
+from .code_verifier import CodeVerifier
 from .utils import (
     get_default_programming_language,
     contains_all_strings,
@@ -44,6 +45,7 @@ class Commands:
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
         self.matched: Match = None
+        self.code_verifier: CodeVerifier = CodeVerifier()
         wikipedia.set_lang('en')
 
     def help_message(self) -> NoReturn:
@@ -378,6 +380,36 @@ class Commands:
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
+
+    def verify_code(self) -> NoReturn:
+        """Verify and execute Python code from user input."""
+        code = self.matched.group('code').strip()
+        
+        if not code:
+            self.vk_instance.send_msg('Код не найден. Используйте формат: verify <код>', self.peer_id)
+            return
+        
+        # Execute the code
+        success, output, exception = self.code_verifier.execute_code(code)
+        
+        if success:
+            # Code executed successfully
+            response = f"✅ Код выполнен успешно:\n\n{output}"
+        else:
+            # Code execution failed
+            response = f"❌ Ошибка выполнения кода:\n\n{output}"
+        
+        # Limit response length to avoid VK message limits
+        max_length = 4096
+        if len(response) > max_length:
+            response = response[:max_length-50] + "\n\n... (вывод обрезан)"
+        
+        self.vk_instance.send_msg(response, self.peer_id)
+
+    def reset_code_environment(self) -> NoReturn:
+        """Reset the code execution environment."""
+        self.code_verifier.reset_environment()
+        self.vk_instance.send_msg('🔄 Среда выполнения кода сброшена.', self.peer_id)
 
     def match_command(
             self,
