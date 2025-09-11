@@ -23,6 +23,7 @@ public class TradingService : BackgroundService
     protected readonly ILogger<TradingService> Logger;
     protected readonly IHostApplicationLifetime Lifetime;
     protected readonly TradingSettings Settings;
+    protected readonly string ConfigurationName;
     protected readonly Account CurrentAccount;
     protected readonly string Figi;
     protected readonly int LotSize;
@@ -40,45 +41,46 @@ public class TradingService : BackgroundService
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
     protected readonly ConcurrentDictionary<string, decimal> ActiveSellOrderSourcePrice;
 
-    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
+    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings, string configurationName = "Default")
     {
         Logger = logger;
         InvestApi = investApi;
         Lifetime = lifetime;
         Settings = settings;
-        Logger.LogInformation($"Instrument: {settings.Instrument}");
-        Logger.LogInformation($"Ticker: {settings.Ticker}");
-        Logger.LogInformation($"CashCurrency: {settings.CashCurrency}");
-        Logger.LogInformation($"AccountIndex: {settings.AccountIndex}");
-        Logger.LogInformation($"MinimumProfitSteps: {settings.MinimumProfitSteps}");
-        Logger.LogInformation($"MarketOrderBookDepth: {settings.MarketOrderBookDepth}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToChangeBuyPrice: {settings.MinimumMarketOrderSizeToChangeBuyPrice}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToChangeSellPrice: {settings.MinimumMarketOrderSizeToChangeSellPrice}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToBuy: {settings.MinimumMarketOrderSizeToBuy}");
-        Logger.LogInformation($"MinimumMarketOrderSizeToSell: {settings.MinimumMarketOrderSizeToSell}");
+        ConfigurationName = configurationName;
+        Logger.LogInformation($"[{ConfigurationName}] Instrument: {settings.Instrument}");
+        Logger.LogInformation($"[{ConfigurationName}] Ticker: {settings.Ticker}");
+        Logger.LogInformation($"[{ConfigurationName}] CashCurrency: {settings.CashCurrency}");
+        Logger.LogInformation($"[{ConfigurationName}] AccountIndex: {settings.AccountIndex}");
+        Logger.LogInformation($"[{ConfigurationName}] MinimumProfitSteps: {settings.MinimumProfitSteps}");
+        Logger.LogInformation($"[{ConfigurationName}] MarketOrderBookDepth: {settings.MarketOrderBookDepth}");
+        Logger.LogInformation($"[{ConfigurationName}] MinimumMarketOrderSizeToChangeBuyPrice: {settings.MinimumMarketOrderSizeToChangeBuyPrice}");
+        Logger.LogInformation($"[{ConfigurationName}] MinimumMarketOrderSizeToChangeSellPrice: {settings.MinimumMarketOrderSizeToChangeSellPrice}");
+        Logger.LogInformation($"[{ConfigurationName}] MinimumMarketOrderSizeToBuy: {settings.MinimumMarketOrderSizeToBuy}");
+        Logger.LogInformation($"[{ConfigurationName}] MinimumMarketOrderSizeToSell: {settings.MinimumMarketOrderSizeToSell}");
         MinimumTimeToBuy = TimeSpan.Parse(settings.MinimumTimeToBuy ?? "00:00:00", CultureInfo.InvariantCulture);
-        Logger.LogInformation($"MinimumTimeToBuy: {MinimumTimeToBuy}");
+        Logger.LogInformation($"[{ConfigurationName}] MinimumTimeToBuy: {MinimumTimeToBuy}");
         MaximumTimeToBuy = TimeSpan.Parse(settings.MaximumTimeToBuy ?? "23:59:59", CultureInfo.InvariantCulture);
-        Logger.LogInformation($"MaximumTimeToBuy: {MaximumTimeToBuy}");
-        Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
-        Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
-        Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
+        Logger.LogInformation($"[{ConfigurationName}] MaximumTimeToBuy: {MaximumTimeToBuy}");
+        Logger.LogInformation($"[{ConfigurationName}] EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
+        Logger.LogInformation($"[{ConfigurationName}] EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
+        Logger.LogInformation($"[{ConfigurationName}] LoadOperationsFrom: {settings.LoadOperationsFrom}");
 
         var currentTime = DateTime.UtcNow.TimeOfDay;
-        Logger.LogInformation($"Current time: {currentTime}");
+        Logger.LogInformation($"[{ConfigurationName}] Current time: {currentTime}");
 
         var accounts = InvestApi.Users.GetAccounts().Accounts;
-        Logger.LogInformation("Accounts:");
+        Logger.LogInformation($"[{ConfigurationName}] Accounts:");
         for (int i = 0; i < accounts.Count; i++)
         {
-            Logger.LogInformation($"[{i}]: {accounts[i]}");
+            Logger.LogInformation($"[{ConfigurationName}] [{i}]: {accounts[i]}");
         }
         if (settings.AccountIndex < 0 || settings.AccountIndex >= accounts.Count)
         {
-            throw new ArgumentException($"Account index {settings.AccountIndex} is out of range. Please select a valid account index ({0}-{accounts.Count - 1}).");
+            throw new ArgumentException($"[{ConfigurationName}] Account index {settings.AccountIndex} is out of range. Please select a valid account index ({0}-{accounts.Count - 1}).");
         }
         CurrentAccount = accounts[settings.AccountIndex];
-        Logger.LogInformation($"CurrentAccount (with {settings.AccountIndex} index): {CurrentAccount}");
+        Logger.LogInformation($"[{ConfigurationName}] CurrentAccount (with {settings.AccountIndex} index): {CurrentAccount}");
 
         if (settings.Instrument == Instrument.Etf)
         {
