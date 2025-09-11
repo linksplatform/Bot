@@ -39,6 +39,7 @@ public class TradingService : BackgroundService
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
     protected readonly ConcurrentDictionary<string, decimal> ActiveSellOrderSourcePrice;
+    protected readonly List<(DateTime Date, decimal BuyPrice, decimal SellPrice)> CompletedOperations;
 
     public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
     {
@@ -111,6 +112,7 @@ public class TradingService : BackgroundService
         ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
+        CompletedOperations = new List<(DateTime, decimal, decimal)>();
         LastOperationsCheckpoint = settings.LoadOperationsFrom;
     }
 
@@ -290,7 +292,15 @@ public class TradingService : BackgroundService
             if (activeOrder.LotsRequested == 0)
             {
                 orders.TryRemove(orderTrades.OrderId, out activeOrder);
-                ActiveSellOrderSourcePrice.TryRemove(orderTrades.OrderId, out decimal sourcePrice);
+                
+                // Track completed buy-sell cycle for Kelly Criterion
+                if (orders == ActiveSellOrders && ActiveSellOrderSourcePrice.TryGetValue(orderTrades.OrderId, out decimal sourcePrice))
+                {
+                    var sellPrice = MoneyValueToDecimal(activeOrder.InitialSecurityPrice);
+                    TrackCompletedOperation(sourcePrice, sellPrice);
+                }
+                
+                ActiveSellOrderSourcePrice.TryRemove(orderTrades.OrderId, out decimal _);
                 Logger.LogInformation($"Active order removed: {activeOrder}");
             }
         }
@@ -477,7 +487,7 @@ public class TradingService : BackgroundService
                             {
                                 Logger.LogInformation($"buy activated");
                                 Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
-                                var lots = (long)(cashBalance / lotPrice);
+                                var lots = CalculateOptimalLotSize(cashBalance, lotPrice);
                                 var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
                                 Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
                                 var response = await PlaceBuyOrder(lots, bestBid);
@@ -544,7 +554,7 @@ public class TradingService : BackgroundService
                                 var lotPrice = bestBid * LotSize;
                                 if (cashBalance > lotPrice)
                                 {
-                                    var lots = (long)(cashBalance / lotPrice);
+                                    var lots = CalculateOptimalLotSize(cashBalance, lotPrice);
                                     var marketLotsAtTargetPrice = orderBook.Bids.FirstOrDefault(o => o.Price == bestBid)?.Quantity ?? 0;
                                     Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
                                     var response = await PlaceBuyOrder(lots, bestBid);
@@ -652,6 +662,57 @@ public class TradingService : BackgroundService
     {
        var currentTime = DateTime.UtcNow.TimeOfDay;
        return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
+    }
+
+    private long CalculateOptimalLotSize(decimal cashBalance, decimal lotPrice)
+    {
+        if (!Settings.UseKellyCriterion)
+        {
+            // Use traditional sizing: all available cash
+            return (long)(cashBalance / lotPrice);
+        }
+
+        double winProbability = Settings.WinProbability;
+        double profitLossRatio = Settings.ProfitLossRatio;
+
+        // If we have enough historical data, calculate metrics dynamically
+        if (CompletedOperations.Count >= 10)
+        {
+            var (historicalWinProb, historicalRatio) = KellyCriterion.CalculateHistoricalMetrics(CompletedOperations);
+            winProbability = historicalWinProb;
+            profitLossRatio = historicalRatio;
+            Logger.LogInformation($"Using historical metrics - Win Probability: {winProbability:F3}, Profit/Loss Ratio: {profitLossRatio:F3}");
+        }
+        else
+        {
+            Logger.LogInformation($"Using configured metrics - Win Probability: {winProbability:F3}, Profit/Loss Ratio: {profitLossRatio:F3}");
+        }
+
+        var kellyFraction = KellyCriterion.CalculateOptimalBetSize(winProbability, profitLossRatio, Settings.KellyFractionLimit);
+        var optimalCashToUse = cashBalance * (decimal)kellyFraction;
+        var lots = (long)Math.Max(1, optimalCashToUse / lotPrice); // Ensure at least 1 lot
+
+        Logger.LogInformation($"Kelly Criterion: Fraction={kellyFraction:F3}, OptimalCash={optimalCashToUse:F2}, Lots={lots}");
+
+        return lots;
+    }
+
+    private void TrackCompletedOperation(decimal buyPrice, decimal sellPrice)
+    {
+        lock (CompletedOperations)
+        {
+            CompletedOperations.Add((DateTime.UtcNow, buyPrice, sellPrice));
+            
+            // Keep only last 100 operations to prevent memory growth
+            if (CompletedOperations.Count > 100)
+            {
+                CompletedOperations.RemoveAt(0);
+            }
+        }
+        
+        var profit = sellPrice - buyPrice;
+        var profitPercent = (profit / buyPrice) * 100;
+        Logger.LogInformation($"Operation completed: Buy={buyPrice}, Sell={sellPrice}, Profit={profit:F4} ({profitPercent:F2}%)");
     } 
 
     private async Task<(decimal, decimal)> GetCashBalance(bool forceRemote = false)

@@ -17,4 +17,8 @@ public class TradingSettings
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
     public DateTime LoadOperationsFrom { get; set; }
+    public bool UseKellyCriterion { get; set; }
+    public double WinProbability { get; set; }
+    public double ProfitLossRatio { get; set; }
+    public double KellyFractionLimit { get; set; } = 0.25;
 }
