@@ -16,5 +16,5 @@ public class TradingSettings
     public string? MaximumTimeToBuy { get; set; }
     public long EarlySellOwnedLotsDelta { get; set; }
     public decimal EarlySellOwnedLotsMultiplier { get; set; }
-    public DateTime LoadOperationsFrom { get; set; }
+    public DateTime? LoadOperationsFrom { get; set; }
 }

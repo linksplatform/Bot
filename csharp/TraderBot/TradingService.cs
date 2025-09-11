@@ -62,8 +62,6 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"MaximumTimeToBuy: {MaximumTimeToBuy}");
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
-        Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
-
         var currentTime = DateTime.UtcNow.TimeOfDay;
         Logger.LogInformation($"Current time: {currentTime}");
 
@@ -111,7 +109,23 @@ public class TradingService : BackgroundService
         ActiveSellOrders = new ConcurrentDictionary<string, OrderState>();
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
-        LastOperationsCheckpoint = settings.LoadOperationsFrom;
+        
+        // Calculate LoadOperationsFrom automatically if not provided
+        DateTime calculatedLoadOperationsFrom;
+        if (settings.LoadOperationsFrom.HasValue)
+        {
+            calculatedLoadOperationsFrom = settings.LoadOperationsFrom.Value;
+            Logger.LogInformation($"LoadOperationsFrom (from config): {calculatedLoadOperationsFrom}");
+        }
+        else
+        {
+            // Use account open date or 30 days ago, whichever is more recent
+            DateTime accountOpenDate = DateTime.SpecifyKind(CurrentAccount.OpenedDate.ToDateTime(), DateTimeKind.Utc);
+            DateTime thirtyDaysAgo = DateTime.UtcNow.AddDays(-30);
+            calculatedLoadOperationsFrom = new[] { accountOpenDate, thirtyDaysAgo }.Max();
+            Logger.LogInformation($"LoadOperationsFrom (calculated automatically): {calculatedLoadOperationsFrom}");
+        }
+        LastOperationsCheckpoint = calculatedLoadOperationsFrom;
     }
 
     protected async Task ReceiveTrades(CancellationToken cancellationToken)
