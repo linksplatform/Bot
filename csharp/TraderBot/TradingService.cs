@@ -63,6 +63,7 @@ public class TradingService : BackgroundService
         Logger.LogInformation($"EarlySellOwnedLotsDelta: {settings.EarlySellOwnedLotsDelta}");
         Logger.LogInformation($"EarlySellOwnedLotsMultiplier: {settings.EarlySellOwnedLotsMultiplier}");
         Logger.LogInformation($"LoadOperationsFrom: {settings.LoadOperationsFrom}");
+        Logger.LogInformation($"MaximumLossPercentage: {settings.MaximumLossPercentage}");
 
         var currentTime = DateTime.UtcNow.TimeOfDay;
         Logger.LogInformation($"Current time: {currentTime}");
@@ -441,6 +442,44 @@ public class TradingService : BackgroundService
 
                 // Logger.LogInformation($"bid: {bestBid}, ask: {bestAsk}.");
                 
+                // Check for maximum loss protection
+                if (LotsSets.Count > 0 && ShouldTriggerMaximumLossProtection(bestBid))
+                {
+                    Logger.LogCritical($"MAXIMUM LOSS PROTECTION TRIGGERED! Current market price: {bestBid}");
+                    
+                    // Cancel all existing orders first
+                    var allOrders = new List<string>();
+                    allOrders.AddRange(ActiveBuyOrders.Keys);
+                    allOrders.AddRange(ActiveSellOrders.Keys);
+                    
+                    foreach (var orderId in allOrders)
+                    {
+                        await TryCancelOrder(orderId);
+                    }
+                    
+                    // Clear active orders
+                    ActiveBuyOrders.Clear();
+                    ActiveSellOrders.Clear();
+                    ActiveSellOrderSourcePrice.Clear();
+                    
+                    // Sell all lots at market price
+                    var totalLots = LotsSets.Values.Sum();
+                    if (totalLots > 0)
+                    {
+                        await PlaceMarketSellOrder(totalLots);
+                        
+                        // Clear lots as they will be sold
+                        LotsSets.Clear();
+                    }
+                    
+                    // Reset cash balance
+                    SetCashBalance(CashBalanceFree + CashBalanceLocked, 0);
+                    
+                    Logger.LogCritical($"MAXIMUM LOSS PROTECTION: Sold {totalLots} lots at market price to minimize further losses");
+                    
+                    continue;
+                }
+                
                 // Logger.LogInformation($"Time: {DateTime.Now}");
                 // Logger.LogInformation($"ActiveBuyOrders.Count: {ActiveBuyOrders.Count}");
                 // Logger.LogInformation($"ActiveSellOrders.Count: {ActiveSellOrders.Count}");
@@ -691,6 +730,51 @@ public class TradingService : BackgroundService
         return targetSellPrice;
     }
 
+    private decimal CalculateCurrentLossPercentage(decimal currentMarketPrice)
+    {
+        if (LotsSets.Count == 0)
+        {
+            return 0;
+        }
+
+        decimal totalCost = 0;
+        decimal totalLots = 0;
+
+        foreach (var lotsSet in LotsSets)
+        {
+            decimal purchasePrice = lotsSet.Key;
+            long lots = lotsSet.Value;
+            totalCost += purchasePrice * lots;
+            totalLots += lots;
+        }
+
+        if (totalLots == 0)
+        {
+            return 0;
+        }
+
+        decimal averagePurchasePrice = totalCost / totalLots;
+        decimal currentValue = currentMarketPrice * totalLots;
+        decimal totalPurchaseCost = averagePurchasePrice * totalLots;
+        
+        decimal lossPercentage = ((totalPurchaseCost - currentValue) / totalPurchaseCost) * 100;
+        
+        Logger.LogInformation($"Average purchase price: {averagePurchasePrice}, Current price: {currentMarketPrice}, Loss: {lossPercentage:F2}%");
+        
+        return lossPercentage;
+    }
+
+    private bool ShouldTriggerMaximumLossProtection(decimal currentMarketPrice)
+    {
+        if (!Settings.MaximumLossPercentage.HasValue || LotsSets.Count == 0)
+        {
+            return false;
+        }
+
+        decimal currentLoss = CalculateCurrentLossPercentage(currentMarketPrice);
+        return currentLoss >= Settings.MaximumLossPercentage.Value;
+    }
+
     protected override async Task ExecuteAsync(CancellationToken cancellationToken)
     {
         var tasks = new []
@@ -828,6 +912,22 @@ public class TradingService : BackgroundService
         // }
         var response = await InvestApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
         Logger.LogInformation($"Sell order placed: {response}");
+        return response;
+    }
+
+    private async Task<PostOrderResponse> PlaceMarketSellOrder(long amount)
+    {
+        PostOrderRequest marketSellOrderRequest = new()
+        {
+            OrderId = Guid.NewGuid().ToString(),
+            AccountId = CurrentAccount.Id,
+            Direction = OrderDirection.Sell,
+            OrderType = OrderType.Market,
+            Figi = Figi,
+            Quantity = amount
+        };
+        var response = await InvestApi.Orders.PostOrderAsync(marketSellOrderRequest).ResponseAsync;
+        Logger.LogCritical($"MAXIMUM LOSS PROTECTION: Market sell order placed for {amount} lots: {response}");
         return response;
     }
 
