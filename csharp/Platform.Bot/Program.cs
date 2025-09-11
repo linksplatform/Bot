@@ -73,6 +73,10 @@ namespace Platform.Bot
                 description: "Minimum interaction interval in seconds.",
                 getDefaultValue: () => 60);
 
+            var openAiApiKeyOption = new Option<string?>(
+                name: "--openai-api-key",
+                description: "OpenAI API key for code optimization features.");
+
             var rootCommand = new RootCommand("Sample app for System.CommandLine")
             {
                 githubUserNameOption,
@@ -80,10 +84,11 @@ namespace Platform.Bot
                 githubApplicationNameOption,
                 databaseFilePathOption,
                 fileSetNameOption,
-                minimumInteractionIntervalOption
+                minimumInteractionIntervalOption,
+                openAiApiKeyOption
             };
 
-            rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval) => 
+            rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval, openAiApiKey) => 
             {
                 Debug.WriteLine($"Nickname: {githubUserName}");
                 Debug.WriteLine($"GitHub API Token: {githubApiToken}");
@@ -91,11 +96,30 @@ namespace Platform.Bot
                 Debug.WriteLine($"Database File Path: {databaseFilePath?.FullName}");
                 Debug.WriteLine($"File Set Name: {fileSetName}");
                 Debug.WriteLine($"Minimum Interaction Interval: {minimumInteractionInterval} seconds");
+                Debug.WriteLine($"OpenAI API Key: {(string.IsNullOrEmpty(openAiApiKey) ? "Not provided" : "Provided")}");
                 
                 var dbContext = new FileStorage(databaseFilePath?.FullName ?? new TemporaryFile().Filename);
                 Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
                 var githubStorage = new GitHubStorage(githubUserName, githubApiToken, githubApplicationName);
-                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
+                
+                // Create list of triggers
+                var triggers = new List<ITrigger<Issue>>
+                {
+                    new HelloWorldTrigger(githubStorage, dbContext, fileSetName),
+                    new OrganizationLastMonthActivityTrigger(githubStorage),
+                    new LastCommitActivityTrigger(githubStorage),
+                    new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage),
+                    new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage),
+                    new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage)
+                };
+
+                // Add CodeOptimizerTrigger if OpenAI API key is provided
+                if (!string.IsNullOrEmpty(openAiApiKey))
+                {
+                    triggers.Add(new CodeOptimizerTrigger(githubStorage, dbContext, openAiApiKey));
+                }
+
+                var issueTracker = new IssueTracker(githubStorage, triggers.ToArray());
                 var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                 var cancellation = new CancellationTokenSource();
@@ -114,7 +138,7 @@ namespace Platform.Bot
                     }
                 }
             }, 
-            githubUserNameOption, githubApiTokenOption, githubApplicationNameOption, databaseFilePathOption, fileSetNameOption, minimumInteractionIntervalOption);
+            githubUserNameOption, githubApiTokenOption, githubApplicationNameOption, databaseFilePathOption, fileSetNameOption, minimumInteractionIntervalOption, openAiApiKeyOption);
 
             return await rootCommand.InvokeAsync(args);
         }
