@@ -826,8 +826,17 @@ public class TradingService : BackgroundService
         // {
         //     throw new InvalidOperationException($"Not enough amount to sell {amount} assets. Available amount: {securityPosition.Balance}");
         // }
-        var response = await InvestApi.Orders.PostOrderAsync(sellOrderRequest).ResponseAsync;
+        using var call = InvestApi.Orders.PostOrderAsync(sellOrderRequest);
+        var headers = await call.ResponseHeadersAsync;
+        var response = await call.ResponseAsync;
+        
+        var trackingId = headers.GetValue("x-tracking-id");
         Logger.LogInformation($"Sell order placed: {response}");
+        if (!string.IsNullOrEmpty(trackingId))
+        {
+            Logger.LogInformation($"Tinkoff request tracking ID: {trackingId}");
+        }
+        
         return response;
     }
 
@@ -847,21 +856,39 @@ public class TradingService : BackgroundService
         // {
         //     throw new InvalidOperationException($"Not enough money to buy {CurrentInstrument.Figi} asset.");
         // }
-        var response = await InvestApi.Orders.PostOrderAsync(buyOrderRequest).ResponseAsync;
+        using var call = InvestApi.Orders.PostOrderAsync(buyOrderRequest);
+        var headers = await call.ResponseHeadersAsync;
+        var response = await call.ResponseAsync;
+        
+        var trackingId = headers.GetValue("x-tracking-id");
         var total = amount * price;
         SetCashBalance(CashBalanceFree - total, CashBalanceLocked + total);
         Logger.LogInformation($"Buy order placed: {response}");
+        if (!string.IsNullOrEmpty(trackingId))
+        {
+            Logger.LogInformation($"Tinkoff request tracking ID: {trackingId}");
+        }
+        
         return response;
     }
 
     private async Task<CancelOrderResponse> CancelOrder(string orderId)
     {
-        var response = await InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
+        using var call = InvestApi.Orders.CancelOrderAsync(new CancelOrderRequest
         {
             AccountId = CurrentAccount.Id,
             OrderId = orderId,
         });
+        var headers = await call.ResponseHeadersAsync;
+        var response = await call.ResponseAsync;
+        
+        var trackingId = headers.GetValue("x-tracking-id");
         Logger.LogInformation($"Order cancelled: {response}");
+        if (!string.IsNullOrEmpty(trackingId))
+        {
+            Logger.LogInformation($"Tinkoff request tracking ID: {trackingId}");
+        }
+        
         return response;
     }
 
