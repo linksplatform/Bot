@@ -147,10 +147,29 @@ public class TradingService : BackgroundService
             if(orderTrades.Direction == OrderDirection.Buy)
             {
                 SetCashBalance(CashBalanceFree, CashBalanceLocked - cashBalanceDelta);
+                Logger.LogInformation($"Buy execution: {trade.Quantity} lots at {trade.Price}, total cost: {cashBalanceDelta}");
             }
             else if (orderTrades.Direction == OrderDirection.Sell)
             {
                 SetCashBalance(CashBalanceFree + cashBalanceDelta, CashBalanceLocked);
+                
+                // Track realized profit/loss for sell trades
+                if (ActiveSellOrderSourcePrice.TryGetValue(orderTrades.OrderId, out var sourcePrice))
+                {
+                    var realizedProfitLoss = (trade.Price - sourcePrice) * trade.Quantity;
+                    if (realizedProfitLoss < 0)
+                    {
+                        Logger.LogWarning($"Loss realized: SELL EXECUTED at LOSS. Source price: {sourcePrice}, execution price: {trade.Price}, lots: {trade.Quantity}, realized loss: {Math.Abs(realizedProfitLoss)}, total revenue: {cashBalanceDelta}");
+                    }
+                    else
+                    {
+                        Logger.LogInformation($"Profit realized: sell executed at profit. Source price: {sourcePrice}, execution price: {trade.Price}, lots: {trade.Quantity}, realized profit: {realizedProfitLoss}, total revenue: {cashBalanceDelta}");
+                    }
+                }
+                else
+                {
+                    Logger.LogInformation($"Sell execution: {trade.Quantity} lots at {trade.Price}, total revenue: {cashBalanceDelta} (source price not tracked)");
+                }
             }
         }
     }
@@ -461,6 +480,17 @@ public class TradingService : BackgroundService
                         var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                         var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
                         Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
+                        
+                        var actualProfitLoss = targetSellPrice - maxPrice;
+                        if (actualProfitLoss < 0)
+                        {
+                            Logger.LogWarning($"Loss detection: placing sell order at LOSS. Source price: {maxPrice}, target sell price: {targetSellPrice}, actual loss: {Math.Abs(actualProfitLoss)}, lots: {totalAmount}");
+                        }
+                        else
+                        {
+                            Logger.LogInformation($"Profit tracking: placing sell order at profit. Source price: {maxPrice}, target sell price: {targetSellPrice}, profit: {actualProfitLoss}, lots: {totalAmount}");
+                        }
+                        
                         var response = await PlaceSellOrder(totalAmount, targetSellPrice);
                         ActiveSellOrderSourcePrice[response.OrderId] = maxPrice;
                         Logger.LogInformation($"sell complete");
@@ -611,6 +641,15 @@ public class TradingService : BackgroundService
                                 continue;
                             }
                             // Place new order at top bid price
+                            var earlySellProfitLoss = topBid - sourcePrice;
+                            if (earlySellProfitLoss < 0)
+                            {
+                                Logger.LogWarning($"Loss detection: EARLY SELL at LOSS. Source price: {sourcePrice}, top bid price: {topBid}, actual loss: {Math.Abs(earlySellProfitLoss)}, lots: {activeSellOrder.LotsRequested}");
+                            }
+                            else
+                            {
+                                Logger.LogInformation($"Early sell profit tracking: source price: {sourcePrice}, top bid price: {topBid}, profit: {earlySellProfitLoss}, lots: {activeSellOrder.LotsRequested}");
+                            }
                             var response = await PlaceSellOrder(activeSellOrder.LotsRequested, topBid);
                             SyncActiveOrders();
                             Logger.LogInformation($"early sell is complete");
@@ -636,6 +675,17 @@ public class TradingService : BackgroundService
                                 var targetSellPrice = GetTargetSellPrice(minimumSellPrice, bestAsk);
                                 var marketLotsAtTargetPrice = orderBook.Asks.FirstOrDefault(o => o.Price == targetSellPrice)?.Quantity ?? 0;
                                 Logger.LogInformation($"marketLotsAtTargetPrice: {marketLotsAtTargetPrice}");
+                                
+                                var priceChangeProfitLoss = targetSellPrice - sourcePrice;
+                                if (priceChangeProfitLoss < 0)
+                                {
+                                    Logger.LogWarning($"Loss detection: PRICE CHANGE to LOSS position. Source price: {sourcePrice}, new target price: {targetSellPrice}, actual loss: {Math.Abs(priceChangeProfitLoss)}, lots: {activeSellOrder.LotsRequested}");
+                                }
+                                else
+                                {
+                                    Logger.LogInformation($"Price change profit tracking: source price: {sourcePrice}, new target price: {targetSellPrice}, profit: {priceChangeProfitLoss}, lots: {activeSellOrder.LotsRequested}");
+                                }
+                                
                                 var response = await PlaceSellOrder(activeSellOrder.LotsRequested, targetSellPrice);
                                 ActiveSellOrderSourcePrice[response.OrderId] = sourcePrice;
                                 SyncActiveOrders();
@@ -680,7 +730,17 @@ public class TradingService : BackgroundService
     private decimal GetMinimumSellPrice(decimal sourcePrice)
     {
         var minimumSellPrice = sourcePrice + Settings.MinimumProfitSteps * PriceStep;
-        // Logger.LogInformation($"minimumSellPrice: {minimumSellPrice}");
+        var profitLoss = minimumSellPrice - sourcePrice;
+        
+        if (Settings.MinimumProfitSteps < 0)
+        {
+            Logger.LogWarning($"Loss detection: selling at loss allowed. Source price: {sourcePrice}, minimum sell price: {minimumSellPrice}, potential loss: {Math.Abs(profitLoss)} ({Settings.MinimumProfitSteps} price steps)");
+        }
+        else
+        {
+            Logger.LogInformation($"Profit calculation: source price: {sourcePrice}, minimum sell price: {minimumSellPrice}, minimum profit: {profitLoss} ({Settings.MinimumProfitSteps} price steps)");
+        }
+        
         return minimumSellPrice;
     }
     
