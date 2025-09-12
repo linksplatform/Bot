@@ -10,6 +10,7 @@ import requests
 from modules import (
     BetterBotBaseDataService, Commands
 )
+from modules.daily_outreach import DailyOutreach
 from tokens import BOT_TOKEN
 from userbot import UserBot
 import patterns
@@ -38,6 +39,7 @@ class Bot(Vk):
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
+        self.daily_outreach = DailyOutreach(self, self.data)
         self.commands = Commands(self, self.data)
         self.commands.register_cmds(
             (patterns.HELP, self.commands.help_message),
@@ -98,6 +100,20 @@ class Bot(Vk):
                 self.userbot.delete_messages(ids, peer)
 
         user = self.data.get_user(from_id, self) if from_id > 0 else None
+
+        # Daily outreach: ask random user about programming languages or GitHub
+        if peer_id >= 2e9 and self.daily_outreach.should_run_daily_outreach():  # Only in group chats
+            try:
+                self.daily_outreach.send_daily_question(peer_id)
+            except Exception as e:
+                print(f"Daily outreach error: {e}")
+
+        # Process potential responses to daily questions
+        if from_id > 0 and user:
+            try:
+                self.daily_outreach.process_potential_response(msg, from_id)
+            except Exception as e:
+                print(f"Response processing error: {e}")
 
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
