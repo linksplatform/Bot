@@ -2,6 +2,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Logging;
 using Tinkoff.InvestApi;
 using TraderBot;
 
@@ -14,7 +15,14 @@ var host = builder
             var section = context.Configuration.GetSection(nameof(TradingSettings));
             return section.Get<TradingSettings>();
         });
-        services.AddHostedService<TradingService>();
+        services.AddHostedService<TradingService>(provider => 
+            new TradingService(
+                provider.GetRequiredService<ILogger<TradingService>>(),
+                provider.GetRequiredService<InvestApiClient>(),
+                provider.GetRequiredService<IHostApplicationLifetime>(),
+                provider.GetRequiredService<TradingSettings>(),
+                provider
+            ));
         services.AddInvestApiClient((_, settings) =>
         {
             var section = context.Configuration.GetSection(nameof(InvestApiSettings));
@@ -26,4 +34,13 @@ var host = builder
     })
     .Build();
 
-await host.RunAsync();
+// Check if running in test mode
+if (args.Length > 0 && args[0] == "--test")
+{
+    Console.WriteLine("Running Portfolio Balance Algorithm Tests...");
+    await PortfolioBalanceAlgorithmTests.RunTests();
+}
+else
+{
+    await host.RunAsync();
+}

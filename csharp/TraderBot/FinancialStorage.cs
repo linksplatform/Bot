@@ -52,6 +52,9 @@ public class FinancialStorage
     public readonly TLinkAddress TypeAsStringOperationFieldType;
     public readonly TLinkAddress TypeAsEnumOperationFieldType;
     public readonly TLinkAddress TradesOperationFieldType;
+    public readonly TLinkAddress PortfolioType;
+    public readonly TLinkAddress AllocationPercentType;
+    public readonly TLinkAddress RebalanceActionType;
 
     public FinancialStorage()
     {
@@ -113,6 +116,9 @@ public class FinancialStorage
         OperationCurrencyFieldType = GetOrCreateType(AssetType, nameof(OperationCurrencyFieldType));
         RubType = GetOrCreateType(OperationCurrencyFieldType, nameof(RubType));
         AmountType = GetOrCreateType(Type, nameof(AmountType));
+        PortfolioType = GetOrCreateType(Type, nameof(PortfolioType));
+        AllocationPercentType = GetOrCreateType(PortfolioType, nameof(AllocationPercentType));
+        RebalanceActionType = GetOrCreateType(PortfolioType, nameof(RebalanceActionType));
 
         // var amountAddress = Storage.GetOrCreate(AmountType, DecimalToRationalConverter.Convert(RubBalance));
         // var rubAmountAddress = Storage.GetOrCreate(RubType, amountAddress);
