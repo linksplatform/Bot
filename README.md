@@ -7,4 +7,10 @@ Bot that can create "hello world" and have some other useful features.
 ## [Discord bot](https://github.com/linksplatform/Bot/tree/AddDiscrodBot/csharp/DiscordBot)
 Bot that can add new programmers to LinksPlatform team from discord to GitHub's organization.
 ## [Trader bot](https://github.com/linksplatform/Bot/tree/main/csharp/TraderBot)
-Scalper strategy implementation.
+Scalper strategy implementation using Tinkoff InvestAPI.
+
+### Communication Channels
+For news, updates, and API-related discussions:
+- [Telegram Channel](https://t.me/tinkoffinvestopenapi) - Official Tinkoff InvestAPI announcements
+- [Telegram Chat](https://t.me/joinchat/VaW05CDzcSdsPULM) - General questions and community discussion
+- [Project Author's Pulse](https://www.tinkoff.ru/invest/social/profile/konard) - Latest project updates
