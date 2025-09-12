@@ -3,6 +3,7 @@ from typing import NoReturn, Tuple, List, Dict, Any, Callable, Optional
 from datetime import datetime
 from time import time
 import os
+import json
 
 from regex import Pattern, Match, split, match, search, IGNORECASE, sub
 from requests import post
@@ -13,6 +14,7 @@ import wikipedia
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
 from .data_builder import DataBuilder
+from .keyboard_utils import TopPaginationKeyboard
 from .utils import (
     get_default_programming_language,
     contains_all_strings,
@@ -124,22 +126,28 @@ class Commands:
             self,
             reverse: bool = False
     ) -> NoReturn:
-        """Sends users top."""
+        """Sends users top with pagination."""
         if self.peer_id < 2e9:
             return
         maximum_users = self.matched.group("maximum_users")
-        maximum_users = int(maximum_users) if maximum_users else -1
-        users = DataBuilder.get_users_sorted_by_karma(
-            self.vk_instance, self.data_service, self.peer_id)
-        users = [i for i in users if
-                 (i["karma"] != 0) or
-                 ("programming_languages" in i and len(i["programming_languages"]) > 0)
-                 ]
-        self.vk_instance.send_msg(
-            CommandsBuilder.build_top_users(
+        
+        # If specific maximum_users is requested, use old behavior without pagination
+        if maximum_users:
+            maximum_users = int(maximum_users)
+            users = DataBuilder.get_users_sorted_by_karma(
+                self.vk_instance, self.data_service, self.peer_id)
+            users = [i for i in users if
+                     (i["karma"] != 0) or
+                     ("programming_languages" in i and len(i["programming_languages"]) > 0)
+                     ]
+            message = CommandsBuilder.build_top_users(
                 users, self.data_service, reverse,
-                self.karma_enabled, maximum_users),
-            self.peer_id)
+                self.karma_enabled, maximum_users)
+            if message:
+                self.vk_instance.send_msg(message, self.peer_id)
+        else:
+            # Use new paginated version
+            self.top_paginated(reverse=reverse, page=0)
 
     def top_langs(
             self,
@@ -436,3 +444,110 @@ class Commands:
             if self.matched:
                 action()
                 return
+
+    def process_callback(
+            self,
+            payload: Dict[str, Any],
+            peer_id: int,
+            from_id: int,
+            event_id: str,
+            user: BetterUser
+    ) -> NoReturn:
+        """Process callback button events
+        
+        :param payload: Callback payload data
+        :param peer_id: chat ID
+        :param from_id: user ID
+        :param event_id: callback event ID
+        :param user: user object
+        """
+        self.peer_id = peer_id
+        self.from_id = from_id
+        self.karma_enabled = peer_id in config.CHATS_KARMA_WHITELIST
+        self.current_user = user
+        
+        if from_id < 0:
+            return
+            
+        try:
+            # Parse payload if it's a string
+            if isinstance(payload, str):
+                payload = json.loads(payload)
+                
+            action = payload.get("action")
+            
+            if action == "paginate":
+                self.handle_top_pagination(payload, event_id)
+            elif action == "page_info":
+                # Just acknowledge the page info button click
+                self.vk_instance.send_callback_answer(event_id, peer_id)
+                
+        except Exception as e:
+            print(f"Error processing callback: {e}")
+            # Send empty callback answer to acknowledge the button press
+            self.vk_instance.send_callback_answer(event_id, peer_id)
+            
+    def handle_top_pagination(
+            self,
+            payload: Dict[str, Any], 
+            event_id: str
+    ) -> NoReturn:
+        """Handle pagination for top command"""
+        command = payload.get("command", "top")
+        page = payload.get("page", 0)
+        reverse = payload.get("reverse", False)
+        
+        # Execute the appropriate top command with pagination
+        if command == "top":
+            self.top_paginated(reverse=reverse, page=page)
+        elif command == "bottom":
+            self.top_paginated(reverse=True, page=page)
+        elif command == "people":
+            self.top_paginated(reverse=reverse, page=page)
+            
+        # Acknowledge the callback
+        self.vk_instance.send_callback_answer(event_id, self.peer_id)
+        
+    def top_paginated(
+            self,
+            reverse: bool = False,
+            page: int = 0
+    ) -> NoReturn:
+        """Sends paginated users top with callback buttons."""
+        if self.peer_id < 2e9:
+            return
+            
+        users = DataBuilder.get_users_sorted_by_karma(
+            self.vk_instance, self.data_service, self.peer_id)
+        users = [i for i in users if
+                 (i["karma"] != 0) or
+                 ("programming_languages" in i and len(i["programming_languages"]) > 0)
+                 ]
+        
+        if reverse:
+            users = list(reversed(users))
+            
+        # Calculate pagination
+        pagination_info = TopPaginationKeyboard.calculate_pagination(len(users))
+        total_pages = pagination_info["total_pages"]
+        
+        # Ensure page is within valid range
+        page = max(0, min(page, total_pages - 1))
+        
+        # Get users for current page
+        page_users = TopPaginationKeyboard.get_page_users(users, page)
+        
+        # Build message
+        command_type = "bottom" if reverse else "top"
+        message = CommandsBuilder.build_top_users(
+            page_users, self.data_service, False, 
+            self.karma_enabled, -1)
+            
+        if message:
+            # Create pagination keyboard
+            keyboard = TopPaginationKeyboard.create_pagination_keyboard(
+                page, total_pages, command_type, reverse)
+                
+            self.vk_instance.send_msg_with_keyboard(message, self.peer_id, keyboard)
+        else:
+            self.vk_instance.send_msg("Пользователи не найдены.", self.peer_id)
