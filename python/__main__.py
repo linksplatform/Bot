@@ -8,7 +8,7 @@ from saya import Vk
 import requests
 
 from modules import (
-    BetterBotBaseDataService, Commands
+    BetterBotBaseDataService, Commands, KarmaChatManager
 )
 from tokens import BOT_TOKEN
 from userbot import UserBot
@@ -39,6 +39,8 @@ class Bot(Vk):
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
         self.commands = Commands(self, self.data)
+        self.karma_chat_manager = KarmaChatManager(self)
+        self.commands.set_karma_chat_manager(self.karma_chat_manager)
         self.commands.register_cmds(
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
@@ -63,7 +65,10 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
-            (patterns.GITHUB_COPILOT, self.commands.github_copilot)
+            (patterns.GITHUB_COPILOT, self.commands.github_copilot),
+            (patterns.CHECK_CHAT_MEMBERSHIP, self.commands.check_chat_membership),
+            (patterns.CHECK_ALL_MEMBERSHIP, self.commands.check_all_membership),
+            (patterns.CHAT_STATUS, self.commands.chat_status)
         )
 
     def message_new(

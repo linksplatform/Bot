@@ -65,3 +65,13 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+# Karma-based chat management commands
+CHECK_CHAT_MEMBERSHIP = recompile(
+    r'\A\s*(check chat membership|проверить участие в чате)\s*\Z', IGNORECASE)
+
+CHECK_ALL_MEMBERSHIP = recompile(
+    r'\A\s*(check all membership|проверить всех участников)\s*\Z', IGNORECASE)
+
+CHAT_STATUS = recompile(
+    r'\A\s*(chat status|статус чата)\s*(?P<chat_id>\d+)?\s*\Z', IGNORECASE)

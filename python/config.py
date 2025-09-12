@@ -27,6 +27,27 @@ CHATS_KARMA_WHITELIST = [
     2000000011
 ]
 
+# Configuration for automatic karma-based chat membership
+# Each entry defines a chat with its karma threshold for automatic membership
+KARMA_BASED_CHATS = [
+    {
+        "chat_id": 2000000001,  # Chat ID where users should be added/removed
+        "karma_threshold": 2,   # Minimum karma required to be in the chat
+        "name": "Main Chat"     # Optional name for logging
+    },
+    # Example of multiple chats with different thresholds:
+    # {
+    #     "chat_id": 2000000002,
+    #     "karma_threshold": 10,
+    #     "name": "Advanced Chat"
+    # },
+    # {
+    #     "chat_id": 2000000003,
+    #     "karma_threshold": 50,
+    #     "name": "Expert Chat"
+    # }
+]
+
 POSITIVE_VOTES_PER_KARMA = 2
 NEGATIVE_VOTES_PER_KARMA = 3
 
