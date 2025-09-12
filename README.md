@@ -1,4 +1,4 @@
-# Bot
+# Bot ([русская версия](README.ru.md))
 
 ## [VK bot](https://github.com/linksplatform/Bot/tree/main/python)
 This bot is created for programmers by programmers. Features are: personal Karma tracking, programmer's personal information storage, Wikipedia access, GitHub Copilot access.
