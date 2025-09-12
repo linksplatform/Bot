@@ -8,7 +8,7 @@ from saya import Vk
 import requests
 
 from modules import (
-    BetterBotBaseDataService, Commands
+    BetterBotBaseDataService, Commands, VkKeyboard, TopPaginationKeyboard
 )
 from tokens import BOT_TOKEN
 from userbot import UserBot
@@ -112,6 +112,26 @@ class Bot(Vk):
         except Exception as e:
             print(e)
 
+    def message_event(
+        self,
+        event: Dict[str, Any]
+    ) -> NoReturn:
+        """Handling callback button events.
+        """
+        event_data = event["object"]
+        peer_id = event_data["peer_id"]
+        from_id = event_data["user_id"]
+        payload = event_data.get("payload", {})
+        event_id = event_data["event_id"]
+        
+        # Get user for callback handling
+        user = self.data.get_user(from_id, self) if from_id > 0 else None
+        
+        try:
+            self.commands.process_callback(
+                payload, peer_id, from_id, event_id, user)
+        except Exception as e:
+            print(f"Error handling callback: {e}")
 
     def delete_message(
         self,
@@ -167,6 +187,46 @@ class Bot(Vk):
             dict(
                 message=msg, peer_id=peer_id,
                 disable_mentions=1, random_id=0))
+
+    def send_msg_with_keyboard(
+        self,
+        msg: str,
+        peer_id: int,
+        keyboard: str
+    ) -> NoReturn:
+        """Sends message with keyboard to chat with {peer_id}.
+
+        :param msg: message text
+        :param peer_id: chat ID
+        :param keyboard: JSON keyboard string
+        """
+        self.call_method(
+            'messages.send',
+            dict(
+                message=msg, peer_id=peer_id,
+                keyboard=keyboard,
+                disable_mentions=1, random_id=0))
+
+    def send_callback_answer(
+        self,
+        event_id: str,
+        peer_id: int,
+        event_data: Dict[str, Any] = None
+    ) -> NoReturn:
+        """Send answer to callback query.
+        
+        :param event_id: Event ID from callback
+        :param peer_id: chat ID
+        :param event_data: Optional event data (for snackbar, etc.)
+        """
+        params = {
+            "event_id": event_id,
+            "peer_id": peer_id
+        }
+        if event_data:
+            params["event_data"] = event_data
+            
+        self.call_method('messages.sendMessageEventAnswer', params)
 
     def get_user_name(
         self,
