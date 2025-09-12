@@ -5,10 +5,12 @@ from time import time
 import os
 
 from regex import Pattern, Match, split, match, search, IGNORECASE, sub
-from requests import post
+from requests import post, get
 from social_ethosa import BetterUser
 from saya import Vk
 import wikipedia
+import json
+import urllib.parse
 
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
@@ -378,6 +380,79 @@ class Commands:
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
+
+    def translate_word(self) -> NoReturn:
+        """Translates word/phrase using online translation service"""
+        word = self.matched.group('word').strip()
+        
+        # Determine source and target languages based on message pattern and content
+        message_without_word = self.msg.replace(word, '')
+        is_russian_message = bool(search(r'[а-яё]', message_without_word, IGNORECASE))
+        word_is_russian = bool(search(r'[а-яё]', word, IGNORECASE))
+        
+        # Determine translation direction based on message patterns:
+        # - "Как перевести X на английский?" -> translate to English, respond in Russian
+        # - "Как переводится X?" -> translate to Russian (inferred), respond in Russian  
+        # - "How to translate X?" -> translate to English (inferred), respond in English
+        # - "What is translation of X?" -> translate to English (inferred), respond in English
+        
+        if search(r'на английский|на англ', self.msg, IGNORECASE):
+            # Explicitly asking for English translation
+            source_lang = 'ru' if word_is_russian else 'en'
+            target_lang = 'en'
+            response_in_russian = True
+        elif is_russian_message:
+            # Russian message without explicit target - infer target language
+            if word_is_russian:
+                source_lang = 'ru'
+                target_lang = 'en'
+            else:
+                source_lang = 'en'
+                target_lang = 'ru'
+            response_in_russian = True
+        else:
+            # English message - infer target as English
+            if word_is_russian:
+                source_lang = 'ru'
+                target_lang = 'en'
+            else:
+                # English word in English message - might want Russian translation
+                source_lang = 'en'
+                target_lang = 'ru'
+            response_in_russian = False
+            
+        try:
+            # Use MyMemory translation API (free, no API key required)
+            encoded_word = urllib.parse.quote(word)
+            url = f"https://api.mymemory.translated.net/get?q={encoded_word}&langpair={source_lang}|{target_lang}"
+            response = get(url, timeout=10)
+            
+            if response.status_code == 200:
+                data = response.json()
+                if data.get('responseStatus') == 200:
+                    translation = data.get('responseData', {}).get('translatedText', '')
+                    if translation and translation.lower() != word.lower():
+                        # Format response based on response language
+                        if response_in_russian:
+                            message = f'"{word}" переводится как "{translation}"'
+                        else:
+                            message = f'"{word}" translates to "{translation}"'
+                        
+                        self.vk_instance.send_msg(message, self.peer_id)
+                        return
+            
+            # Fallback message if translation fails
+            if response_in_russian:
+                self.vk_instance.send_msg('Не удалось перевести слово.', self.peer_id)
+            else:
+                self.vk_instance.send_msg('Could not translate the word.', self.peer_id)
+                
+        except Exception as e:
+            print(f"Translation error: {e}")
+            if response_in_russian:
+                self.vk_instance.send_msg('Ошибка при переводе.', self.peer_id)
+            else:
+                self.vk_instance.send_msg('Translation error occurred.', self.peer_id)
 
     def match_command(
             self,
