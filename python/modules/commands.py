@@ -44,7 +44,15 @@ class Commands:
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
         self.matched: Match = None
+        self.karma_chat_manager = None  # Will be set by the bot
         wikipedia.set_lang('en')
+    
+    def set_karma_chat_manager(self, karma_chat_manager):
+        """Set the karma chat manager instance.
+        
+        :param karma_chat_manager: KarmaChatManager instance
+        """
+        self.karma_chat_manager = karma_chat_manager
 
     def help_message(self) -> NoReturn:
         """Sends help message"""
@@ -221,6 +229,14 @@ class Commands:
 
             if user_karma_change:
                 self.data_service.save_user(self.user)
+                # Check and update chat membership after karma change
+                if self.karma_chat_manager:
+                    self.karma_chat_manager.check_and_update_membership(self.user)
+            
+            if selected_user_karma_change and self.karma_chat_manager:
+                # Also check membership for the user who initiated the karma change if their karma changed
+                self.karma_chat_manager.check_and_update_membership(self.current_user)
+                
             self.vk_instance.send_msg(
                 CommandsBuilder.build_karma_change(
                     user_karma_change, selected_user_karma_change, voters),
@@ -378,6 +394,88 @@ class Commands:
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
+    
+    def check_chat_membership(self) -> NoReturn:
+        """Check and update current user's membership in karma-based chats."""
+        if not self.karma_chat_manager or self.from_id <= 0:
+            return
+            
+        user = self.data_service.get_user(self.from_id, self.vk_instance)
+        self.karma_chat_manager.check_and_update_membership(user)
+        
+        self.vk_instance.send_msg(
+            f"✅ Проверка участия в чатах выполнена для пользователя с кармой {user.karma}.",
+            self.peer_id
+        )
+    
+    def check_all_membership(self) -> NoReturn:
+        """Check and update membership for all users (admin command)."""
+        if not self.karma_chat_manager or self.peer_id < 2e9:
+            return
+            
+        # This is a resource-intensive operation, so it could be restricted to admins
+        try:
+            self.karma_chat_manager.check_all_users_membership(self.data_service)
+            self.vk_instance.send_msg(
+                "✅ Проверка участия во всех чатах завершена.",
+                self.peer_id
+            )
+        except Exception as e:
+            self.vk_instance.send_msg(
+                f"❌ Ошибка при проверке участия: {str(e)[:100]}",
+                self.peer_id
+            )
+    
+    def chat_status(self) -> NoReturn:
+        """Show status of a karma-based chat."""
+        if not self.karma_chat_manager or self.peer_id < 2e9:
+            return
+            
+        chat_id_str = self.matched.group("chat_id")
+        if chat_id_str:
+            chat_id = int(chat_id_str)
+        else:
+            chat_id = self.peer_id
+            
+        try:
+            status = self.karma_chat_manager.get_chat_members_by_karma(chat_id, self.data_service)
+            
+            if not status['eligible'] and not status['ineligible']:
+                self.vk_instance.send_msg(
+                    f"❓ Чат {chat_id} не настроен для кармы-управления или недоступен.",
+                    self.peer_id
+                )
+                return
+            
+            eligible_count = len(status['eligible'])
+            ineligible_count = len(status['ineligible'])
+            
+            # Find chat config to show threshold
+            threshold = "не найден"
+            for chat_config in config.KARMA_BASED_CHATS:
+                if chat_config["chat_id"] == chat_id:
+                    threshold = chat_config["karma_threshold"]
+                    break
+            
+            message = f"📊 Статус чата {chat_id}:\n"
+            message += f"🎯 Порог кармы: {threshold}\n"
+            message += f"✅ Подходящих участников: {eligible_count}\n"
+            message += f"❌ Неподходящих участников: {ineligible_count}\n"
+            
+            if ineligible_count > 0:
+                message += "\n👥 Участники с недостаточной кармой:\n"
+                for member in status['ineligible'][:5]:  # Show max 5
+                    message += f"• {member['name']} (карма: {member['karma']})\n"
+                if ineligible_count > 5:
+                    message += f"... и ещё {ineligible_count - 5}"
+            
+            self.vk_instance.send_msg(message, self.peer_id)
+            
+        except Exception as e:
+            self.vk_instance.send_msg(
+                f"❌ Ошибка при получении статуса чата: {str(e)[:100]}",
+                self.peer_id
+            )
 
     def match_command(
             self,
