@@ -6,6 +6,8 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net.Http;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Octokit.Internal;
 using Platform.Threading;
@@ -242,13 +244,50 @@ namespace Storage.Remote.GitHub
 
         #region Repository
         
-        public async Task<List<int>> GetAuthorIdsOfCommits(long repositoryId, CommitRequest commitRequest)
+        public async Task<List<long>> GetAuthorIdsOfCommits(long repositoryId, CommitRequest commitRequest)
         {
             var commits = await Client.Repository.Commit.GetAll(repositoryId, commitRequest);
             return commits.Select(commit => commit.Author.Id).ToList();
         }
 
         public Task<IReadOnlyList<Repository>> GetAllRepositories(string ownerName) => Client.Repository.GetAllForOrg(ownerName);
+
+        /// <summary>
+        /// Search for commits using the GitHub Search API.
+        /// Since Octokit.NET doesn't support SearchCommits yet, this method uses direct HTTP calls to GitHub API.
+        /// </summary>
+        /// <param name="query">The search query (e.g., "repo:owner/repo author:username")</param>
+        /// <returns>Search results containing commits</returns>
+        public async Task<SearchCommitsResult> SearchCommits(string query)
+        {
+            var httpClient = new HttpClient();
+            httpClient.DefaultRequestHeaders.Add("User-Agent", "LinksplatformBot/1.0.0");
+            httpClient.DefaultRequestHeaders.Add("Accept", "application/vnd.github+json");
+            httpClient.DefaultRequestHeaders.Add("X-GitHub-Api-Version", "2022-11-28");
+            
+            if (Client.Credentials.AuthenticationType == AuthenticationType.Bearer)
+            {
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {Client.Credentials.Password}");
+            }
+            else if (Client.Credentials.AuthenticationType == AuthenticationType.Basic)
+            {
+                httpClient.DefaultRequestHeaders.Add("Authorization", $"token {Client.Credentials.Password}");
+            }
+
+            var encodedQuery = Uri.EscapeDataString(query);
+            var url = $"https://api.github.com/search/commits?q={encodedQuery}";
+            
+            var response = await httpClient.GetAsync(url);
+            response.EnsureSuccessStatusCode();
+            
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<SearchCommitsResult>(jsonResponse, new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower
+            });
+            
+            return result ?? new SearchCommitsResult { TotalCount = 0, Items = new List<CommitSearchResult>() };
+        }
         
         #region Content
 
@@ -396,5 +435,85 @@ namespace Storage.Remote.GitHub
         #endregion
 
         #endregion
+    }
+
+    /// <summary>
+    /// Represents the result of a commit search operation.
+    /// This class mirrors the GitHub API response structure for commit search.
+    /// </summary>
+    public class SearchCommitsResult
+    {
+        public int TotalCount { get; set; }
+        public bool IncompleteResults { get; set; }
+        public List<CommitSearchResult> Items { get; set; } = new();
+    }
+
+    /// <summary>
+    /// Represents a single commit result from the search.
+    /// Contains essential commit information returned by GitHub API.
+    /// </summary>
+    public class CommitSearchResult
+    {
+        public string Sha { get; set; } = string.Empty;
+        public CommitSearchCommit Commit { get; set; } = new();
+        public string Url { get; set; } = string.Empty;
+        public string HtmlUrl { get; set; } = string.Empty;
+        public CommitSearchAuthor Author { get; set; } = new();
+        public CommitSearchAuthor Committer { get; set; } = new();
+        public List<CommitSearchParent> Parents { get; set; } = new();
+        public CommitSearchRepository Repository { get; set; } = new();
+    }
+
+    public class CommitSearchCommit
+    {
+        public CommitSearchAuthor Author { get; set; } = new();
+        public CommitSearchAuthor Committer { get; set; } = new();
+        public string Message { get; set; } = string.Empty;
+        public CommitSearchTree Tree { get; set; } = new();
+        public string Url { get; set; } = string.Empty;
+        public int CommentCount { get; set; }
+    }
+
+    public class CommitSearchAuthor
+    {
+        public string Name { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public DateTime Date { get; set; }
+        public long? Id { get; set; }
+        public string Login { get; set; } = string.Empty;
+        public string AvatarUrl { get; set; } = string.Empty;
+        public string HtmlUrl { get; set; } = string.Empty;
+    }
+
+    public class CommitSearchTree
+    {
+        public string Sha { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+    }
+
+    public class CommitSearchParent
+    {
+        public string Sha { get; set; } = string.Empty;
+        public string Url { get; set; } = string.Empty;
+        public string HtmlUrl { get; set; } = string.Empty;
+    }
+
+    public class CommitSearchRepository
+    {
+        public long Id { get; set; }
+        public string Name { get; set; } = string.Empty;
+        public string FullName { get; set; } = string.Empty;
+        public CommitSearchOwner Owner { get; set; } = new();
+        public bool Private { get; set; }
+        public string HtmlUrl { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+    }
+
+    public class CommitSearchOwner
+    {
+        public long Id { get; set; }
+        public string Login { get; set; } = string.Empty;
+        public string AvatarUrl { get; set; } = string.Empty;
+        public string HtmlUrl { get; set; } = string.Empty;
     }
 }
