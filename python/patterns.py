@@ -65,3 +65,16 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+# Translation patterns
+TRANSLATE_TO_ENGLISH_RU = recompile(
+    r'\A\s*(как перевести|как переводится)\s+(?P<word>[\w\s]+?)\s+(на английский|на англ)\??\s*\Z', IGNORECASE)
+
+TRANSLATE_TO_RUSSIAN_RU = recompile(
+    r'\A\s*(как переводится|как перевести)\s+(?P<word>[\w\s]+?)\??\s*\Z', IGNORECASE)
+
+TRANSLATE_TO_ENGLISH_EN = recompile(
+    r'\A\s*(how to translate|what is translation of)\s+(?P<word>[\w\s]+?)\??\s*\Z', IGNORECASE)
+
+TRANSLATE_WORD = recompile(
+    r'\A\s*(translate|перевести|переводить|перевод)\s+(?P<word>[\w\s]+?)\??\s*\Z', IGNORECASE)
