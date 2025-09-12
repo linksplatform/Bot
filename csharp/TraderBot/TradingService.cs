@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using System.Globalization;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.DependencyInjection;
 using Grpc.Core;
 using Google.Protobuf.WellKnownTypes;
 using Tinkoff.InvestApi;
@@ -39,8 +40,11 @@ public class TradingService : BackgroundService
     protected readonly ConcurrentDictionary<string, OrderState> ActiveSellOrders;
     protected readonly ConcurrentDictionary<decimal, long> LotsSets;
     protected readonly ConcurrentDictionary<string, decimal> ActiveSellOrderSourcePrice;
+    protected readonly FinancialStorage FinancialStorage;
+    protected PortfolioBalanceAlgorithm? PortfolioBalanceAlgorithm;
+    protected DateTime LastPortfolioRebalanceCheck;
 
-    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings)
+    public TradingService(ILogger<TradingService> logger, InvestApiClient investApi, IHostApplicationLifetime lifetime, TradingSettings settings, IServiceProvider serviceProvider)
     {
         Logger = logger;
         InvestApi = investApi;
@@ -112,6 +116,21 @@ public class TradingService : BackgroundService
         LotsSets = new ConcurrentDictionary<decimal, long>();
         ActiveSellOrderSourcePrice = new ConcurrentDictionary<string, decimal>();
         LastOperationsCheckpoint = settings.LoadOperationsFrom;
+        FinancialStorage = new FinancialStorage();
+        
+        if (settings.PortfolioBalance?.Enabled == true)
+        {
+            var loggerFactory = serviceProvider.GetRequiredService<ILoggerFactory>();
+            PortfolioBalanceAlgorithm = new PortfolioBalanceAlgorithm(
+                FinancialStorage, 
+                InvestApi, 
+                loggerFactory.CreateLogger<PortfolioBalanceAlgorithm>(), 
+                settings.PortfolioBalance, 
+                CurrentAccount);
+            Logger.LogInformation("Portfolio balance algorithm initialized");
+        }
+        
+        LastPortfolioRebalanceCheck = DateTime.MinValue;
     }
 
     protected async Task ReceiveTrades(CancellationToken cancellationToken)
@@ -447,6 +466,7 @@ public class TradingService : BackgroundService
 
                 if (ActiveBuyOrders.Count == 0 && ActiveSellOrders.Count == 0)
                 {
+                    await CheckPortfolioRebalanceIfNeeded();
                     var areOrdersPlaced = false;
                     // Process potential sell order
                     if (LotsSets.Count > 0)
@@ -652,6 +672,88 @@ public class TradingService : BackgroundService
     {
        var currentTime = DateTime.UtcNow.TimeOfDay;
        return currentTime > MinimumTimeToBuy && currentTime < MaximumTimeToBuy;
+    }
+
+    private async Task CheckPortfolioRebalanceIfNeeded()
+    {
+        if (PortfolioBalanceAlgorithm == null || Settings.PortfolioBalance?.Enabled != true)
+            return;
+
+        var now = DateTime.UtcNow;
+        var timeSinceLastCheck = now - LastPortfolioRebalanceCheck;
+        
+        if (timeSinceLastCheck < Settings.PortfolioBalance.RebalanceCheckInterval)
+            return;
+            
+        LastPortfolioRebalanceCheck = now;
+        
+        try
+        {
+            Logger.LogInformation("Checking portfolio balance");
+            var rebalanceActions = await PortfolioBalanceAlgorithm.AnalyzePortfolioBalance();
+            
+            if (rebalanceActions.Any())
+            {
+                Logger.LogInformation($"Portfolio rebalancing needed: {rebalanceActions.Count} actions");
+                foreach (var action in rebalanceActions)
+                {
+                    Logger.LogInformation($"Action: {action.Action} {Math.Abs(action.AmountToRebalance):F2} RUB of {action.Ticker} " +
+                                        $"(Current: {action.CurrentPercent:F2}%, Target: {action.TargetPercent:F2}%)");
+                }
+                
+                await ExecuteRebalanceActions(rebalanceActions);
+            }
+            else
+            {
+                Logger.LogInformation("Portfolio is balanced, no rebalancing needed");
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Error during portfolio balance check");
+        }
+    }
+
+    private async Task ExecuteRebalanceActions(List<RebalanceAction> actions)
+    {
+        foreach (var action in actions)
+        {
+            try
+            {
+                if (action.Ticker == Figi || action.Ticker == Settings.Ticker)
+                {
+                    await ExecuteRebalanceForCurrentInstrument(action);
+                }
+                else
+                {
+                    Logger.LogInformation($"Rebalance action for {action.Ticker} will be handled by separate trading instance");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError(ex, $"Error executing rebalance action for {action.Ticker}");
+            }
+        }
+    }
+
+    private async Task ExecuteRebalanceForCurrentInstrument(RebalanceAction action)
+    {
+        if (action.Action == RebalanceActionType.Buy && action.AmountToRebalance > 0)
+        {
+            var cashBalance = await GetCashBalance();
+            if (cashBalance.Item1 >= action.AmountToRebalance)
+            {
+                Logger.LogInformation($"Executing portfolio rebalance buy for {action.Ticker}: {action.AmountToRebalance:F2} RUB");
+            }
+            else
+            {
+                Logger.LogWarning($"Insufficient cash balance for rebalance buy: need {action.AmountToRebalance:F2}, have {cashBalance.Item1:F2}");
+            }
+        }
+        else if (action.Action == RebalanceActionType.Sell && action.AmountToRebalance < 0)
+        {
+            Logger.LogInformation($"Executing portfolio rebalance sell for {action.Ticker}: {Math.Abs(action.AmountToRebalance):F2} RUB");
+        }
     } 
 
     private async Task<(decimal, decimal)> GetCashBalance(bool forceRemote = false)
