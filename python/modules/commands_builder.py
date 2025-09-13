@@ -24,12 +24,16 @@ class CommandsBuilder:
             return ("Вы находитесь в личных сообщениях бота.\n"
                     f"Документация — {documentation_link}")
         elif peer_id > 2e9:
+            rules_help = ("\n\n📋 Команды для правил:\n"
+                         "• set rules [gist_url] — установить правила из GitHub Gist\n"
+                         "• remove rules — убрать правила\n" 
+                         "• rules status — статус правил")
             if karma:
                 return ("Вы находитесь в беседе с включённой кармой.\n"
-                        f"Документация — {documentation_link}")
+                        f"Документация — {documentation_link}" + rules_help)
             else:
                 return (f"Вы находитесь в беседе (#{peer_id}) с выключенной кармой.\n"
-                        f"Документация — {documentation_link}")
+                        f"Документация — {documentation_link}" + rules_help)
 
     @staticmethod
     def build_info_message(
