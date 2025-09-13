@@ -65,3 +65,7 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+# Google search pattern
+GOOGLE_SEARCH = recompile(
+    r'\A\s*(search|найди|поиск|google)\s+(?P<query>[\S][\S\s]*?)\??\s*\Z', IGNORECASE)

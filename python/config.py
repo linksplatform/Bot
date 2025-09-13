@@ -153,5 +153,22 @@ GITHUB_COPILOT_LANGUAGES = {
 GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} {output_file}"'
 GITHUB_COPILOT_TIMEOUT = 120  # seconds
 
+# Google search configuration
+GOOGLE_SEARCH_WHITELISTED_SITES = [
+    'stackoverflow.com',
+    'github.com',
+    'docs.python.org',
+    'developer.mozilla.org',
+    'w3schools.com',
+    'medium.com',
+    'dev.to',
+    'geeksforgeeks.org',
+    'tutorialspoint.com',
+    'programiz.com'
+]
+GOOGLE_SEARCH_MIN_WORDS = 3
+GOOGLE_SEARCH_MAX_RESULTS = 3
+GOOGLE_SEARCH_TIMEOUT = 10  # seconds
+
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
 GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
