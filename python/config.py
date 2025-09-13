@@ -27,6 +27,16 @@ CHATS_KARMA_WHITELIST = [
     2000000011
 ]
 
+# Message logging configuration
+# Main chats that should have their messages forwarded to logging chat
+MAIN_CHATS = [
+    # 2000000001,  # Add your main chat IDs here
+    # 2000000011
+]
+
+# Chat ID where all messages from main chats will be forwarded for logging
+LOGGING_CHAT_ID = None  # Set this to your logging chat ID (e.g., 2000000020)
+
 POSITIVE_VOTES_PER_KARMA = 2
 NEGATIVE_VOTES_PER_KARMA = 3
 
