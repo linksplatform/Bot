@@ -1,0 +1,31 @@
+Standalone Off-topic Detection Test
+==================================================
+
+Testing: 'How do I implement binary search in Python'
+------------------------------
+  Searching Google: https://www.google.com/search?q=How+do+I+implement+binary+search+in+Python&num=10
+Result: OFF-TOPIC
+Reason: No search results found
+
+Testing: 'What is React hooks'
+------------------------------
+  Searching Google: https://www.google.com/search?q=What+is+React+hooks&num=10
+Result: OFF-TOPIC
+Reason: No search results found
+
+Testing: 'What's the weather like today'
+------------------------------
+  Searching Google: https://www.google.com/search?q=What+s+the+weather+like+today&num=10
+Result: OFF-TOPIC
+Reason: No search results found
+
+Testing: 'hi there'
+------------------------------
+Result: ON-TOPIC
+Reason: Too short (2 words < 3)
+
+Testing: 'Python list comprehension examples'
+------------------------------
+  Searching Google: https://www.google.com/search?q=Python+list+comprehension+examples&num=10
+Result: OFF-TOPIC
+Reason: No search results found
