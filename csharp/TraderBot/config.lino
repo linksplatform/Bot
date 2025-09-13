@@ -1,0 +1,29 @@
+// Trading Bot Configuration in Links Notation
+// This is a simplified representation - full Links Notation would be more complex
+
+(etf_ticker "TRUR")
+(cash_currency "rub")
+(account_index -1)
+(minimum_profit_steps -2)
+(market_order_book_depth 10)
+(minimum_market_order_size_to_buy 300000)
+(minimum_market_order_size_to_sell 0)
+(minimum_time_to_buy "09:00:00")
+(maximum_time_to_buy "14:45:00")
+(early_sell_owned_lots_delta 300000)
+(early_sell_owned_lots_multiplier 0)
+
+// Strategy configuration
+(strategy_name "OptimalBid")
+(number_of_bids 5)
+(bid_spacing 0.01)
+(lots_per_bid 100)
+
+// API configuration
+(use_simulation true)
+(tinkoff_access_token "")
+(app_name "LinksPlatformBot")
+
+// Performance tracking
+(performance_goal_annual_outperformance 0.01)
+(enable_performance_tracking true)
