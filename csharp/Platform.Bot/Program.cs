@@ -97,6 +97,7 @@ namespace Platform.Bot
                 var githubStorage = new GitHubStorage(githubUserName, githubApiToken, githubApplicationName);
                 var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
                 var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
+                var commitTracker = new CommitTracker(githubStorage, new DependencyOnlyReleaseTrigger(githubStorage));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                 var cancellation = new CancellationTokenSource();
                 while (true)
@@ -105,6 +106,7 @@ namespace Platform.Bot
                     {
                         await issueTracker.Start(cancellation.Token);
                         await pullRequenstTracker.Start(cancellation.Token);
+                        await commitTracker.Start(cancellation.Token);
                         // timestampTracker.Start(cancellation.Token);
                         Thread.Sleep(minimumInteractionInterval);
                     }
