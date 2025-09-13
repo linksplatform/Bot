@@ -9,6 +9,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Octokit.Internal;
 using Platform.Threading;
+using Storage.Analysis;
 using File = Storage.Local.File;
 
 namespace Storage.Remote.GitHub
@@ -394,6 +395,116 @@ namespace Storage.Remote.GitHub
 
 
         #endregion
+
+        #endregion
+
+        #region BugReproductionSupport
+
+        /// <summary>
+        /// Gets all files from a repository.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        /// <returns>List of repository files with content.</returns>
+        public async Task<List<RepositoryFile>> GetRepositoryFiles(Repository repository)
+        {
+            var files = new List<RepositoryFile>();
+            var branch = await Client.Repository.Branch.Get(repository.Id, repository.DefaultBranch);
+            var tree = await Client.Git.Tree.GetRecursive(repository.Id, branch.Commit.Sha);
+
+            foreach (var treeItem in tree.Tree)
+            {
+                if (treeItem.Type == TreeType.Blob && !treeItem.Path.StartsWith(".git/"))
+                {
+                    try
+                    {
+                        var content = await Client.Repository.Content.GetAllContentsByRef(repository.Id, treeItem.Path, repository.DefaultBranch);
+                        var fileContent = content.FirstOrDefault()?.Content ?? string.Empty;
+
+                        files.Add(new RepositoryFile
+                        {
+                            Path = treeItem.Path,
+                            Content = fileContent,
+                            IsTestFile = IsTestFile(treeItem.Path),
+                            IsConfigFile = IsConfigFile(treeItem.Path),
+                            IsEntryPoint = IsEntryPointFile(treeItem.Path, fileContent)
+                        });
+                    }
+                    catch
+                    {
+                        // Skip files that can't be read (binary files, etc.)
+                        continue;
+                    }
+                }
+            }
+
+            return files;
+        }
+
+        /// <summary>
+        /// Creates a new branch in the repository.
+        /// </summary>
+        /// <param name="repository">The repository.</param>
+        /// <param name="branchName">The name of the new branch.</param>
+        /// <returns>The created branch.</returns>
+        public async Task<Reference> CreateBranch(Repository repository, string branchName)
+        {
+            var mainBranch = await Client.Repository.Branch.Get(repository.Id, repository.DefaultBranch);
+            var newBranch = new NewReference($"refs/heads/{branchName}", mainBranch.Commit.Sha);
+            return await CreateReference(repository.Id, newBranch);
+        }
+
+        /// <summary>
+        /// Creates a comment on an issue.
+        /// </summary>
+        /// <param name="issue">The issue to comment on.</param>
+        /// <param name="message">The comment message.</param>
+        /// <returns>The created comment.</returns>
+        public async Task<IssueComment> CreateIssueComment(Issue issue, string message)
+        {
+            return await CreateIssueComment(issue.Repository.Id, issue.Number, message);
+        }
+
+        /// <summary>
+        /// Closes an issue asynchronously.
+        /// </summary>
+        /// <param name="issue">The issue to close.</param>
+        /// <returns>The updated issue.</returns>
+        public async Task<Issue> CloseIssueAsync(Issue issue)
+        {
+            var issueUpdate = new IssueUpdate
+            {
+                State = ItemState.Closed
+            };
+            return await Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, issueUpdate);
+        }
+
+        private bool IsTestFile(string path)
+        {
+            var pathLower = path.ToLower();
+            return pathLower.Contains("test") || pathLower.Contains("spec") || path.EndsWith("Test.cs") || path.EndsWith("Tests.cs");
+        }
+
+        private bool IsConfigFile(string path)
+        {
+            var fileName = Path.GetFileName(path).ToLower();
+            var extension = Path.GetExtension(path).ToLower();
+
+            return extension == ".json" || extension == ".xml" || extension == ".yaml" || extension == ".yml" || extension == ".toml" ||
+                   fileName.Contains("config") || fileName.Contains("settings") || fileName.Contains("appsettings") ||
+                   fileName == "package.json" || fileName == "web.config" || fileName == "app.config" || fileName.EndsWith(".csproj");
+        }
+
+        private bool IsEntryPointFile(string path, string content)
+        {
+            var fileName = Path.GetFileName(path).ToLower();
+            var contentLower = content.ToLower();
+
+            return fileName.Contains("main") || 
+                   fileName.Contains("program") ||
+                   contentLower.Contains("static void main") ||
+                   contentLower.Contains("if __name__ == \"__main__\"") ||
+                   contentLower.Contains("function main(");
+        }
 
         #endregion
     }
