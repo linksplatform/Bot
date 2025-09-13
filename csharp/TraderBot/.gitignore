@@ -1,3 +1,4 @@
 appsettings.json
 log.txt
 log.*.txt
+logs/

@@ -2,11 +2,18 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Configuration.UserSecrets;
+using Microsoft.Extensions.Logging;
 using Tinkoff.InvestApi;
 using TraderBot;
+using NLog.Extensions.Logging;
 
 var builder = Host.CreateDefaultBuilder(args);
 var host = builder
+    .ConfigureLogging(logging =>
+    {
+        logging.ClearProviders();
+        logging.AddNLog();
+    })
     .ConfigureServices((context, services) =>
     {
         services.AddSingleton(_ =>
