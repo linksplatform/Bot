@@ -379,6 +379,47 @@ class Commands:
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
 
+    def copy_languages(self) -> NoReturn:
+        """Copy programming languages from another user's profile"""
+        if not self.user or self.user.uid == self.from_id:
+            self.vk_instance.send_msg(
+                'Перешлите сообщение пользователя, чьи языки программирования вы хотите скопировать.',
+                self.peer_id
+            )
+            return
+        
+        source_languages = self.data_service.get_user_sorted_programming_languages(self.user)
+        if not source_languages:
+            self.vk_instance.send_msg(
+                f'У [id{self.user.uid}|{self.vk_instance.get_user_name(self.user.uid)}] не указано языков программирования.',
+                self.peer_id
+            )
+            return
+        
+        # Copy languages to current user
+        current_languages = self.current_user.programming_languages
+        new_languages = list(set(current_languages + source_languages))
+        self.current_user.programming_languages = new_languages
+        self.data_service.save_user(self.current_user)
+        
+        # Send confirmation message
+        copied_count = len(source_languages)
+        total_count = len(new_languages)
+        already_had = len(current_languages)
+        new_added = total_count - already_had
+        
+        if new_added == 0:
+            self.vk_instance.send_msg(
+                f'Все языки программирования от [id{self.user.uid}|{self.vk_instance.get_user_name(self.user.uid)}] у вас уже есть.',
+                self.peer_id
+            )
+        else:
+            self.vk_instance.send_msg(
+                f'Скопировано {new_added} новых языков программирования от [id{self.user.uid}|{self.vk_instance.get_user_name(self.user.uid)}]. '
+                f'У вас теперь {total_count} языков программирования.',
+                self.peer_id
+            )
+
     def match_command(
             self,
             pattern: Pattern
