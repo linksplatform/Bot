@@ -252,6 +252,35 @@ namespace Storage.Remote.GitHub
         
         #region Content
 
+        public async Task<IReadOnlyList<RepositoryContent>> GetAllContents(long repositoryId, string path = "")
+        {
+            return await Client.Repository.Content.GetAllContents(repositoryId, path);
+        }
+
+        public async Task<IReadOnlyList<RepositoryContent>> GetAllContents(string owner, string repo, string path = "")
+        {
+            return await Client.Repository.Content.GetAllContents(owner, repo, path);
+        }
+
+        public async Task<IReadOnlyList<RepositoryContent>> GetAllContentsByRef(long repositoryId, string path, string reference)
+        {
+            return await Client.Repository.Content.GetAllContentsByRef(repositoryId, path, reference);
+        }
+
+        public async Task<string> GetFileContent(long repositoryId, string path, string reference = null)
+        {
+            var contents = reference == null 
+                ? await Client.Repository.Content.GetAllContents(repositoryId, path)
+                : await Client.Repository.Content.GetAllContentsByRef(repositoryId, path, reference);
+            
+            if (contents.Count > 0 && contents[0].Type == ContentType.File)
+            {
+                return contents[0].Content;
+            }
+            
+            return null;
+        }
+
         // public async Task<RepositoryContentChangeSet> CreateOrUpdateFile(string fileContent, string filePath, Repository repository, string branchName, string commitMessage)
         // {
         //     try
