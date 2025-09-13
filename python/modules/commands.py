@@ -5,10 +5,11 @@ from time import time
 import os
 
 from regex import Pattern, Match, split, match, search, IGNORECASE, sub
-from requests import post
+from requests import post, get
 from social_ethosa import BetterUser
 from saya import Vk
 import wikipedia
+import urllib.parse
 
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
@@ -378,6 +379,100 @@ class Commands:
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
+
+    def google_search(self) -> NoReturn:
+        """Search Google for answers and return whitelisted links"""
+        query = self.matched.group('query').strip()
+        
+        # Check minimum word count
+        words = query.split()
+        if len(words) < config.GOOGLE_SEARCH_MIN_WORDS:
+            self.vk_instance.send_msg(
+                f'Пожалуйста, используйте не менее {config.GOOGLE_SEARCH_MIN_WORDS} слов для поиска.',
+                self.peer_id
+            )
+            return
+        
+        try:
+            # Build Google search URL
+            search_url = f"https://www.google.com/search?q={urllib.parse.quote(query)}&num=20"
+            
+            # Set headers to mimic a browser
+            headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            }
+            
+            # Make the search request
+            response = get(search_url, headers=headers, timeout=config.GOOGLE_SEARCH_TIMEOUT)
+            response.raise_for_status()
+            
+            # Extract links from search results using multiple patterns
+            import re
+            
+            # Try multiple patterns to extract URLs from Google results
+            url_patterns = [
+                r'href="(/url\?q=[^"]+)"',  # Standard Google redirect
+                r'href="(https?://[^"]*)"',  # Direct URLs
+                r'data-href="([^"]+)"',     # Alternative href attribute
+            ]
+            
+            all_links = []
+            for pattern in url_patterns:
+                matches = re.findall(pattern, response.text)
+                all_links.extend(matches)
+            
+            filtered_links = []
+            seen_domains = set()
+            
+            for link in all_links:
+                if len(filtered_links) >= config.GOOGLE_SEARCH_MAX_RESULTS:
+                    break
+                    
+                # Clean up URL
+                actual_url = link
+                if '/url?q=' in link:
+                    # Extract from Google redirect
+                    try:
+                        actual_url = link.split('/url?q=')[1].split('&')[0]
+                        actual_url = urllib.parse.unquote(actual_url)
+                    except:
+                        continue
+                elif link.startswith('/'):
+                    # Skip relative URLs
+                    continue
+                
+                # Validate URL format
+                if not actual_url.startswith(('http://', 'https://')):
+                    continue
+                    
+                # Check if URL is from whitelisted domain
+                for whitelisted_site in config.GOOGLE_SEARCH_WHITELISTED_SITES:
+                    if whitelisted_site in actual_url and whitelisted_site not in seen_domains:
+                        # Count matching words in URL for relevance
+                        word_matches = sum(1 for word in words if word.lower() in actual_url.lower())
+                        if word_matches >= 0:  # Allow URLs even without exact word matches
+                            filtered_links.append(actual_url)
+                            seen_domains.add(whitelisted_site)
+                            break
+            
+            # Send results
+            if filtered_links:
+                result_message = f"Результаты поиска для '{query}':\n\n"
+                for i, link in enumerate(filtered_links, 1):
+                    result_message += f"{i}. {link}\n"
+                self.vk_instance.send_msg(result_message, self.peer_id)
+            else:
+                self.vk_instance.send_msg(
+                    f"К сожалению, не найдено ссылок с проверенных сайтов для запроса '{query}'.",
+                    self.peer_id
+                )
+                
+        except Exception as e:
+            print(f"Google search error: {e}")
+            self.vk_instance.send_msg(
+                "Произошла ошибка при поиске. Попробуйте позже.",
+                self.peer_id
+            )
 
     def match_command(
             self,
