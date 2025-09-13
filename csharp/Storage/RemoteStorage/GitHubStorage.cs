@@ -360,6 +360,22 @@ namespace Storage.Remote.GitHub
 
         #endregion
 
+        #region Template
+
+        public async Task<Repository> CreateRepositoryFromTemplate(string templateOwner, string templateRepo, string newOwner, string newRepoName, string description = "", bool isPrivate = false)
+        {
+            var request = new NewRepositoryFromTemplate(newRepoName)
+            {
+                Owner = newOwner,
+                Description = description,
+                Private = isPrivate
+            };
+            
+            return await Client.Repository.Generate(templateOwner, templateRepo, request);
+        }
+
+        #endregion
+
         #region Organization
 
         #region Member
