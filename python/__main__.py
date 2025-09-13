@@ -14,12 +14,13 @@ from tokens import BOT_TOKEN
 from userbot import UserBot
 import patterns
 import config
+from network_handler import VkNetworkMixin
 
 
 CHAT_ID_OFFSET = 2e9
 
 
-class Bot(Vk):
+class Bot(VkNetworkMixin, Vk):
     """Provides working with VK API as group.
     """
     def __init__(
