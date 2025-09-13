@@ -8,6 +8,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommandLineParser" Version="2.9.1" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.8.0" />
     <PackageReference Include="Octokit" Version="7.0.1" />
     <PackageReference Include="Platform.Communication.Protocol.Lino" Version="0.4.0" />
     <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.1" />
