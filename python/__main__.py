@@ -201,4 +201,12 @@ class Bot(Vk):
 
 if __name__ == '__main__':
     vk = Bot(token=BOT_TOKEN, group_id=config.BOT_GROUP_ID, debug=True)
+    
+    # Start friend request monitoring if enabled and USER_TOKEN is available
+    if config.FRIEND_REQUEST_AUTO_ACCEPT:
+        print("Starting VK Bot with friend request auto-acceptance")
+        vk.userbot.start_friend_request_monitor(check_interval=config.FRIEND_REQUEST_CHECK_INTERVAL)
+    else:
+        print("Friend request auto-acceptance is disabled")
+    
     vk.start_listen()

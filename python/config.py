@@ -153,5 +153,9 @@ GITHUB_COPILOT_LANGUAGES = {
 GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} {output_file}"'
 GITHUB_COPILOT_TIMEOUT = 120  # seconds
 
+# Friend request auto-acceptance settings
+FRIEND_REQUEST_AUTO_ACCEPT = True  # Enable/disable automatic friend request acceptance
+FRIEND_REQUEST_CHECK_INTERVAL = 30  # Check interval in seconds (default: 30)
+
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
 GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
