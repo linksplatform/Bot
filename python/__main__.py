@@ -78,6 +78,9 @@ class Bot(Vk):
         from_id = event["from_id"]
         msg_id = event["conversation_message_id"]
 
+        # Forward messages from main chats to logging chat
+        self._forward_message_to_logging_chat(event, peer_id, from_id)
+
         if peer_id in self.messages_to_delete:
             peer = CHAT_ID_OFFSET + config.USERBOT_CHATS[peer_id]
             new_messages_to_delete = []
@@ -188,6 +191,91 @@ class Bot(Vk):
         return self.call_method(
             'users.get', dict(user_ids=uid, name_case=name_case)
         )['response'][0]["first_name"]
+
+    def _forward_message_to_logging_chat(
+        self,
+        event: Dict[str, Any],
+        peer_id: int,
+        from_id: int
+    ) -> NoReturn:
+        """Forwards messages from main chats to logging chat.
+        
+        :param event: message event data
+        :param peer_id: chat ID where the message was sent
+        :param from_id: user ID who sent the message
+        """
+        # Check if logging is enabled and configured
+        if not config.LOGGING_CHAT_ID or not config.MAIN_CHATS:
+            return
+            
+        # Only forward messages from specified main chats
+        if peer_id not in config.MAIN_CHATS:
+            return
+            
+        # Don't forward our own messages to avoid loops
+        if from_id < 0:  # Negative from_id means it's from a group/bot
+            return
+        
+        try:
+            # Get user name for better logging format
+            user_name = self.get_user_name(from_id) if from_id > 0 else "Unknown"
+            
+            # Format the original message with metadata
+            original_text = event.get("text", "")
+            chat_title = self._get_chat_title(peer_id)
+            timestamp = datetime.fromtimestamp(event.get("date", 0)).strftime("%Y-%m-%d %H:%M:%S")
+            
+            # Create formatted log message
+            log_message = f"[{timestamp}] {chat_title}\n{user_name}: {original_text}"
+            
+            # Handle attachments
+            attachments = event.get("attachments", [])
+            if attachments:
+                attachment_info = []
+                for attachment in attachments:
+                    att_type = attachment.get("type", "unknown")
+                    attachment_info.append(f"[{att_type}]")
+                if attachment_info:
+                    log_message += f"\nAttachments: {', '.join(attachment_info)}"
+            
+            # Handle forwarded messages
+            fwd_messages = event.get("fwd_messages", [])
+            if fwd_messages:
+                log_message += f"\n[Forwarded {len(fwd_messages)} message(s)]"
+            
+            # Handle reply to message
+            reply_message = event.get("reply_message", {})
+            if reply_message:
+                log_message += "\n[Reply to message]"
+            
+            # Send to logging chat
+            self.send_msg(log_message, config.LOGGING_CHAT_ID)
+            
+        except Exception as e:
+            print(f"Error forwarding message to logging chat: {e}")
+
+    def _get_chat_title(self, peer_id: int) -> str:
+        """Get chat title for better logging format.
+        
+        :param peer_id: chat ID
+        :return: chat title or formatted chat ID
+        """
+        try:
+            # For group chats (peer_id > 2000000000), try to get conversation info
+            if peer_id > 2000000000:
+                response = self.call_method(
+                    'messages.getConversationsById',
+                    {'peer_ids': peer_id}
+                )
+                if 'response' in response and 'items' in response['response']:
+                    items = response['response']['items']
+                    if items:
+                        chat_settings = items[0].get('chat_settings', {})
+                        title = chat_settings.get('title', f'Chat {peer_id}')
+                        return title
+            return f'Chat {peer_id}'
+        except Exception:
+            return f'Chat {peer_id}'
 
     @staticmethod
     def get_messages(
