@@ -45,6 +45,8 @@ namespace Storage.Local
         private readonly TLinkAddress _setMarker;
         private readonly TLinkAddress _fileMarker;
         private readonly TLinkAddress _gitHubLastMigrationTimestampMarker;
+        private readonly TLinkAddress _rewardMarker;
+        private readonly TLinkAddress _karmaMarker;
         private readonly TLinkAddress Any;
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => _synchronizedLinks.Exists(currentMappingIndex) ? currentMappingIndex : _synchronizedLinks.CreateAndUpdate(_meaningRoot, _synchronizedLinks.Constants.Itself);
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => _synchronizedLinks.Exists(meaningRootIndex) ? meaningRootIndex : _synchronizedLinks.CreatePoint();
@@ -76,6 +78,8 @@ namespace Storage.Local
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _gitHubLastMigrationTimestampMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _rewardMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _karmaMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
             var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
@@ -328,6 +332,144 @@ namespace Storage.Local
         }
 
         // public void SetLastGithubMigrationTimeStamp()
+
+        /// <summary>
+        /// <para>
+        /// Adds a reward for an issue.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="reward">The reward to add.</param>
+        /// <returns>The link address of the created reward.</returns>
+        public TLinkAddress AddReward(Reward reward)
+        {
+            var rewardData = $"{reward.IssueUrl}|{reward.Description}|{reward.AddedBy}|{reward.AddedDate:yyyy-MM-dd HH:mm:ss}|{reward.IsActive}";
+            var rewardAddress = CreateString(rewardData);
+            return _synchronizedLinks.GetOrCreate(_rewardMarker, rewardAddress);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets all active rewards.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <returns>List of rewards.</returns>
+        public List<Reward> GetActiveRewards()
+        {
+            var rewards = new List<Reward>();
+            foreach (var link in _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _rewardMarker, target: Any)))
+            {
+                var rewardData = GetString(_synchronizedLinks.GetTarget(link));
+                var reward = ParseRewardFromString(rewardData);
+                if (reward.IsActive)
+                {
+                    rewards.Add(reward);
+                }
+            }
+            return rewards;
+        }
+
+        /// <summary>
+        /// <para>
+        /// Updates a reward's active status.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="issueUrl">The issue URL to update.</param>
+        /// <param name="isActive">Whether the reward should be active.</param>
+        public void UpdateRewardStatus(string issueUrl, bool isActive)
+        {
+            foreach (var link in _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _rewardMarker, target: Any)))
+            {
+                var rewardData = GetString(_synchronizedLinks.GetTarget(link));
+                var reward = ParseRewardFromString(rewardData);
+                if (reward.IssueUrl == issueUrl)
+                {
+                    reward.IsActive = isActive;
+                    var updatedData = $"{reward.IssueUrl}|{reward.Description}|{reward.AddedBy}|{reward.AddedDate:yyyy-MM-dd HH:mm:ss}|{reward.IsActive}";
+                    var updatedAddress = CreateString(updatedData);
+                    _synchronizedLinks.Delete(link);
+                    _synchronizedLinks.GetOrCreate(_rewardMarker, updatedAddress);
+                    break;
+                }
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Sets or updates user karma.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="userKarma">The user karma to set.</param>
+        /// <returns>The link address of the karma record.</returns>
+        public TLinkAddress SetUserKarma(UserKarma userKarma)
+        {
+            var karmaData = $"{userKarma.Username}|{userKarma.KarmaPoints}|{userKarma.LastUpdated:yyyy-MM-dd HH:mm:ss}";
+            var karmaAddress = CreateString(karmaData);
+            var usernameAddress = CreateString(userKarma.Username);
+            
+            // Check if karma already exists for this user
+            foreach (var link in _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _karmaMarker, target: Any)))
+            {
+                var existingKarmaData = GetString(_synchronizedLinks.GetTarget(link));
+                var existingKarma = ParseKarmaFromString(existingKarmaData);
+                if (existingKarma.Username == userKarma.Username)
+                {
+                    _synchronizedLinks.Delete(link);
+                    return _synchronizedLinks.GetOrCreate(_karmaMarker, karmaAddress);
+                }
+            }
+            
+            return _synchronizedLinks.GetOrCreate(_karmaMarker, karmaAddress);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets user karma by username.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="username">The username to get karma for.</param>
+        /// <returns>The user karma or null if not found.</returns>
+        public UserKarma? GetUserKarma(string username)
+        {
+            foreach (var link in _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _karmaMarker, target: Any)))
+            {
+                var karmaData = GetString(_synchronizedLinks.GetTarget(link));
+                var karma = ParseKarmaFromString(karmaData);
+                if (karma.Username == username)
+                {
+                    return karma;
+                }
+            }
+            return null;
+        }
+
+        private Reward ParseRewardFromString(string data)
+        {
+            var parts = data.Split('|');
+            return new Reward
+            {
+                IssueUrl = parts[0],
+                Description = parts[1],
+                AddedBy = parts[2],
+                AddedDate = DateTime.ParseExact(parts[3], "yyyy-MM-dd HH:mm:ss", null),
+                IsActive = bool.Parse(parts[4])
+            };
+        }
+
+        private UserKarma ParseKarmaFromString(string data)
+        {
+            var parts = data.Split('|');
+            return new UserKarma
+            {
+                Username = parts[0],
+                KarmaPoints = int.Parse(parts[1]),
+                LastUpdated = DateTime.ParseExact(parts[2], "yyyy-MM-dd HH:mm:ss", null)
+            };
+        }
 
         protected override void Dispose(bool manual, bool wasDisposed)
         {

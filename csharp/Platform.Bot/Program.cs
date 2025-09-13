@@ -15,6 +15,7 @@ using CommandLine;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
 using Platform.Bot.Triggers.Decorators;
+using Platform.Bot.Services;
 
 namespace Platform.Bot
 {
@@ -95,7 +96,23 @@ namespace Platform.Bot
                 var dbContext = new FileStorage(databaseFilePath?.FullName ?? new TemporaryFile().Filename);
                 Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
                 var githubStorage = new GitHubStorage(githubUserName, githubApiToken, githubApplicationName);
-                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
+                
+                // Initialize services
+                var karmaService = new KarmaService(dbContext, githubStorage);
+                var rewardsService = new RewardsService(dbContext, githubStorage);
+                
+                var issueTracker = new IssueTracker(githubStorage, 
+                    new HelloWorldTrigger(githubStorage, dbContext, fileSetName), 
+                    new OrganizationLastMonthActivityTrigger(githubStorage), 
+                    new LastCommitActivityTrigger(githubStorage), 
+                    new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), 
+                    new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), 
+                    new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage),
+                    // Reward-related triggers
+                    new KarmaAuthorTriggerDecorator(new AddRewardTrigger(githubStorage, rewardsService, karmaService), karmaService, githubStorage),
+                    new ListRewardsTrigger(githubStorage, rewardsService),
+                    new KarmaAuthorTriggerDecorator(new RemoveRewardTrigger(githubStorage, rewardsService, karmaService), karmaService, githubStorage),
+                    new CleanupClosedRewardsTrigger(githubStorage, rewardsService));
                 var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                 var cancellation = new CancellationTokenSource();
