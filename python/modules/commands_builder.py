@@ -180,8 +180,41 @@ class CommandsBuilder:
         """
         if selected_user_karma_change:
             if user_karma_change:
-                return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
+                return ("✅ Карма успешно изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
                         (user_karma_change + selected_user_karma_change))
-            return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
+            return ("✅ Карма успешно изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
                 (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
         return None
+
+    @staticmethod
+    def build_vote_registered(
+        target_user: BetterUser,
+        data: BetterBotBaseDataService,
+        operator: str,
+        current_voters_count: int,
+        required_voters: int
+    ) -> str:
+        """Builds message for successful vote registration without karma change yet
+        """
+        vote_type = "за" if operator == "+" else "против"
+        target_name = f"[id{data.get_user_property(target_user, 'uid')}|{data.get_user_property(target_user, 'name')}]"
+        remaining = required_voters - current_voters_count
+        return (f"✅ Ваш голос {vote_type} {target_name} засчитан! "
+                f"Голосов: {current_voters_count}/{required_voters}. "
+                f"До изменения кармы осталось: {remaining}.")
+
+    @staticmethod
+    def build_personal_karma_transfer_success(
+        from_user: BetterUser,
+        to_user: BetterUser,
+        data: BetterBotBaseDataService,
+        amount: int
+    ) -> str:
+        """Builds message for successful personal karma transfer
+        """
+        from_name = f"[id{data.get_user_property(from_user, 'uid')}|{data.get_user_property(from_user, 'name')}]"
+        to_name = f"[id{data.get_user_property(to_user, 'uid')}|{data.get_user_property(to_user, 'name')}]"
+        transfer_type = "передали" if amount > 0 else "забрали"
+        return (f"✅ Операция успешна! {from_name} {transfer_type} {abs(amount)} кармы "
+                f"{'пользователю' if amount > 0 else 'у пользователя'} {to_name}.")
+    
