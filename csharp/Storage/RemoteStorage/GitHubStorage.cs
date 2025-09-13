@@ -392,6 +392,10 @@ namespace Storage.Remote.GitHub
             return allMembers;
         }
 
+        public async Task InviteToOrganization(string organizationName, string username)
+        {
+            await Client.Organization.Member.AddOrUpdateOrganizationMembership(organizationName, username, new OrganizationMembershipUpdate());
+        }
 
         #endregion
 
