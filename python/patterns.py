@@ -65,3 +65,13 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+# Rules management patterns
+SET_RULES_GIST = recompile(
+    r'\A\s*(set rules|установить правила)\s+(https://gist\.github\.com/(?P<user>[a-zA-Z0-9\-_]+)/(?P<gist_id>[a-f0-9]+))\s*\Z', IGNORECASE)
+
+REMOVE_RULES_GIST = recompile(
+    r'\A\s*(remove rules|убрать правила)\s*\Z', IGNORECASE)
+
+GET_RULES_STATUS = recompile(
+    r'\A\s*(rules status|статус правил)\s*\Z', IGNORECASE)

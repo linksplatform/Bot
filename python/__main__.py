@@ -2,7 +2,9 @@
 """Main Bot module.
 """
 from datetime import datetime, timedelta
-from typing import NoReturn, List, Dict, Any
+from typing import NoReturn, List, Dict, Any, Optional
+import threading
+import time
 
 from saya import Vk
 import requests
@@ -10,6 +12,7 @@ import requests
 from modules import (
     BetterBotBaseDataService, Commands
 )
+from modules.rules_service import RulesService
 from tokens import BOT_TOKEN
 from userbot import UserBot
 import patterns
@@ -38,7 +41,8 @@ class Bot(Vk):
         self.messages_to_delete = {}
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
-        self.commands = Commands(self, self.data)
+        self.rules_service = RulesService()
+        self.commands = Commands(self, self.data, self.rules_service)
         self.commands.register_cmds(
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
@@ -63,8 +67,15 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
-            (patterns.GITHUB_COPILOT, self.commands.github_copilot)
+            (patterns.GITHUB_COPILOT, self.commands.github_copilot),
+            (patterns.SET_RULES_GIST, self.commands.set_rules_gist),
+            (patterns.REMOVE_RULES_GIST, self.commands.remove_rules_gist),
+            (patterns.GET_RULES_STATUS, self.commands.get_rules_status)
         )
+        
+        # Start rules monitoring thread
+        self.rules_monitor_thread = threading.Thread(target=self._monitor_rules, daemon=True)
+        self.rules_monitor_thread.start()
 
     def message_new(
         self,
@@ -167,6 +178,83 @@ class Bot(Vk):
             dict(
                 message=msg, peer_id=peer_id,
                 disable_mentions=1, random_id=0))
+    
+    def pin_message(
+        self,
+        peer_id: int,
+        message_id: int
+    ) -> dict:
+        """Pin a message in chat
+        
+        :param peer_id: chat ID
+        :param message_id: message ID to pin
+        """
+        return self.call_method(
+            'messages.pin',
+            dict(peer_id=peer_id, message_id=message_id))
+    
+    def unpin_message(
+        self,
+        peer_id: int,
+        message_id: int
+    ) -> dict:
+        """Unpin a message in chat
+        
+        :param peer_id: chat ID  
+        :param message_id: message ID to unpin
+        """
+        return self.call_method(
+            'messages.unpin',
+            dict(peer_id=peer_id, message_id=message_id))
+    
+    def send_and_pin_message(
+        self,
+        msg: str,
+        peer_id: int
+    ) -> Optional[int]:
+        """Send a message and pin it
+        
+        :param msg: message text
+        :param peer_id: chat ID
+        :return: message ID if successful, None otherwise
+        """
+        try:
+            # Send message
+            response = self.call_method(
+                'messages.send',
+                dict(
+                    message=msg, peer_id=peer_id,
+                    disable_mentions=1, random_id=0))
+            
+            if 'response' in response:
+                message_id = response['response']
+                # Pin the message
+                pin_response = self.pin_message(peer_id, message_id)
+                if 'response' in pin_response:
+                    return message_id
+            return None
+        except Exception as e:
+            print(f"Error sending and pinning message: {e}")
+            return None
+    
+    def edit_message(
+        self,
+        peer_id: int,
+        message_id: int,
+        message: str
+    ) -> dict:
+        """Edit a message
+        
+        :param peer_id: chat ID
+        :param message_id: message ID to edit
+        :param message: new message text
+        """
+        return self.call_method(
+            'messages.edit',
+            dict(
+                peer_id=peer_id, 
+                message_id=message_id, 
+                message=message))
 
     def get_user_name(
         self,
@@ -197,6 +285,69 @@ class Bot(Vk):
         """
         reply_message = event.get("reply_message", {})
         return [reply_message] if reply_message else event.get("fwd_messages", [])
+    
+    def _monitor_rules(self) -> NoReturn:
+        """Background thread to monitor rules changes"""
+        while True:
+            try:
+                # Check every 5 minutes
+                time.sleep(300)
+                
+                # Get all monitored chats
+                monitored_chats = self.rules_service.get_all_monitored_chats()
+                
+                for peer_id_str, config in monitored_chats.items():
+                    peer_id = int(peer_id_str)
+                    
+                    # Check for updates
+                    updated_content = self.rules_service.check_gist_updates(peer_id)
+                    
+                    if updated_content:
+                        # Rules have been updated
+                        new_rules_message = f"📋 Правила чата:\n\n{updated_content}"
+                        
+                        # Try to edit existing pinned message
+                        pinned_message_id = config.get("pinned_message_id")
+                        
+                        if pinned_message_id:
+                            try:
+                                # Try to edit the existing pinned message
+                                edit_response = self.edit_message(
+                                    peer_id, pinned_message_id, new_rules_message)
+                                
+                                if 'response' in edit_response:
+                                    # Successfully edited
+                                    self.send_msg(
+                                        "🔄 Правила чата обновлены в закрепленном сообщении!",
+                                        peer_id)
+                                else:
+                                    # Failed to edit, create new pinned message
+                                    self._create_new_pinned_rules(peer_id, new_rules_message)
+                            except Exception as e:
+                                print(f"Error editing pinned message: {e}")
+                                self._create_new_pinned_rules(peer_id, new_rules_message)
+                        else:
+                            # No existing pinned message, create new one
+                            self._create_new_pinned_rules(peer_id, new_rules_message)
+                            
+            except Exception as e:
+                print(f"Error in rules monitoring: {e}")
+    
+    def _create_new_pinned_rules(self, peer_id: int, rules_message: str) -> NoReturn:
+        """Helper method to create and pin new rules message"""
+        try:
+            message_id = self.send_and_pin_message(rules_message, peer_id)
+            if message_id:
+                self.rules_service.update_pinned_message_id(peer_id, message_id)
+                self.send_msg(
+                    "🔄 Правила чата обновлены и закреплено новое сообщение!",
+                    peer_id)
+            else:
+                self.send_msg(
+                    "🔄 Правила чата обновлены, но не удалось закрепить сообщение.",
+                    peer_id)
+        except Exception as e:
+            print(f"Error creating new pinned rules: {e}")
 
 
 if __name__ == '__main__':

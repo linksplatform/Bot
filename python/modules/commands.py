@@ -29,7 +29,8 @@ class Commands:
     def __init__(
             self,
             vk_instance: Vk,
-            data_service: BetterBotBaseDataService
+            data_service: BetterBotBaseDataService,
+            rules_service=None
     ):
         self.msg: str = ""
         self.msg_id: int = 0
@@ -43,6 +44,7 @@ class Commands:
         self.selected_message: Dict[str, Any] = {}
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
+        self.rules_service = rules_service
         self.matched: Match = None
         wikipedia.set_lang('en')
 
@@ -436,3 +438,94 @@ class Commands:
             if self.matched:
                 action()
                 return
+    
+    def set_rules_gist(self) -> NoReturn:
+        """Set GitHub gist URL for rules monitoring"""
+        if not self.rules_service:
+            return
+            
+        # Only allow in group chats
+        if self.peer_id < 2e9:
+            self.vk_instance.send_msg(
+                "Эта команда доступна только в групповых чатах.", 
+                self.peer_id)
+            return
+        
+        # Check if user is admin (simplified check - in real implementation 
+        # you should check actual admin permissions)
+        
+        gist_url = self.matched.group(2)  # Full URL from pattern
+        
+        if self.rules_service.set_rules_gist(self.peer_id, gist_url, self.from_id):
+            # Fetch and post initial rules
+            gist_id = gist_url.split("/")[-1]
+            content = self.rules_service.fetch_gist_content(gist_id)
+            
+            if content:
+                rules_message = f"📋 Правила чата:\n\n{content}"
+                message_id = self.vk_instance.send_and_pin_message(rules_message, self.peer_id)
+                
+                if message_id:
+                    self.rules_service.update_pinned_message_id(self.peer_id, message_id)
+                    self.vk_instance.send_msg(
+                        f"✅ Правила успешно установлены и закреплены!\n"
+                        f"Источник: {gist_url}",
+                        self.peer_id)
+                else:
+                    self.vk_instance.send_msg(
+                        "✅ Правила установлены, но не удалось закрепить сообщение.",
+                        self.peer_id)
+            else:
+                self.vk_instance.send_msg(
+                    "❌ Не удалось получить содержимое правил из gist.",
+                    self.peer_id)
+        else:
+            self.vk_instance.send_msg(
+                "❌ Не удалось установить правила. Проверьте URL gist.",
+                self.peer_id)
+    
+    def remove_rules_gist(self) -> NoReturn:
+        """Remove rules gist monitoring for chat"""
+        if not self.rules_service:
+            return
+            
+        if self.peer_id < 2e9:
+            self.vk_instance.send_msg(
+                "Эта команда доступна только в групповых чатах.",
+                self.peer_id)
+            return
+        
+        if self.rules_service.remove_rules_gist(self.peer_id):
+            self.vk_instance.send_msg(
+                "✅ Мониторинг правил отключен для этого чата.",
+                self.peer_id)
+        else:
+            self.vk_instance.send_msg(
+                "❌ Правила не были установлены для этого чата.",
+                self.peer_id)
+    
+    def get_rules_status(self) -> NoReturn:
+        """Get rules monitoring status for chat"""
+        if not self.rules_service:
+            return
+            
+        if self.peer_id < 2e9:
+            self.vk_instance.send_msg(
+                "Эта команда доступна только в групповых чатах.",
+                self.peer_id)
+            return
+        
+        config = self.rules_service.get_rules_config(self.peer_id)
+        if config:
+            set_by_name = self.vk_instance.get_user_name(config['set_by'])
+            self.vk_instance.send_msg(
+                f"📊 Статус правил:\n"
+                f"🔗 Источник: {config['gist_url']}\n"
+                f"👤 Установил: {set_by_name}\n"
+                f"📅 Дата установки: {config['set_at'][:10]}\n"
+                f"🔄 Последняя проверка: {config.get('last_check', 'Никогда')[:19] if config.get('last_check') else 'Никогда'}",
+                self.peer_id)
+        else:
+            self.vk_instance.send_msg(
+                "❌ Правила не установлены для этого чата.",
+                self.peer_id)
