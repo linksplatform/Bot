@@ -2,21 +2,27 @@
 """Provides working with VK API as user.
 """
 from typing import NoReturn, List, Dict, Any
+import logging
 
 from exceptions import TooManyMessagesError
 from tokens import USER_TOKEN
 from requests import Session
+from network_handler import NetworkHandler
 
 
 class UserBot:
     """Automatically deleting unnecessary messages.
     """
-    session = Session()
-    url = 'https://api.vk.com/method/'
-    token = USER_TOKEN
+    def __init__(self):
+        """Initialize UserBot with network handling."""
+        self.network_handler = NetworkHandler()
+        self.session = self.network_handler.create_session()
+        self.url = 'https://api.vk.com/method/'
+        self.token = USER_TOKEN
+        self.logger = logging.getLogger('UserBot')
 
-    @staticmethod
     def delete_messages(
+        self,
         conversation_message_ids: List[int],
         peer_id: int
     ) -> NoReturn:
@@ -37,16 +43,27 @@ class UserBot:
             }
             return 1;'''
             data = {
-                'access_token': UserBot.token,
+                'access_token': self.token,
                 'code': code % params,
                 'v': '5.103'
             }
-            return UserBot.execute(data)
+            try:
+                return self.execute(data)
+            except Exception as e:
+                self.logger.error(f"Failed to delete messages: {e}")
+                raise
         raise TooManyMessagesError(
             'Maximum amount was reached (%d/24)' % len(conversation_message_ids))
 
-    @staticmethod
-    def execute(data: str) -> Dict[str, Any]:
+    def execute(self, data: str) -> Dict[str, Any]:
         """Executes VK Script.
         """
-        return UserBot.session.post(UserBot.url + 'execute', data=data).json()
+        try:
+            response = self.network_handler.make_request(
+                self.session, 'POST', self.url + 'execute', data=data
+            )
+            response.raise_for_status()
+            return response.json()
+        except Exception as e:
+            self.logger.error(f"Failed to execute VK script: {e}")
+            raise
