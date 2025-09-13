@@ -63,7 +63,10 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
-            (patterns.GITHUB_COPILOT, self.commands.github_copilot)
+            (patterns.GITHUB_COPILOT, self.commands.github_copilot),
+            (patterns.ASK_QUESTION, self.commands.ask_question),
+            (patterns.RESOLVE_QUESTION, self.commands.resolve_question),
+            (patterns.QUESTIONS_DESK, self.commands.show_questions_desk)
         )
 
     def message_new(
@@ -167,6 +170,55 @@ class Bot(Vk):
             dict(
                 message=msg, peer_id=peer_id,
                 disable_mentions=1, random_id=0))
+
+    def pin_message(
+        self,
+        peer_id: int,
+        message_id: int
+    ) -> Dict[str, Any]:
+        """Pins a message in chat.
+
+        :param peer_id: chat ID
+        :param message_id: message ID to pin
+        """
+        return self.call_method(
+            'messages.pin',
+            dict(peer_id=peer_id, message_id=message_id))
+
+    def unpin_message(
+        self,
+        peer_id: int
+    ) -> Dict[str, Any]:
+        """Unpins current pinned message in chat.
+
+        :param peer_id: chat ID
+        """
+        return self.call_method(
+            'messages.unpin',
+            dict(peer_id=peer_id))
+
+    def send_and_pin_msg(
+        self,
+        msg: str,
+        peer_id: int
+    ) -> int:
+        """Sends a message and pins it, returning the message ID.
+
+        :param msg: message text
+        :param peer_id: chat ID
+        :return: message ID of the sent message
+        """
+        response = self.call_method(
+            'messages.send',
+            dict(
+                message=msg, peer_id=peer_id,
+                disable_mentions=1, random_id=0))
+        
+        if 'response' in response:
+            message_id = response['response']
+            self.pin_message(peer_id, message_id)
+            return message_id
+        return 0
 
     def get_user_name(
         self,

@@ -13,6 +13,7 @@ import wikipedia
 from .commands_builder import CommandsBuilder
 from .data_service import BetterBotBaseDataService
 from .data_builder import DataBuilder
+from .questions_service import QuestionsService
 from .utils import (
     get_default_programming_language,
     contains_all_strings,
@@ -43,6 +44,7 @@ class Commands:
         self.selected_message: Dict[str, Any] = {}
         self.vk_instance: Vk = vk_instance
         self.data_service: BetterBotBaseDataService = data_service
+        self.questions_service: QuestionsService = QuestionsService()
         self.matched: Match = None
         wikipedia.set_lang('en')
 
@@ -378,6 +380,175 @@ class Commands:
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
+
+    def ask_question(self) -> NoReturn:
+        """Submit a new question to the questions desk."""
+        if not self.karma_enabled:
+            self.vk_instance.send_msg(
+                "Вопросы доступны только в чатах с включенной кармой.",
+                self.peer_id
+            )
+            return
+            
+        question = self.matched.group('question').strip()
+        reward_str = self.matched.group('reward')
+        reward = 0
+        
+        if reward_str:
+            try:
+                reward = int(reward_str)
+                if reward < 0:
+                    self.vk_instance.send_msg(
+                        "Награда не может быть отрицательной.",
+                        self.peer_id
+                    )
+                    return
+                if reward > self.current_user.karma:
+                    self.vk_instance.send_msg(
+                        f"У вас недостаточно кармы. Доступно: {self.current_user.karma}",
+                        self.peer_id
+                    )
+                    return
+            except ValueError:
+                reward = 0
+        
+        # Deduct karma if reward is specified
+        if reward > 0:
+            self.current_user.karma -= reward
+            self.data_service.save_user(self.current_user)
+        
+        # Add question to the desk
+        question_id = self.questions_service.add_question(
+            question=question,
+            user_id=self.current_user.uid,
+            user_name=self.current_user.name,
+            peer_id=self.peer_id,
+            reward=reward
+        )
+        
+        # Send confirmation
+        reward_text = f" с наградой {reward} кармы" if reward > 0 else ""
+        self.vk_instance.send_msg(
+            f"Вопрос #{question_id} добавлен на доску{reward_text}.\n\n"
+            f"Вопрос: {question}",
+            self.peer_id
+        )
+        
+        # Update pinned message
+        self.update_questions_desk()
+
+    def resolve_question(self) -> NoReturn:
+        """Resolve a question and award karma to resolver."""
+        if not self.karma_enabled:
+            self.vk_instance.send_msg(
+                "Вопросы доступны только в чатах с включенной кармой.",
+                self.peer_id
+            )
+            return
+            
+        question_id = int(self.matched.group('question_id'))
+        question = self.questions_service.get_question_by_id(question_id)
+        
+        if not question:
+            self.vk_instance.send_msg(
+                f"Вопрос #{question_id} не найден.",
+                self.peer_id
+            )
+            return
+            
+        if question['status'] != 'open':
+            self.vk_instance.send_msg(
+                f"Вопрос #{question_id} уже решен.",
+                self.peer_id
+            )
+            return
+        
+        if question['peer_id'] != self.peer_id:
+            self.vk_instance.send_msg(
+                f"Вопрос #{question_id} из другого чата.",
+                self.peer_id
+            )
+            return
+        
+        # Resolve the question
+        resolved_question = self.questions_service.resolve_question(
+            question_id=question_id,
+            resolver_id=self.current_user.uid,
+            resolver_name=self.current_user.name
+        )
+        
+        if resolved_question:
+            # Award karma to resolver
+            reward = resolved_question['reward']
+            if reward > 0:
+                self.current_user.karma += reward
+                self.data_service.save_user(self.current_user)
+            
+            # Send confirmation
+            reward_text = f" и получил {reward} кармы" if reward > 0 else ""
+            self.vk_instance.send_msg(
+                f"{self.current_user.name} решил вопрос #{question_id}{reward_text}!\n\n"
+                f"Вопрос: {resolved_question['question']}",
+                self.peer_id
+            )
+            
+            # Update pinned message
+            self.update_questions_desk()
+
+    def show_questions_desk(self) -> NoReturn:
+        """Display the current questions desk."""
+        open_questions = self.questions_service.get_open_questions(self.peer_id)
+        
+        if not open_questions:
+            self.vk_instance.send_msg(
+                "📋 Доска вопросов пуста.\n\n"
+                "Используйте 'ask [вопрос] [награда]' чтобы добавить вопрос.",
+                self.peer_id
+            )
+            return
+        
+        message = "📋 Доска вопросов:\n\n"
+        
+        for i, question in enumerate(open_questions[:10], 1):  # Show top 10
+            reward_text = f" (🏆 {question['reward']})" if question['reward'] > 0 else ""
+            message += f"{i}. #{question['id']}: {question['question']}{reward_text}\n"
+            message += f"   от {question['user_name']}\n\n"
+        
+        if len(open_questions) > 10:
+            message += f"... и еще {len(open_questions) - 10} вопросов\n\n"
+        
+        message += "Используйте 'resolve [ID]' чтобы решить вопрос."
+        
+        self.vk_instance.send_msg(message, self.peer_id)
+
+    def update_questions_desk(self) -> NoReturn:
+        """Update the pinned message with current questions."""
+        if not self.karma_enabled:
+            return
+        
+        # Generate the questions desk message
+        desk_message = self.questions_service.generate_questions_desk_message(self.peer_id)
+        
+        # Get current pinned message ID
+        current_pinned = self.questions_service.get_pinned_message(self.peer_id)
+        
+        try:
+            # If there's already a pinned message, unpin it first
+            if current_pinned:
+                self.vk_instance.unpin_message(self.peer_id)
+            
+            # Send and pin the new message
+            if hasattr(self.vk_instance, 'send_and_pin_msg'):
+                message_id = self.vk_instance.send_and_pin_msg(desk_message, self.peer_id)
+                if message_id:
+                    self.questions_service.set_pinned_message(self.peer_id, message_id)
+            else:
+                # Fallback if method doesn't exist
+                self.vk_instance.send_msg(desk_message, self.peer_id)
+        except Exception as e:
+            # If pinning fails, just send the message normally
+            print(f"Pinning failed: {e}")
+            self.vk_instance.send_msg(desk_message, self.peer_id)
 
     def match_command(
             self,
