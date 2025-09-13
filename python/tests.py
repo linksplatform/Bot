@@ -219,8 +219,30 @@ class Test3Commands(TestCase):
     def test_apply_karma_change(
         self
     ) -> NoReturn:
-        self.commands.apply_karma_change('-', 6)
+        self.commands.apply_karma_change('-', 6, "тестовая причина")
         self.commands.karma_message()
+
+    @ordered
+    def test_karma_with_reasons(
+        self
+    ) -> NoReturn:
+        # Test karma with reasons
+        test_messages = [
+            "+ решение сработало",
+            "- вопрос недостаточно конкретный",
+            "+5 отличная помощь",
+            "-2 неточный ответ"
+        ]
+        
+        for msg in test_messages:
+            self.commands.msg = msg
+            self.commands.match_command(patterns.APPLY_KARMA)
+            if self.commands.matched:
+                operator = self.commands.matched.group("operator")
+                amount = self.commands.matched.group("amount")
+                amount = int(amount) if amount else 0
+                reason = self.commands.matched.group("reason")
+                print(f"Message: '{msg}' -> Operator: '{operator}', Amount: {amount}, Reason: '{reason}'")
 
 
 if __name__ == '__main__':
