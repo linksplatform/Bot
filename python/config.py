@@ -153,5 +153,74 @@ GITHUB_COPILOT_LANGUAGES = {
 GITHUB_COPILOT_RUN_COMMAND = 'bash -c "./copilot.sh {input_file} {output_file}"'
 GITHUB_COPILOT_TIMEOUT = 120  # seconds
 
+# Whitelisted programming-related websites for off-topic detection
+PROGRAMMING_WEBSITES_WHITELIST = [
+    'stackoverflow.com',
+    'github.com',
+    'developer.mozilla.org',
+    'docs.python.org',
+    'docs.oracle.com',
+    'cppreference.com',
+    'rust-lang.org',
+    'golang.org',
+    'kotlinlang.org',
+    'swift.org',
+    'ruby-lang.org',
+    'php.net',
+    'learn.microsoft.com',
+    'w3schools.com',
+    'geeksforgeeks.org',
+    'tutorialspoint.com',
+    'codecademy.com',
+    'freecodecamp.org',
+    'hackernoon.com',
+    'medium.com',
+    'dev.to',
+    'codepen.io',
+    'jsfiddle.net',
+    'replit.com',
+    'codesandbox.io',
+    'leetcode.com',
+    'hackerrank.com',
+    'codeforces.com',
+    'topcoder.com',
+    'codewars.com',
+    'exercism.org',
+    'techcrunch.com',
+    'ycombinator.com',
+    'reddit.com/r/programming',
+    'reddit.com/r/learnprogramming',
+    'reddit.com/r/webdev',
+    'reddit.com/r/javascript',
+    'reddit.com/r/python',
+    'reddit.com/r/java',
+    'reddit.com/r/cpp',
+    'reddit.com/r/csharp',
+    'reddit.com/r/rust',
+    'reddit.com/r/golang',
+    'programiz.com',
+    'javatpoint.com',
+    'ibm.com/developer',
+    'aws.amazon.com',
+    'cloud.google.com',
+    'azure.microsoft.com',
+    'heroku.com',
+    'netlify.com',
+    'vercel.com',
+    'digitalocean.com',
+    'npmjs.com',
+    'pypi.org',
+    'nuget.org',
+    'packagist.org',
+    'rubygems.org',
+    'crates.io',
+    'maven.apache.org',
+    'gradle.org'
+]
+
+# Off-topic detection settings
+OFF_TOPIC_DETECTION_ENABLED = True
+OFF_TOPIC_MIN_WORDS = 3  # Minimum words in message to trigger detection
+
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
 GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])

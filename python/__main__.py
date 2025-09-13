@@ -8,7 +8,7 @@ from saya import Vk
 import requests
 
 from modules import (
-    BetterBotBaseDataService, Commands
+    BetterBotBaseDataService, Commands, OffTopicDetector
 )
 from tokens import BOT_TOKEN
 from userbot import UserBot
@@ -39,6 +39,7 @@ class Bot(Vk):
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
         self.commands = Commands(self, self.data)
+        self.off_topic_detector = OffTopicDetector()
         self.commands.register_cmds(
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
@@ -111,6 +112,20 @@ class Bot(Vk):
                 user, selected_user)
         except Exception as e:
             print(e)
+        
+        # Off-topic detection (only for regular users, not system messages)
+        if from_id > 0 and not msg.startswith('/') and msg.strip():
+            try:
+                is_off_topic, reason = self.off_topic_detector.is_off_topic(msg)
+                if is_off_topic:
+                    self.send_msg(
+                        f"⚠️ Possible off-topic message detected.\n"
+                        f"This chat is for programming discussions.\n"
+                        f"Reason: {reason}",
+                        peer_id
+                    )
+            except Exception as e:
+                print(f"Off-topic detection error: {e}")
 
 
     def delete_message(
