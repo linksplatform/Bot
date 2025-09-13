@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8</TargetFramework>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../csharp/Platform.Bot/Platform.Bot.csproj" />
+    <ProjectReference Include="../csharp/Storage/Storage.csproj" />
+  </ItemGroup>
+
+</Project>
