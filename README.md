@@ -2,6 +2,10 @@
 
 ## [VK bot](https://github.com/linksplatform/Bot/tree/main/python)
 This bot is created for programmers by programmers. Features are: personal Karma tracking, programmer's personal information storage, Wikipedia access, GitHub Copilot access.
+
+## [Telegram bot](https://github.com/linksplatform/Bot/tree/main/telegram)
+Modern LinksBot implementation for Telegram with cleaner code and enhanced features. Includes karma system, programming language profiles, GitHub integration, and Wikipedia search - all without SQL dependencies.
+
 ## [GitHub bot](https://github.com/linksplatform/Bot/tree/main/csharp/Platform.Bot)
 Bot that can create "hello world" and have some other useful features.
 ## [Discord bot](https://github.com/linksplatform/Bot/tree/AddDiscrodBot/csharp/DiscordBot)

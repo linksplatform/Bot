@@ -1,0 +1,31 @@
+# Data files (contains user data)
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Bot token (keep private)
+config.py
+
+# Logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Virtual environment
+venv/
+env/
+.env
+
+# OS
+.DS_Store
+Thumbs.db
