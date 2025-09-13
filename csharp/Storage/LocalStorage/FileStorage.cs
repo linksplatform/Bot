@@ -327,6 +327,101 @@ namespace Storage.Local
             return files;
         }
 
+        /// <summary>
+        /// <para>
+        /// Adds a simple key-value link mapping.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="key">
+        /// <para>The key.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="value">
+        /// <para>The value.</para>
+        /// <para></para>
+        /// </param>
+        public void AddLink(string key, string value)
+        {
+            var keyAddress = CreateString(key);
+            var valueAddress = CreateString(value);
+            _synchronizedLinks.GetOrCreate(keyAddress, valueAddress);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets all key-value links as strings.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <returns>
+        /// <para>The list of key:value strings.</para>
+        /// <para></para>
+        /// </returns>
+        public List<string> GetLinks()
+        {
+            var links = new List<string>();
+            var query = new Link<UInt64>(index: Any, source: Any, target: Any);
+            _synchronizedLinks.Each(link =>
+            {
+                try
+                {
+                    var source = _synchronizedLinks.GetSource(link);
+                    var target = _synchronizedLinks.GetTarget(link);
+                    
+                    if (source != _fileMarker && source != _setMarker && source != _unicodeSequenceMarker && 
+                        source != _unicodeSymbolMarker && source != _meaningRoot && source != _negativeNumberIndex &&
+                        target != _fileMarker && target != _setMarker && target != _unicodeSequenceMarker && 
+                        target != _unicodeSymbolMarker && target != _meaningRoot && target != _negativeNumberIndex &&
+                        source != target)
+                    {
+                        var keyString = GetString(source);
+                        var valueString = GetString(target);
+                        if (!string.IsNullOrEmpty(keyString) && !string.IsNullOrEmpty(valueString))
+                        {
+                            links.Add($"{keyString}:{valueString}");
+                        }
+                    }
+                }
+                catch
+                {
+                    // Skip links that can't be converted to strings
+                }
+                return _synchronizedLinks.Constants.Continue;
+            }, query);
+            return links;
+        }
+
+        /// <summary>
+        /// <para>
+        /// Adds a link to invite (for compatibility with existing bot).
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="link">
+        /// <para>The link.</para>
+        /// <para></para>
+        /// </param>
+        public void AddLinkToIvite(string link)
+        {
+            AddLink("invite", link);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets links to invite (for compatibility with existing bot).
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <returns>
+        /// <para>The list of invite links.</para>
+        /// <para></para>
+        /// </returns>
+        public List<string> GetLinksToInvite()
+        {
+            return GetLinks().Where(l => l.StartsWith("invite:")).Select(l => l.Substring(7)).ToList();
+        }
+
         // public void SetLastGithubMigrationTimeStamp()
 
         protected override void Dispose(bool manual, bool wasDisposed)
