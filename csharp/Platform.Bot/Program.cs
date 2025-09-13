@@ -15,6 +15,7 @@ using CommandLine;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
 using Platform.Bot.Triggers.Decorators;
+using Platform.Bot.Services;
 
 namespace Platform.Bot
 {
@@ -73,6 +74,15 @@ namespace Platform.Bot
                 description: "Minimum interaction interval in seconds.",
                 getDefaultValue: () => 60);
 
+            var discordBotTokenOption = new Option<string?>(
+                name: "--discord-bot-token",
+                description: "Discord bot token for role synchronization.");
+
+            var enableFlowsSyncOption = new Option<bool>(
+                name: "--enable-flows-sync",
+                description: "Enable flows order sync functionality.",
+                getDefaultValue: () => true);
+
             var rootCommand = new RootCommand("Sample app for System.CommandLine")
             {
                 githubUserNameOption,
@@ -80,10 +90,12 @@ namespace Platform.Bot
                 githubApplicationNameOption,
                 databaseFilePathOption,
                 fileSetNameOption,
-                minimumInteractionIntervalOption
+                minimumInteractionIntervalOption,
+                discordBotTokenOption,
+                enableFlowsSyncOption
             };
 
-            rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval) => 
+            rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval, discordBotToken, enableFlowsSync) => 
             {
                 Debug.WriteLine($"Nickname: {githubUserName}");
                 Debug.WriteLine($"GitHub API Token: {githubApiToken}");
@@ -91,11 +103,30 @@ namespace Platform.Bot
                 Debug.WriteLine($"Database File Path: {databaseFilePath?.FullName}");
                 Debug.WriteLine($"File Set Name: {fileSetName}");
                 Debug.WriteLine($"Minimum Interaction Interval: {minimumInteractionInterval} seconds");
+                Debug.WriteLine($"Discord Bot Token: {(string.IsNullOrEmpty(discordBotToken) ? "Not provided" : "Provided")}");
+                Debug.WriteLine($"Flows Sync Enabled: {enableFlowsSync}");
                 
                 var dbContext = new FileStorage(databaseFilePath?.FullName ?? new TemporaryFile().Filename);
                 Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
                 var githubStorage = new GitHubStorage(githubUserName, githubApiToken, githubApplicationName);
-                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
+                
+                var triggers = new List<ITrigger<Issue>>
+                {
+                    new HelloWorldTrigger(githubStorage, dbContext, fileSetName),
+                    new OrganizationLastMonthActivityTrigger(githubStorage),
+                    new LastCommitActivityTrigger(githubStorage),
+                    new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage),
+                    new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage),
+                    new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage)
+                };
+
+                if (enableFlowsSync)
+                {
+                    var discordService = new DiscordRoleSyncService(discordBotToken ?? string.Empty);
+                    triggers.Add(new AdminAuthorIssueTriggerDecorator(new FlowsOrderSyncTrigger(githubStorage, dbContext, discordService), githubStorage));
+                }
+
+                var issueTracker = new IssueTracker(githubStorage, triggers.ToArray());
                 var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                 var cancellation = new CancellationTokenSource();
@@ -114,7 +145,7 @@ namespace Platform.Bot
                     }
                 }
             }, 
-            githubUserNameOption, githubApiTokenOption, githubApplicationNameOption, databaseFilePathOption, fileSetNameOption, minimumInteractionIntervalOption);
+            githubUserNameOption, githubApiTokenOption, githubApplicationNameOption, databaseFilePathOption, fileSetNameOption, minimumInteractionIntervalOption, discordBotTokenOption, enableFlowsSyncOption);
 
             return await rootCommand.InvokeAsync(args);
         }
