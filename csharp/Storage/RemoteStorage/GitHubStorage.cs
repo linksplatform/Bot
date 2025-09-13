@@ -396,5 +396,110 @@ namespace Storage.Remote.GitHub
         #endregion
 
         #endregion
+
+        #region Repository Creation and Content Management
+
+        /// <summary>
+        /// <para>
+        /// Creates a new repository under the owner's account or organization.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="repositoryName">
+        /// <para>The repository name.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="description">
+        /// <para>The repository description.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="isPrivate">
+        /// <para>Whether the repository should be private.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The created repository.</para>
+        /// <para></para>
+        /// </returns>
+        public async Task<Repository> CreateRepository(string repositoryName, string description = "", bool isPrivate = false)
+        {
+            var newRepository = new NewRepository(repositoryName)
+            {
+                Description = description,
+                Private = isPrivate,
+                AutoInit = true
+            };
+
+            return await Client.Repository.Create(Owner, newRepository);
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets all repository contents recursively.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="repository">
+        /// <para>The repository to scan.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>A list of all repository contents.</para>
+        /// <para></para>
+        /// </returns>
+        public async Task<List<RepositoryContent>> GetAllRepositoryContentsRecursive(Repository repository)
+        {
+            var allContents = new List<RepositoryContent>();
+            await GetContentsRecursive(repository.Id, "", allContents);
+            return allContents;
+        }
+
+        private async Task GetContentsRecursive(long repositoryId, string path, List<RepositoryContent> allContents)
+        {
+            try
+            {
+                var contents = await Client.Repository.Content.GetAllContents(repositoryId, path);
+                
+                foreach (var content in contents)
+                {
+                    allContents.Add(content);
+                    
+                    if (content.Type == ContentType.Dir)
+                    {
+                        await GetContentsRecursive(repositoryId, content.Path, allContents);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error getting contents for path '{path}': {ex.Message}");
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets the decoded content of a file.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="repositoryContent">
+        /// <para>The repository content.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The decoded file content as string.</para>
+        /// <para></para>
+        /// </returns>
+        public string GetDecodedFileContent(RepositoryContent repositoryContent)
+        {
+            if (repositoryContent.Encoding == "base64")
+            {
+                var bytes = Convert.FromBase64String(repositoryContent.Content);
+                return System.Text.Encoding.UTF8.GetString(bytes);
+            }
+            return repositoryContent.Content;
+        }
+
+        #endregion
     }
 }
