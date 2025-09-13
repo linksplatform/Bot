@@ -62,6 +62,27 @@ def karma_limit(karma: int) -> int:
     return 168  # hours (a week)
 
 
+def max_languages_allowed(karma: int) -> int:
+    """Returns maximum number of languages allowed based on karma.
+    
+    :param karma: user's karma value
+    :return: maximum number of languages the user can have
+    """
+    for limit_item in config.LANGUAGE_LIMITS:
+        min_karma = limit_item["min_karma"]
+        max_karma = limit_item["max_karma"]
+        
+        # Check if karma falls within this range
+        min_condition = min_karma is None or karma >= min_karma
+        max_condition = max_karma is None or karma < max_karma
+        
+        if min_condition and max_condition:
+            return limit_item["max_languages"]
+    
+    # Default fallback (should not happen with proper config)
+    return 1
+
+
 def is_available_ghpage(
     profile: str
 ) -> bool:

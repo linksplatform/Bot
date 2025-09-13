@@ -17,6 +17,7 @@ from .utils import (
     get_default_programming_language,
     contains_all_strings,
     karma_limit,
+    max_languages_allowed,
     is_available_ghpage
 )
 import config
@@ -78,8 +79,20 @@ class Commands:
             return
         languages = self.current_user.programming_languages
         condition = language not in languages if is_add else language in languages
+        
         if condition:
             if is_add:
+                # Check karma-based language limit before adding
+                max_allowed = max_languages_allowed(self.current_user.karma)
+                current_count = len(languages)
+                
+                if current_count >= max_allowed:
+                    self.vk_instance.send_msg(
+                        CommandsBuilder.build_language_limit_exceeded(
+                            self.current_user, self.data_service, max_allowed),
+                        self.peer_id)
+                    return
+                
                 languages.append(language)
             else:
                 languages.remove(language)

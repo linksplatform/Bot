@@ -120,6 +120,19 @@ class CommandsBuilder:
                 f"недостаточно :(")
 
     @staticmethod
+    def build_language_limit_exceeded(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        max_allowed: int
+    ) -> str:
+        current_karma = data.get_user_property(user, 'karma')
+        return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
+                f"{data.get_user_property(user, 'name')}], "
+                f"но с Вашей кармой [{current_karma}] можно иметь максимум {max_allowed} "
+                f"язык{'ов' if max_allowed != 1 else ''}. "
+                f"Увеличьте карму для добавления большего количества языков!")
+
+    @staticmethod
     def build_not_in_whitelist(
         user: BetterUser,
         data: BetterBotBaseDataService,

@@ -38,6 +38,15 @@ KARMA_LIMIT_HOURS = [
     { "min_karma": 20,   "max_karma": None, "limit": 0.5 },
 ]
 
+# Language limits based on karma
+LANGUAGE_LIMITS = [
+    { "min_karma": None, "max_karma": 0,   "max_languages": 1 },  # Negative karma users can only have 1 language
+    { "min_karma": 0,    "max_karma": 5,   "max_languages": 3 },  # Low karma users: up to 3 languages
+    { "min_karma": 5,    "max_karma": 15,  "max_languages": 5 },  # Medium karma users: up to 5 languages
+    { "min_karma": 15,   "max_karma": 30,  "max_languages": 8 },  # Good karma users: up to 8 languages
+    { "min_karma": 30,   "max_karma": None, "max_languages": 15 }, # High karma users: up to 15 languages
+]
+
 DEFAULT_PROGRAMMING_LANGUAGES = [
     r"Assembler",
     r"JavaScript",

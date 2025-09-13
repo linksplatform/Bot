@@ -9,5 +9,6 @@ from .utils import (
     contains_string,
     contains_all_strings,
     karma_limit,
+    max_languages_allowed,
     is_available_ghpage
 )
