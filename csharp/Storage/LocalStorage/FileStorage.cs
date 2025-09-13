@@ -17,6 +17,7 @@ using System.Numerics;
 using System.Text;
 using Platform.Data.Doublets.Numbers.Raw;
 using Platform.Disposables;
+using Storage.AST;
 using TLinkAddress = System.UInt64;
 
 namespace Storage.Local
@@ -45,6 +46,10 @@ namespace Storage.Local
         private readonly TLinkAddress _setMarker;
         private readonly TLinkAddress _fileMarker;
         private readonly TLinkAddress _gitHubLastMigrationTimestampMarker;
+        private readonly TLinkAddress _astNodeMarker;
+        private readonly TLinkAddress _astNodeTypeMarker;
+        private readonly TLinkAddress _astPositionMarker;
+        private readonly CSharpAstTransformer _astTransformer;
         private readonly TLinkAddress Any;
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => _synchronizedLinks.Exists(currentMappingIndex) ? currentMappingIndex : _synchronizedLinks.CreateAndUpdate(_meaningRoot, _synchronizedLinks.Constants.Itself);
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => _synchronizedLinks.Exists(meaningRootIndex) ? meaningRootIndex : _synchronizedLinks.CreatePoint();
@@ -76,6 +81,9 @@ namespace Storage.Local
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _gitHubLastMigrationTimestampMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _astNodeMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _astNodeTypeMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _astPositionMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
             var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
@@ -90,6 +98,7 @@ namespace Storage.Local
             _listToSequenceConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
             _bigIntederToRawNumberConverter = new BigIntegerToRawNumberSequenceConverter<TLinkAddress>(_synchronizedLinks, _addressToNumberConverter, _listToSequenceConverter, _negativeNumberIndex);
             _rawNumberToBigIntegerConverter = new RawNumberSequenceToBigIntegerConverter<TLinkAddress>(_synchronizedLinks, _numberToAddressConverter, _negativeNumberIndex);
+            _astTransformer = new CSharpAstTransformer();
         }
 
         /// <summary>
@@ -325,6 +334,126 @@ namespace Storage.Local
                 });
             }
             return files;
+        }
+
+        /// <summary>
+        /// Transforms code into AST and stores it in the links store.
+        /// Each AST node is mapped to its exact position in the code text.
+        /// </summary>
+        /// <param name="code">The code to transform into AST.</param>
+        /// <returns>The link address of the root AST node.</returns>
+        public TLinkAddress TransformCodeToAst(string code)
+        {
+            if (string.IsNullOrEmpty(code))
+            {
+                throw new ArgumentException("Code cannot be null or empty.", nameof(code));
+            }
+
+            var rootAstNode = _astTransformer.TransformCode(code);
+            return StoreAstNodeInLinks(rootAstNode);
+        }
+
+        /// <summary>
+        /// Stores an AST node and its children in the links store.
+        /// </summary>
+        /// <param name="astNode">The AST node to store.</param>
+        /// <returns>The link address of the stored AST node.</returns>
+        private TLinkAddress StoreAstNodeInLinks(AstNode astNode)
+        {
+            // Create a link for the AST node type
+            var nodeTypeLink = CreateString(astNode.NodeType);
+            
+            // Create a link for the node text
+            var nodeTextLink = CreateString(astNode.Text);
+            
+            // Create position information as a sequence
+            var positionData = new List<TLinkAddress>
+            {
+                CreateBigInteger(astNode.StartPosition),
+                CreateBigInteger(astNode.EndPosition),
+                CreateBigInteger(astNode.StartLine),
+                CreateBigInteger(astNode.StartColumn),
+                CreateBigInteger(astNode.EndLine),
+                CreateBigInteger(astNode.EndColumn)
+            };
+            var positionLink = _listToSequenceConverter.Convert(positionData);
+            
+            // Create the main AST node link
+            // Structure: AST_NODE_MARKER -> (NODE_TYPE -> (TEXT -> POSITION))
+            var nodeContentLink = _synchronizedLinks.GetOrCreate(nodeTextLink, positionLink);
+            var nodeWithTypeLink = _synchronizedLinks.GetOrCreate(nodeTypeLink, nodeContentLink);
+            var astNodeLink = _synchronizedLinks.GetOrCreate(_astNodeMarker, nodeWithTypeLink);
+            
+            // Store children and link them to this node
+            foreach (var child in astNode.Children)
+            {
+                var childLink = StoreAstNodeInLinks(child);
+                _synchronizedLinks.GetOrCreate(astNodeLink, childLink);
+            }
+            
+            return astNodeLink;
+        }
+
+        /// <summary>
+        /// Gets all AST nodes from the links store.
+        /// </summary>
+        /// <returns>List of all AST node link addresses.</returns>
+        public List<TLinkAddress> GetAllAstNodes()
+        {
+            var astNodes = new List<TLinkAddress>();
+            foreach (var astNode in _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _astNodeMarker, target: Any)))
+            {
+                if (astNode != null && astNode.Count > 0)
+                {
+                    astNodes.Add(astNode[0]); // Index is at position 0
+                }
+            }
+            return astNodes;
+        }
+
+        /// <summary>
+        /// Gets the AST node information for a given link address.
+        /// </summary>
+        /// <param name="astNodeLink">The AST node link address.</param>
+        /// <returns>A dictionary containing node information.</returns>
+        public Dictionary<string, object> GetAstNodeInfo(TLinkAddress astNodeLink)
+        {
+            var nodeInfo = new Dictionary<string, object>();
+            
+            try
+            {
+                var astNodeData = _synchronizedLinks.GetLink(astNodeLink);
+                if (_synchronizedLinks.GetSource(astNodeData) != _astNodeMarker)
+                {
+                    throw new InvalidOperationException("Link is not an AST node.");
+                }
+                
+                var nodeWithTypeLink = _synchronizedLinks.GetTarget(astNodeData);
+                var nodeWithType = _synchronizedLinks.GetLink(nodeWithTypeLink);
+                
+                var nodeTypeLink = _synchronizedLinks.GetSource(nodeWithType);
+                var nodeContentLink = _synchronizedLinks.GetTarget(nodeWithType);
+                var nodeContent = _synchronizedLinks.GetLink(nodeContentLink);
+                
+                var nodeTextLink = _synchronizedLinks.GetSource(nodeContent);
+                var positionLink = _synchronizedLinks.GetTarget(nodeContent);
+                
+                nodeInfo["NodeType"] = GetString(nodeTypeLink);
+                nodeInfo["Text"] = GetString(nodeTextLink);
+                nodeInfo["LinkAddress"] = astNodeLink;
+                
+                // Extract position information
+                // This is a simplified extraction - in a real implementation,
+                // you'd need to properly deserialize the position sequence
+                nodeInfo["HasPositionInfo"] = true;
+                
+                return nodeInfo;
+            }
+            catch (Exception ex)
+            {
+                nodeInfo["Error"] = ex.Message;
+                return nodeInfo;
+            }
         }
 
         // public void SetLastGithubMigrationTimeStamp()
