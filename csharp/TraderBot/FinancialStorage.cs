@@ -16,8 +16,10 @@ using TLinkAddress = System.UInt64;
 
 namespace TraderBot;
 
-// TODO: Under construction
-
+/// <summary>
+/// Financial data storage using Doublets associative database
+/// Implements storage for trading operations, portfolio states, and performance data
+/// </summary>
 public class FinancialStorage
 {
     public readonly ILinks<TLinkAddress> Storage;
@@ -200,6 +202,106 @@ public class FinancialStorage
         //         operation.Id = UnicodeSequenceToStringConverter.Convert(idLink);
         //     }
         // }
+    }
+
+    /// <summary>
+    /// Store a trading operation in the Doublets storage
+    /// </summary>
+    public TLinkAddress StoreOperation(string operationId, string operationType, decimal price, int quantity, DateTime timestamp, string symbol)
+    {
+        var operationIdLink = StringToUnicodeSequenceConverter.Convert(operationId);
+        var operationTypeLink = StringToUnicodeSequenceConverter.Convert(operationType);
+        var symbolLink = StringToUnicodeSequenceConverter.Convert(symbol);
+        var priceLink = DecimalToRationalConverter.Convert(price);
+        var quantityLink = BigIntegerToRawNumberSequenceConverter.Convert(quantity);
+        var timestampLink = BigIntegerToRawNumberSequenceConverter.Convert(timestamp.Ticks);
+
+        // Create operation entity
+        var operation = Storage.GetOrCreate(OperationType, operationIdLink);
+        
+        // Store operation fields
+        Storage.GetOrCreate(operation, Storage.GetOrCreate(IdOperationFieldType, operationIdLink));
+        Storage.GetOrCreate(operation, Storage.GetOrCreate(TypeAsStringOperationFieldType, operationTypeLink));
+        Storage.GetOrCreate(operation, Storage.GetOrCreate(PriceOperationFieldType, priceLink));
+        Storage.GetOrCreate(operation, Storage.GetOrCreate(QuantityOperationFieldType, quantityLink));
+        Storage.GetOrCreate(operation, Storage.GetOrCreate(DateOperationFieldType, timestampLink));
+        Storage.GetOrCreate(operation, Storage.GetOrCreate(FigiOperationFieldType, symbolLink));
+
+        return operation;
+    }
+
+    /// <summary>
+    /// Store portfolio balance in the Doublets storage
+    /// </summary>
+    public TLinkAddress StoreBalance(string currency, decimal amount, DateTime timestamp)
+    {
+        var currencyLink = StringToUnicodeSequenceConverter.Convert(currency);
+        var amountLink = DecimalToRationalConverter.Convert(amount);
+        var timestampLink = BigIntegerToRawNumberSequenceConverter.Convert(timestamp.Ticks);
+
+        var balanceEntity = Storage.GetOrCreate(BalanceType, currencyLink);
+        Storage.GetOrCreate(balanceEntity, Storage.GetOrCreate(AmountType, amountLink));
+        Storage.GetOrCreate(balanceEntity, Storage.GetOrCreate(DateOperationFieldType, timestampLink));
+
+        return balanceEntity;
+    }
+
+    /// <summary>
+    /// Store performance metrics in the Doublets storage
+    /// </summary>
+    public TLinkAddress StorePerformanceSnapshot(decimal portfolioValue, decimal etfPrice, DateTime timestamp)
+    {
+        var performanceType = GetOrCreateType(Type, "PerformanceSnapshot");
+        var portfolioValueLink = DecimalToRationalConverter.Convert(portfolioValue);
+        var etfPriceLink = DecimalToRationalConverter.Convert(etfPrice);
+        var timestampLink = BigIntegerToRawNumberSequenceConverter.Convert(timestamp.Ticks);
+
+        var snapshot = Storage.GetOrCreate(performanceType, timestampLink);
+        Storage.GetOrCreate(snapshot, Storage.GetOrCreate(GetOrCreateType(performanceType, "PortfolioValue"), portfolioValueLink));
+        Storage.GetOrCreate(snapshot, Storage.GetOrCreate(GetOrCreateType(performanceType, "EtfPrice"), etfPriceLink));
+
+        return snapshot;
+    }
+
+    /// <summary>
+    /// Retrieve performance snapshots from storage
+    /// </summary>
+    public IEnumerable<(DateTime Timestamp, decimal PortfolioValue, decimal EtfPrice)> GetPerformanceSnapshots()
+    {
+        var results = new List<(DateTime, decimal, decimal)>();
+        var performanceType = GetOrCreateType(Type, "PerformanceSnapshot");
+        var portfolioValueType = GetOrCreateType(performanceType, "PortfolioValue");
+        var etfPriceType = GetOrCreateType(performanceType, "EtfPrice");
+
+        Storage.Each(link =>
+        {
+            if (Storage.GetSource(link) == performanceType)
+            {
+                var timestamp = new DateTime((long)RawNumberSequenceToBigIntegerConverter.Convert(Storage.GetTarget(link)));
+                decimal portfolioValue = 0;
+                decimal etfPrice = 0;
+
+                Storage.Each(field =>
+                {
+                    if (Storage.GetSource(field) == link)
+                    {
+                        var fieldType = Storage.GetSource(Storage.GetTarget(field));
+                        var fieldValue = Storage.GetTarget(Storage.GetTarget(field));
+
+                        if (fieldType == portfolioValueType)
+                            portfolioValue = RationalToDecimalConverter.Convert(fieldValue);
+                        else if (fieldType == etfPriceType)
+                            etfPrice = RationalToDecimalConverter.Convert(fieldValue);
+                    }
+                    return Storage.Constants.Continue;
+                });
+
+                results.Add((timestamp, portfolioValue, etfPrice));
+            }
+            return Storage.Constants.Continue;
+        });
+
+        return results.OrderBy(r => r.Item1);
     }
 
     public decimal? GetAmountValueOrDefault(TLinkAddress amountAddress)
