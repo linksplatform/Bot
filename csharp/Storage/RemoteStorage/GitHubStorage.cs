@@ -395,6 +395,33 @@ namespace Storage.Remote.GitHub
 
         #endregion
 
+        #region Content Access
+
+        public async Task<IReadOnlyList<RepositoryContent>> GetRepositoryContents(Repository repository)
+        {
+            try
+            {
+                return await Client.Repository.Content.GetAllContents(repository.Id);
+            }
+            catch
+            {
+                return new List<RepositoryContent>();
+            }
+        }
+
+        public async Task<string> GetFileContent(Repository repository, string path)
+        {
+            var contents = await Client.Repository.Content.GetAllContents(repository.Id, path);
+            return contents.First().Content;
+        }
+
+        public async Task<IssueComment> CreateComment(Issue issue, string comment)
+        {
+            return await Client.Issue.Comment.Create(issue.Repository.Id, issue.Number, comment);
+        }
+
+        #endregion
+
         #endregion
     }
 }
