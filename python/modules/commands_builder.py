@@ -174,14 +174,16 @@ class CommandsBuilder:
     def build_karma_change(
         user_karma_change: Optional[Tuple[int, str, int, int]],
         selected_user_karma_change: Optional[Tuple[int, str, int, int]],
-        voters: List[int]
+        voters: List[int],
+        reason: Optional[str] = None
     ) -> Optional[str]:
         """Builds karma changing
         """
         if selected_user_karma_change:
+            reason_text = f" Причина: {reason}" if reason else ""
             if user_karma_change:
-                return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s]." %
-                        (user_karma_change + selected_user_karma_change))
-            return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
-                (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
+                return ("Карма изменена: [id%s|%s] [%s]->[%s], [id%s|%s] [%s]->[%s].%s" %
+                        (user_karma_change + selected_user_karma_change + (reason_text,)))
+            return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)%s" %
+                (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]), reason_text)))
         return None

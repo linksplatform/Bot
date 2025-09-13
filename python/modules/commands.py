@@ -174,6 +174,7 @@ class Commands:
             operator = self.matched.group("operator")[0]
             amount = self.matched.group("amount")
             amount = int(amount) if amount else 0
+            reason = self.matched.group("reason")
 
             utcnow = datetime.utcnow()
 
@@ -211,7 +212,7 @@ class Commands:
                     return
 
             user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(
-                operator, amount)
+                operator, amount, reason)
 
             if collective_vote_applied:
                 self.current_user.last_collective_vote = int(utcnow.timestamp())
@@ -223,14 +224,15 @@ class Commands:
                 self.data_service.save_user(self.user)
             self.vk_instance.send_msg(
                 CommandsBuilder.build_karma_change(
-                    user_karma_change, selected_user_karma_change, voters),
+                    user_karma_change, selected_user_karma_change, voters, reason),
                 self.peer_id)
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
     def apply_karma_change(
             self,
             operator: str,
-            amount: int
+            amount: int,
+            reason: Optional[str] = None
     ) -> Tuple[
         Optional[Tuple[int, str, int, int]],  # current user karma changed
         Optional[Tuple[int, str, int, int]],  # selected user karma changed
