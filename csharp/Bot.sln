@@ -10,6 +10,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Storage", "Storage\Storage.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TraderBot", "TraderBot\TraderBot.csproj", "{FAE89FE2-17C5-4AD6-98EC-84002CC4C672}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DiscordBot", "DiscordBot\DiscordBot.csproj", "{8B5F7E91-2D44-4F6C-8A5A-1E9C3B4D5F7E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,9 @@ Global
 		{FAE89FE2-17C5-4AD6-98EC-84002CC4C672}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FAE89FE2-17C5-4AD6-98EC-84002CC4C672}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FAE89FE2-17C5-4AD6-98EC-84002CC4C672}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8B5F7E91-2D44-4F6C-8A5A-1E9C3B4D5F7E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8B5F7E91-2D44-4F6C-8A5A-1E9C3B4D5F7E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8B5F7E91-2D44-4F6C-8A5A-1E9C3B4D5F7E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8B5F7E91-2D44-4F6C-8A5A-1E9C3B4D5F7E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
