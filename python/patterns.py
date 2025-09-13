@@ -54,6 +54,9 @@ PEOPLE_LANGUAGES = recompile(
     r'\A\s*(люди|народ|people)\s*(?P<languages>(' + DEFAULT_LANGUAGES +
     r')(\s+(' + DEFAULT_LANGUAGES + r'))*)\s*\Z', IGNORECASE)
 
+FRIENDS_RECOMMENDATIONS = recompile(
+    r'\A\s*(друзья|friends|рекомендации|recommendations)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
+
 WHAT_IS = recompile(
     r'\A\s*(what is|что такое|що таке)\s+(?P<question>[\S\s]+?)\??\s*\Z', IGNORECASE)
 

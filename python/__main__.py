@@ -60,6 +60,7 @@ class Bot(Vk):
             (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
             (patterns.BOTTOM_LANGUAGES,
              lambda: self.commands.top_langs(True)),
+            (patterns.FRIENDS_RECOMMENDATIONS, self.commands.friends_recommendations),
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),

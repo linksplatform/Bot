@@ -161,6 +161,71 @@ class Commands:
             self.vk_instance.send_msg(built, self.peer_id)
             return
 
+    def friends_recommendations(self) -> NoReturn:
+        """Sends friend recommendations based on shared programming languages."""
+        if self.peer_id < 2e9:
+            return
+        maximum_users = self.matched.group("maximum_users")
+        maximum_users = int(maximum_users) if maximum_users else 10
+        
+        # Get current user's programming languages
+        current_user_languages = self.data_service.get_user_sorted_programming_languages(self.current_user)
+        if not current_user_languages:
+            self.vk_instance.send_msg(
+                "Сначала добавьте свои языки программирования (например: += Python).",
+                self.peer_id
+            )
+            return
+        
+        # Get all users with their programming languages
+        all_users = DataBuilder.get_users_sorted_by_karma(
+            self.vk_instance, self.data_service, self.peer_id)
+        
+        # Calculate compatibility scores for each user
+        recommendations = []
+        current_user_id = self.current_user.uid
+        
+        for user_data in all_users:
+            user_id = self.data_service.get_user_property(user_data, "uid")
+            # Skip current user
+            if user_id == current_user_id:
+                continue
+                
+            user_languages = self.data_service.get_user_property(user_data, "programming_languages")
+            if not user_languages or not isinstance(user_languages, list):
+                continue
+                
+            # Calculate number of shared languages
+            shared_languages = set(current_user_languages) & set(user_languages)
+            if shared_languages:
+                recommendations.append({
+                    'user_data': user_data,
+                    'shared_count': len(shared_languages),
+                    'shared_languages': sorted(list(shared_languages))
+                })
+        
+        # Sort by number of shared languages (descending), then by karma
+        recommendations.sort(key=lambda x: (
+            -x['shared_count'], 
+            -self.data_service.get_user_property(x['user_data'], 'karma')
+        ))
+        
+        # Limit results
+        recommendations = recommendations[:maximum_users]
+        
+        if not recommendations:
+            self.vk_instance.send_msg(
+                "Пока не найдено пользователей с общими языками программирования.",
+                self.peer_id
+            )
+            return
+            
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_friends_recommendations(
+                recommendations, self.data_service, current_user_languages),
+            self.peer_id
+        )
+
     def apply_karma(self) -> NoReturn:
         """Changes user karma."""
         if self.peer_id < 2e9 or not self.karma_enabled or not self.matched or self.is_bot_selected:

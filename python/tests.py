@@ -222,6 +222,32 @@ class Test3Commands(TestCase):
         self.commands.apply_karma_change('-', 6)
         self.commands.karma_message()
 
+    @ordered
+    def test_friends_recommendations(
+        self
+    ) -> NoReturn:
+        """Test friend recommendations feature."""
+        # Set up test data - create user 3 with some shared languages
+        user_3 = db.get_or_create_user(3, None)
+        user_3.programming_languages = ['Python', 'Java']
+        user_3.karma = 50
+        db.save_user(user_3)
+        
+        # Set current user (user 2) to have some languages
+        self.commands.current_user = db.get_user(2)
+        self.commands.current_user.programming_languages = ['Python', 'JavaScript'] 
+        db.save_user(self.commands.current_user)
+        
+        # Test the friends recommendations command
+        self.commands.msg = 'friends'
+        self.commands.match_command(patterns.FRIENDS_RECOMMENDATIONS)
+        self.commands.friends_recommendations()
+        
+        # Test with maximum users limit
+        self.commands.msg = 'friends 5'
+        self.commands.match_command(patterns.FRIENDS_RECOMMENDATIONS)
+        self.commands.friends_recommendations()
+
 
 if __name__ == '__main__':
     db = BetterBotBaseDataService("test_db")

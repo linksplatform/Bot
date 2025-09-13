@@ -185,3 +185,57 @@ class CommandsBuilder:
             return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
                 (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
         return None
+
+    @staticmethod
+    def build_friends_recommendations(
+        recommendations: List[dict],
+        data: BetterBotBaseDataService,
+        user_languages: List[str]
+    ) -> str:
+        """Builds friends recommendations message based on shared programming languages.
+        
+        Arguments:
+        - {recommendations} - list of recommendation dicts with user_data, shared_count, shared_languages
+        - {data} - data service
+        - {user_languages} - current user's programming languages
+        """
+        if not recommendations:
+            return "Пока не найдено пользователей с общими языками программирования."
+        
+        user_languages_str = ", ".join(sorted(user_languages))
+        message_lines = [f"🤝 Рекомендации друзей (ваши языки: {user_languages_str}):\n"]
+        
+        for i, rec in enumerate(recommendations, 1):
+            user_data = rec['user_data']
+            shared_count = rec['shared_count']
+            shared_languages = rec['shared_languages']
+            
+            user_id = data.get_user_property(user_data, 'uid')
+            user_name = data.get_user_property(user_data, 'name')
+            karma = DataBuilder.build_karma(user_data, data)
+            github_profile = DataBuilder.build_github_profile(user_data, data, prefix=" - ", default="")
+            
+            shared_languages_str = ", ".join(shared_languages)
+            
+            # Format: "1. [id123|Name] (karma) - github.com/user - общие: Python, Java (2)"
+            line = (f"{i}. [id{user_id}|{user_name}] ({karma}){github_profile} - "
+                   f"общие: {shared_languages_str} ({shared_count})")
+            message_lines.append(line)
+        
+        # Check total message length and truncate if needed
+        full_message = '\n'.join(message_lines)
+        if len(full_message) > 4000:  # Leave some margin for VK's 4096 character limit
+            # Truncate the recommendations and add notice
+            truncated_lines = message_lines[:1]  # Keep header
+            current_length = len(message_lines[0])
+            
+            for line in message_lines[1:]:
+                if current_length + len(line) + 50 > 4000:  # 50 chars for truncation notice
+                    truncated_lines.append("... (список сокращён)")
+                    break
+                truncated_lines.append(line)
+                current_length += len(line) + 1  # +1 for newline
+            
+            full_message = '\n'.join(truncated_lines)
+        
+        return full_message
