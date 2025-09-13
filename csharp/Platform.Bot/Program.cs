@@ -15,6 +15,7 @@ using CommandLine;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
 using Platform.Bot.Triggers.Decorators;
+using Platform.Bot.Services;
 
 namespace Platform.Bot
 {
@@ -95,8 +96,8 @@ namespace Platform.Bot
                 var dbContext = new FileStorage(databaseFilePath?.FullName ?? new TemporaryFile().Filename);
                 Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
                 var githubStorage = new GitHubStorage(githubUserName, githubApiToken, githubApplicationName);
-                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
-                var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
+                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage), new CodeDuplicationDetectionTrigger(githubStorage, dbContext));
+                var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage), new CodeDuplicationBranchMonitorTrigger(githubStorage, dbContext));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                 var cancellation = new CancellationTokenSource();
                 while (true)
