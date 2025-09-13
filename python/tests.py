@@ -7,7 +7,7 @@ from unittest import (
 
 from modules import (
     BetterBotBaseDataService, DataBuilder,
-    VkInstance, Commands
+    VkInstance, Commands, QuestionsService
 )
 import patterns
 import config
@@ -221,6 +221,178 @@ class Test3Commands(TestCase):
     ) -> NoReturn:
         self.commands.apply_karma_change('-', 6)
         self.commands.karma_message()
+
+
+class Test3QuestionsService(TestCase):
+    """TestCase for questions service functionality"""
+    
+    def setUp(self):
+        self.questions_service = QuestionsService('test_questions.json', 'test_pinned.json')
+        # Clear any existing data
+        self.questions_service.questions = []
+        self.questions_service.pinned_messages = {}
+        self.questions_service.next_id = 1
+    
+    @ordered
+    def test_add_question(self):
+        """Test adding a question"""
+        question_id = self.questions_service.add_question(
+            question="How to use Python decorators?",
+            user_id=123,
+            user_name="TestUser",
+            peer_id=2000000001,
+            reward=5
+        )
+        
+        self.assertEqual(question_id, 1)
+        self.assertEqual(len(self.questions_service.questions), 1)
+        
+        question = self.questions_service.get_question_by_id(1)
+        self.assertIsNotNone(question)
+        self.assertEqual(question['question'], "How to use Python decorators?")
+        self.assertEqual(question['user_id'], 123)
+        self.assertEqual(question['reward'], 5)
+        self.assertEqual(question['status'], 'open')
+    
+    @ordered
+    def test_resolve_question(self):
+        """Test resolving a question"""
+        # Add a question first
+        question_id = self.questions_service.add_question(
+            question="Test question",
+            user_id=123,
+            user_name="TestUser",
+            peer_id=2000000001,
+            reward=10
+        )
+        
+        # Resolve it
+        resolved = self.questions_service.resolve_question(
+            question_id=question_id,
+            resolver_id=456,
+            resolver_name="Resolver"
+        )
+        
+        self.assertIsNotNone(resolved)
+        self.assertEqual(resolved['status'], 'resolved')
+        self.assertEqual(resolved['resolved_by'], 456)
+        self.assertEqual(resolved['resolved_by_name'], "Resolver")
+    
+    @ordered
+    def test_get_open_questions(self):
+        """Test getting open questions sorted by reward"""
+        # Add multiple questions
+        self.questions_service.add_question("Question 1", 1, "User1", 2000000001, 5)
+        self.questions_service.add_question("Question 2", 2, "User2", 2000000001, 15)
+        self.questions_service.add_question("Question 3", 3, "User3", 2000000001, 10)
+        
+        open_questions = self.questions_service.get_open_questions(2000000001)
+        
+        # Should be sorted by reward descending
+        self.assertEqual(len(open_questions), 3)
+        self.assertEqual(open_questions[0]['reward'], 15)
+        self.assertEqual(open_questions[1]['reward'], 10)
+        self.assertEqual(open_questions[2]['reward'], 5)
+    
+    @ordered
+    def test_pinned_messages(self):
+        """Test pinned message management"""
+        peer_id = 2000000001
+        message_id = 12345
+        
+        # Set pinned message
+        self.questions_service.set_pinned_message(peer_id, message_id)
+        
+        # Get pinned message
+        pinned = self.questions_service.get_pinned_message(peer_id)
+        self.assertEqual(pinned, message_id)
+        
+        # Clear pinned message
+        self.questions_service.clear_pinned_message(peer_id)
+        pinned = self.questions_service.get_pinned_message(peer_id)
+        self.assertIsNone(pinned)
+    
+    @ordered
+    def test_generate_desk_message(self):
+        """Test generating questions desk message"""
+        peer_id = 2000000001
+        
+        # Test empty desk
+        message = self.questions_service.generate_questions_desk_message(peer_id)
+        self.assertIn("пока нет вопросов", message)
+        
+        # Add questions
+        self.questions_service.add_question("Question 1", 1, "User1", peer_id, 5)
+        self.questions_service.add_question("Question 2", 2, "User2", peer_id, 0)
+        
+        message = self.questions_service.generate_questions_desk_message(peer_id)
+        self.assertIn("📋 Доска вопросов", message)
+        self.assertIn("Question 1", message)
+        self.assertIn("Question 2", message)
+        self.assertIn("🏆5", message)  # Reward display
+
+
+class Test4QuestionsCommands(TestCase):
+    """TestCase for questions commands functionality"""
+    
+    def setUp(self):
+        self.vk = VkInstance()
+        self.db = BetterBotBaseDataService('test_commands_db')
+        self.commands = Commands(self.vk, self.db)
+        self.commands.questions_service = QuestionsService('test_cmd_questions.json', 'test_cmd_pinned.json')
+        self.commands.questions_service.questions = []
+        self.commands.questions_service.pinned_messages = {}
+        self.commands.questions_service.next_id = 1
+        
+        # Setup test user
+        self.commands.current_user = self.db.get_or_create_user(123)
+        self.commands.current_user.karma = 50
+        self.commands.peer_id = 2000000001
+        self.commands.karma_enabled = True
+    
+    @ordered
+    def test_ask_question_command(self):
+        """Test ask question command"""
+        self.commands.msg = "ask How to learn Python? 10"
+        self.commands.match_command(patterns.ASK_QUESTION)
+        
+        initial_karma = self.commands.current_user.karma
+        self.commands.ask_question()
+        
+        # Check karma was deducted
+        self.assertEqual(self.commands.current_user.karma, initial_karma - 10)
+        
+        # Check question was added
+        questions = self.commands.questions_service.get_open_questions(self.commands.peer_id)
+        self.assertEqual(len(questions), 1)
+        self.assertEqual(questions[0]['question'], "How to learn Python?")
+        self.assertEqual(questions[0]['reward'], 10)
+    
+    @ordered
+    def test_resolve_question_command(self):
+        """Test resolve question command"""
+        # Add a question first
+        question_id = self.commands.questions_service.add_question(
+            question="Test question",
+            user_id=456,
+            user_name="Other User",
+            peer_id=self.commands.peer_id,
+            reward=15
+        )
+        
+        self.commands.msg = f"resolve {question_id}"
+        self.commands.match_command(patterns.RESOLVE_QUESTION)
+        
+        initial_karma = self.commands.current_user.karma
+        self.commands.resolve_question()
+        
+        # Check karma was awarded
+        self.assertEqual(self.commands.current_user.karma, initial_karma + 15)
+        
+        # Check question was resolved
+        question = self.commands.questions_service.get_question_by_id(question_id)
+        self.assertEqual(question['status'], 'resolved')
+        self.assertEqual(question['resolved_by'], self.commands.current_user.uid)
 
 
 if __name__ == '__main__':

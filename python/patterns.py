@@ -65,3 +65,13 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+# Questions desk patterns
+ASK_QUESTION = recompile(
+    r'\A\s*(ask|спросить)\s+(?P<question>[\S\s]+?)(\s+(?P<reward>\d+))?\s*\Z', IGNORECASE)
+
+RESOLVE_QUESTION = recompile(
+    r'\A\s*(resolve|решить)\s+(?P<question_id>\d+)\s*\Z', IGNORECASE)
+
+QUESTIONS_DESK = recompile(
+    r'\A\s*(questions|вопросы|desk|доска)\s*\Z', IGNORECASE)

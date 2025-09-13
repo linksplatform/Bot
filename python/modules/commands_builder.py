@@ -25,8 +25,12 @@ class CommandsBuilder:
                     f"Документация — {documentation_link}")
         elif peer_id > 2e9:
             if karma:
+                questions_help = ("\n\n📋 Доска вопросов:\n"
+                                "• ask [вопрос] [награда] — добавить вопрос с кармой в награду\n"
+                                "• resolve [ID] — решить вопрос и получить награду\n"
+                                "• questions — показать доску вопросов")
                 return ("Вы находитесь в беседе с включённой кармой.\n"
-                        f"Документация — {documentation_link}")
+                        f"Документация — {documentation_link}{questions_help}")
             else:
                 return (f"Вы находитесь в беседе (#{peer_id}) с выключенной кармой.\n"
                         f"Документация — {documentation_link}")
