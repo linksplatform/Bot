@@ -15,6 +15,7 @@ using CommandLine;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
 using Platform.Bot.Triggers.Decorators;
+using Platform.Bot.Commands;
 
 namespace Platform.Bot
 {
@@ -73,7 +74,7 @@ namespace Platform.Bot
                 description: "Minimum interaction interval in seconds.",
                 getDefaultValue: () => 60);
 
-            var rootCommand = new RootCommand("Sample app for System.CommandLine")
+            var rootCommand = new RootCommand("Platform Bot - GitHub automation and metadata extraction")
             {
                 githubUserNameOption,
                 githubApiTokenOption,
@@ -82,6 +83,9 @@ namespace Platform.Bot
                 fileSetNameOption,
                 minimumInteractionIntervalOption
             };
+
+            // Add repository metadata commands
+            rootCommand.AddCommand(RepositoryMetadataCommand.CreateCommand());
 
             rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval) => 
             {
@@ -98,6 +102,9 @@ namespace Platform.Bot
                 var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
                 var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
+                
+                // Add repository metadata extraction tracker
+                var metadataExtractionTracker = new DateTimeTracker(githubStorage, new RepositoryMetadataExtractorTrigger(githubStorage, dbContext, "linksplatform", Path.Combine(Directory.GetCurrentDirectory(), "repository-metadata")));
                 var cancellation = new CancellationTokenSource();
                 while (true)
                 {
@@ -106,6 +113,7 @@ namespace Platform.Bot
                         await issueTracker.Start(cancellation.Token);
                         await pullRequenstTracker.Start(cancellation.Token);
                         // timestampTracker.Start(cancellation.Token);
+                        await metadataExtractionTracker.Start(cancellation.Token);
                         Thread.Sleep(minimumInteractionInterval);
                     }
                     catch (Exception ex)
