@@ -221,10 +221,23 @@ class Commands:
 
             if user_karma_change:
                 self.data_service.save_user(self.user)
-            self.vk_instance.send_msg(
-                CommandsBuilder.build_karma_change(
-                    user_karma_change, selected_user_karma_change, voters),
-                self.peer_id)
+            
+            # Send feedback message
+            feedback_message = CommandsBuilder.build_karma_change(
+                user_karma_change, selected_user_karma_change, voters)
+            
+            # If no karma change yet but vote was applied, send vote registered feedback
+            if not feedback_message and collective_vote_applied and amount == 0:
+                current_voters = "supporters" if operator == "+" else "opponents"
+                current_count = len(self.user[current_voters])
+                required = config.POSITIVE_VOTES_PER_KARMA if operator == "+" else config.NEGATIVE_VOTES_PER_KARMA
+                feedback_message = CommandsBuilder.build_vote_registered(
+                    self.user, self.data_service, operator, current_count, required)
+            
+            # Always provide feedback for successful operations
+            if feedback_message:
+                self.vk_instance.send_msg(feedback_message, self.peer_id)
+            
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
     def apply_karma_change(
