@@ -13,8 +13,15 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
+        <PackageReference Include="NLog.Extensions.Logging" Version="5.3.8" />
         <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.1" />
         <PackageReference Include="Tinkoff.InvestApi" Version="0.6.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Update="NLog.config">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
 
 </Project>
