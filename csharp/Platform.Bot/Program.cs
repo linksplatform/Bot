@@ -15,6 +15,7 @@ using CommandLine;
 using Platform.Bot.Trackers;
 using Platform.Bot.Triggers;
 using Platform.Bot.Triggers.Decorators;
+using Platform.Bot.Services;
 
 namespace Platform.Bot
 {
@@ -73,6 +74,18 @@ namespace Platform.Bot
                 description: "Minimum interaction interval in seconds.",
                 getDefaultValue: () => 60);
 
+            var discordTokenOption = new Option<string?>(
+                name: "--discord-token",
+                description: "Discord bot token (optional).");
+
+            var discordGuildIdOption = new Option<ulong?>(
+                name: "--discord-guild-id",
+                description: "Discord guild/server ID (optional).");
+
+            var discordChannelIdOption = new Option<ulong?>(
+                name: "--discord-channel-id",
+                description: "Discord channel ID for invites (optional).");
+
             var rootCommand = new RootCommand("Sample app for System.CommandLine")
             {
                 githubUserNameOption,
@@ -80,22 +93,48 @@ namespace Platform.Bot
                 githubApplicationNameOption,
                 databaseFilePathOption,
                 fileSetNameOption,
-                minimumInteractionIntervalOption
+                minimumInteractionIntervalOption,
+                discordTokenOption,
+                discordGuildIdOption,
+                discordChannelIdOption
             };
 
-            rootCommand.SetHandler(async (githubUserName, githubApiToken, githubApplicationName, databaseFilePath, fileSetName, minimumInteractionInterval) => 
+            rootCommand.SetHandler(async (context) => 
             {
+                var githubUserName = context.ParseResult.GetValueForOption(githubUserNameOption)!;
+                var githubApiToken = context.ParseResult.GetValueForOption(githubApiTokenOption)!;
+                var githubApplicationName = context.ParseResult.GetValueForOption(githubApplicationNameOption)!;
+                var databaseFilePath = context.ParseResult.GetValueForOption(databaseFilePathOption);
+                var fileSetName = context.ParseResult.GetValueForOption(fileSetNameOption);
+                var minimumInteractionInterval = context.ParseResult.GetValueForOption(minimumInteractionIntervalOption);
+                var discordToken = context.ParseResult.GetValueForOption(discordTokenOption);
+                var discordGuildId = context.ParseResult.GetValueForOption(discordGuildIdOption);
+                var discordChannelId = context.ParseResult.GetValueForOption(discordChannelIdOption);
+
                 Debug.WriteLine($"Nickname: {githubUserName}");
                 Debug.WriteLine($"GitHub API Token: {githubApiToken}");
                 Debug.WriteLine($"Application Name: {githubApplicationName}");
                 Debug.WriteLine($"Database File Path: {databaseFilePath?.FullName}");
                 Debug.WriteLine($"File Set Name: {fileSetName}");
                 Debug.WriteLine($"Minimum Interaction Interval: {minimumInteractionInterval} seconds");
+                Debug.WriteLine($"Discord Token: {(string.IsNullOrEmpty(discordToken) ? "Not provided" : "Provided")}");
+                Debug.WriteLine($"Discord Guild ID: {discordGuildId}");
+                Debug.WriteLine($"Discord Channel ID: {discordChannelId}");
                 
                 var dbContext = new FileStorage(databaseFilePath?.FullName ?? new TemporaryFile().Filename);
                 Console.WriteLine($"Bot has been started. {Environment.NewLine}Press CTRL+C to close");
                 var githubStorage = new GitHubStorage(githubUserName, githubApiToken, githubApplicationName);
-                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage));
+                
+                var discordService = !string.IsNullOrEmpty(discordToken) && discordGuildId.HasValue && discordChannelId.HasValue 
+                    ? new Platform.Bot.Services.DiscordService(discordToken, discordGuildId.Value, discordChannelId.Value) 
+                    : null;
+                
+                if (discordService != null)
+                {
+                    await discordService.ConnectAsync();
+                }
+                
+                var issueTracker = new IssueTracker(githubStorage, new HelloWorldTrigger(githubStorage, dbContext, fileSetName ?? "HelloWorldSet"), new OrganizationLastMonthActivityTrigger(githubStorage), new LastCommitActivityTrigger(githubStorage), new AdminAuthorIssueTriggerDecorator(new ProtectDefaultBranchTrigger(githubStorage), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationRepositoriesDefaultBranchTrigger(githubStorage, dbContext), githubStorage), new AdminAuthorIssueTriggerDecorator(new ChangeOrganizationPullRequestsBaseBranchTrigger(githubStorage, dbContext), githubStorage), new OwnerKeeperApprovalTriggerDecorator(new TeamInvitationTrigger(githubStorage, discordService!), githubStorage));
                 var pullRequenstTracker = new PullRequestTracker(githubStorage, new MergeDependabotBumpsTrigger(githubStorage));
                 var timestampTracker = new DateTimeTracker(githubStorage, new CreateAndSaveOrganizationRepositoriesMigrationTrigger(githubStorage, dbContext, Path.Combine(Directory.GetCurrentDirectory(), "/github-migrations")));
                 var cancellation = new CancellationTokenSource();
@@ -113,8 +152,7 @@ namespace Platform.Bot
                         Console.WriteLine(ex.ToStringWithAllInnerExceptions());
                     }
                 }
-            }, 
-            githubUserNameOption, githubApiTokenOption, githubApplicationNameOption, databaseFilePathOption, fileSetNameOption, minimumInteractionIntervalOption);
+            });
 
             return await rootCommand.InvokeAsync(args);
         }
