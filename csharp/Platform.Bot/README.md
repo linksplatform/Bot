@@ -40,3 +40,32 @@ dotnet run MyNickname ghp_123 MyAppName db.links HelloWorldSet
 ```shell
 ./run.sh NICKNAME TOKEN APP_NAME
 ```
+
+## Features
+
+The bot supports several triggers that respond to specific GitHub issues:
+
+### Commit Collection Feature
+
+To collect all commit links for a specific user in chronological order, create an issue with one of these titles:
+- `Collect commits for user <username>`
+- `User commits <username>`
+- `Collect user commits`
+- `Collect all user commits`
+
+You can also specify the username in the issue body using `@username` syntax.
+
+**Example:**
+1. Create an issue titled: "Collect commits for user konard"
+2. The bot will automatically:
+   - Find all commits by that user across all organization repositories
+   - Sort them chronologically (oldest first)
+   - Generate a detailed report with links to all commits
+   - Post the results as a comment on the issue
+   - Close the issue when complete
+
+The output includes:
+- Total number of commits found
+- Commits grouped by repository
+- Each commit with timestamp and direct link to GitHub
+- Formatted as markdown for easy reading
