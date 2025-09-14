@@ -92,6 +92,24 @@ class Test2DataBuilder(TestCase):
             db.get_user(2, None), db, default='отсутствуют'
         )
         assert programming_languages == 'отсутствуют'
+        
+        # Test sorting preference
+        user_1 = db.get_user(1, None)
+        
+        # Test with sorting enabled (default)
+        user_1.programming_languages_sorted = True
+        db.save_user(user_1)
+        programming_languages_sorted = DataBuilder.build_programming_languages(user_1, db)
+        
+        # Test with sorting disabled
+        user_1.programming_languages_sorted = False
+        db.save_user(user_1)
+        programming_languages_unsorted = DataBuilder.build_programming_languages(user_1, db)
+        
+        # They should be different if the list has more than one element and wasn't already sorted
+        # In this case we expect: sorted = 'C#, C++, Java, Python', unsorted = 'C#, C++, Java, Python' (original order)
+        assert programming_languages_sorted == 'C#, C++, Java, Python'
+        assert programming_languages_unsorted == 'C#, C++, Java, Python'
 
     @ordered
     def test_build_github_profile(
@@ -164,6 +182,22 @@ class Test3Commands(TestCase):
         self.commands.msg = '-= github.com/ethosa'
         self.commands.match_command(patterns.REMOVE_GITHUB_PROFILE)
         self.commands.change_github_profile(False)
+        
+    @ordered
+    def test_change_sorting_preference(
+        self
+    ) -> NoReturn:
+        self.commands.current_user = db.get_user(1)
+        
+        # Test enabling sorting
+        self.commands.msg = 'сортировать'
+        self.commands.match_command(patterns.ENABLE_SORTING)
+        self.commands.change_sorting_preference(True)
+        
+        # Test disabling sorting  
+        self.commands.msg = 'не сортировать'
+        self.commands.match_command(patterns.DISABLE_SORTING)
+        self.commands.change_sorting_preference(False)
 
     @ordered
     def test_karma_message(

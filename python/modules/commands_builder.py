@@ -48,6 +48,15 @@ class CommandsBuilder:
         """
         programming_languages_string = DataBuilder.build_programming_languages(user, data)
         profile = DataBuilder.build_github_profile(user, data, default="отсутствует")
+        
+        # Get sorting preference for current user only
+        sorting_status = ""
+        if data.get_user_property(user, 'uid') == from_id:
+            sort_preference = data.get_user_property(user, "programming_languages_sorted")
+            if sort_preference is None:
+                sort_preference = True
+            sorting_status = f"\nСортировка языков: {'включена' if sort_preference else 'выключена'}"
+        
         mention = f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
         is_self = data.get_user_property(user, 'uid') == from_id
         karma_str: str = ""
@@ -60,7 +69,7 @@ class CommandsBuilder:
             karma_str = f"{mention}.\n"
         return (f"{karma_str}"
                 f"Языки программирования: {programming_languages_string}\n"
-                f"Страничка на GitHub: {profile}.")
+                f"Страничка на GitHub: {profile}.{sorting_status}")
 
     @staticmethod
     def build_change_programming_languages(
@@ -91,6 +100,17 @@ class CommandsBuilder:
         else:
             return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}], "
                     f"Ваша страничка на GitHub — {profile}.")
+
+    @staticmethod
+    def build_sorting_preference_changed(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        status: str
+    ) -> str:
+        """Builds sorting preference change message.
+        """
+        return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}], "
+                f"сортировка языков программирования {status}.")
 
     @staticmethod
     def build_karma(

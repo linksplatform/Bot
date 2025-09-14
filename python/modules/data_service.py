@@ -14,6 +14,7 @@ class BetterBotBaseDataService:
     def __init__(self, db_name: str = "users"):
         self.base = BetterBotBase(db_name, "dat")
         self.base.addPattern("programming_languages", [])
+        self.base.addPattern("programming_languages_sorted", True)
         self.base.addPattern("last_collective_vote", 0)
         self.base.addPattern("github_profile", "")
         self.base.addPattern("supporters", [])
