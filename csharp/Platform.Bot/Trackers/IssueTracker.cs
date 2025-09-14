@@ -74,10 +74,27 @@ namespace Platform.Bot.Trackers
                     }
                     if (await trigger.Condition(issue))
                     {
-                        await trigger.Action(issue);
+                        if (trigger is IPrivateMessageTrigger<Issue> privateMessageTrigger)
+                        {
+                            await HandlePrivateMessageTrigger(issue, privateMessageTrigger);
+                        }
+                        else
+                        {
+                            await trigger.Action(issue);
+                        }
                     }
                 }
             }
+        }
+
+        private async Task HandlePrivateMessageTrigger(Issue issue, IPrivateMessageTrigger<Issue> trigger)
+        {
+            var targetUser = trigger.GetTargetUserLogin(issue);
+            var subject = trigger.GetMessageSubject(issue);
+            var messageContent = await trigger.GetPrivateMessageContent(issue);
+
+            var privateMessageIssue = await _storage.SendPrivateMessage(targetUser, subject, messageContent);
+            await _storage.CreateMinimalIssueComment(issue.Repository.Id, issue.Number, targetUser, subject, privateMessageIssue);
         }
     }
 }

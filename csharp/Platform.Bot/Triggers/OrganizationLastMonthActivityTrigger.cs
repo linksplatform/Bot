@@ -17,7 +17,7 @@ namespace Platform.Bot.Triggers
     /// <para></para>
     /// </summary>
     /// <seealso cref="ITrigger{Issue}"/>
-    internal class OrganizationLastMonthActivityTrigger : ITrigger<TContext>
+    internal class OrganizationLastMonthActivityTrigger : IPrivateMessageTrigger<TContext>
     {
         private readonly GitHubStorage _storage;
         private readonly Parser _parser = new();
@@ -62,11 +62,24 @@ namespace Platform.Bot.Triggers
         /// </param>
         public async Task Action(TContext context)
         {
-            var issueService = _storage.Client.Issue;
+            _storage.CloseIssue(context);
+        }
+
+        public string GetTargetUserLogin(TContext context)
+        {
+            return context.User.Login;
+        }
+
+        public string GetMessageSubject(TContext context)
+        {
+            return "Organization Last Month Activity Report";
+        }
+
+        public async Task<string> GetPrivateMessageContent(TContext context)
+        {
             var owner = context.Repository.Owner.Login;
             var activeUsersString = string.Join("\n", GetActiveUsers(GetIgnoredRepositories(_parser.Parse(context.Body)), owner));
-            issueService.Comment.Create(owner, context.Repository.Name, context.Number, activeUsersString);
-            _storage.CloseIssue(context);
+            return $"# Organization Last Month Activity\n\nActive users in the last month:\n\n{activeUsersString}";
         }
 
         /// <summary>
