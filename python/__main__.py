@@ -120,15 +120,25 @@ class Bot(Vk):
         delay: int = 2
     ) -> NoReturn:
         """Assigns messages to deleting.
+        
+        :param peer_id: chat ID
+        :param msg_id: message ID
+        :param delay: delay in seconds before deletion
         """
-        if peer_id in config.USERBOT_CHATS and peer_id in config.CHATS_DELETING:
-            if peer_id not in self.messages_to_delete:
-                self.messages_to_delete.update({peer_id: []})
-            data = {
-                'date': datetime.now() + timedelta(seconds=delay),
-                'id': msg_id
-            }
-            self.messages_to_delete[peer_id].append(data)
+        # Check if this peer supports message deletion
+        if peer_id in config.USERBOT_CHATS:
+            # For karma messages, use CHATS_DELETING; for bot messages, use broader criteria
+            karma_deletion = peer_id in config.CHATS_DELETING
+            bot_deletion = self._should_delete_bot_message(peer_id)
+            
+            if karma_deletion or bot_deletion:
+                if peer_id not in self.messages_to_delete:
+                    self.messages_to_delete.update({peer_id: []})
+                data = {
+                    'date': datetime.now() + timedelta(seconds=delay),
+                    'id': msg_id
+                }
+                self.messages_to_delete[peer_id].append(data)
 
     def get_members(
         self,
@@ -156,17 +166,39 @@ class Bot(Vk):
         self,
         msg: str,
         peer_id: int
-    ) -> NoReturn:
-        """Sends message to chat with {peer_id}.
+    ) -> int:
+        """Sends message to chat with {peer_id} and schedules deletion if configured.
 
         :param msg: message text
         :param peer_id: chat ID
+        :returns: message ID
         """
-        self.call_method(
+        response = self.call_method(
             'messages.send',
             dict(
                 message=msg, peer_id=peer_id,
                 disable_mentions=1, random_id=0))
+        
+        # Get the message ID from the response
+        msg_id = response.get('response', 0)
+        
+        # Schedule deletion of bot messages if enabled
+        if (config.BOT_MESSAGE_DELETE_DELAY_MINUTES > 0 and 
+            self._should_delete_bot_message(peer_id)):
+            delay_seconds = config.BOT_MESSAGE_DELETE_DELAY_MINUTES * 60
+            self.delete_message(peer_id, msg_id, delay_seconds)
+            
+        return msg_id
+
+    def _should_delete_bot_message(self, peer_id: int) -> bool:
+        """Determines if bot messages should be deleted in this chat.
+        
+        :param peer_id: chat ID
+        :returns: True if messages should be deleted, False otherwise
+        """
+        # Use BOT_MESSAGE_DELETE_CHATS if configured, otherwise fall back to CHATS_DELETING
+        delete_chats = config.BOT_MESSAGE_DELETE_CHATS or config.CHATS_DELETING
+        return peer_id in delete_chats and peer_id in config.USERBOT_CHATS
 
     def get_user_name(
         self,
