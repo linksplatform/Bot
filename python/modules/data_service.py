@@ -19,6 +19,8 @@ class BetterBotBaseDataService:
         self.base.addPattern("supporters", [])
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
+        self.base.addPattern("auto_update_enabled", True)
+        self.base.addPattern("last_auto_update", 0)
 
     def get_or_create_user(
         self,

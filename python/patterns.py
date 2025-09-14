@@ -15,6 +15,12 @@ INFO = recompile(
 UPDATE = recompile(
     r'\A\s*(обновить|update)\s*\Z', IGNORECASE)
 
+UPDATE_ALL = recompile(
+    r'\A\s*(обновить всех|update all)\s*\Z', IGNORECASE)
+
+AUTO_UPDATE = recompile(
+    r'\A\s*(авто[- ]?обновление|auto[- ]?update)\s+(вкл|on|выкл|off)\s*\Z', IGNORECASE)
+
 KARMA = recompile(
     r'\A\s*(карма|karma)\s*\Z', IGNORECASE)
 
