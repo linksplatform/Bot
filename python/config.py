@@ -30,6 +30,9 @@ CHATS_KARMA_WHITELIST = [
 POSITIVE_VOTES_PER_KARMA = 2
 NEGATIVE_VOTES_PER_KARMA = 3
 
+# Disable automatic votes deletion (issue #52)
+DISABLE_AUTOMATIC_VOTES_DELETION = True
+
 KARMA_LIMIT_HOURS = [
     { "min_karma": None, "max_karma": -19,  "limit": 8 },
     { "min_karma": -19,  "max_karma": -1,   "limit": 4 },
