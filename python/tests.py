@@ -222,6 +222,48 @@ class Test3Commands(TestCase):
         self.commands.apply_karma_change('-', 6)
         self.commands.karma_message()
 
+    @ordered
+    def test_censored_words_rating_clean_message(
+        self
+    ) -> NoReturn:
+        """Test rating for clean message (+1)"""
+        self.commands.msg = "Hello, this is a clean message"
+        self.commands.current_user = db.get_user(1)
+        initial_rating = self.commands.current_user.censored_words_rating
+        
+        self.commands.process_censored_words_rating()
+        
+        # Should get +1 for clean message
+        assert self.commands.current_user.censored_words_rating == initial_rating + 1
+
+    @ordered
+    def test_censored_words_rating_with_censored_words(
+        self
+    ) -> NoReturn:
+        """Test rating for message with censored words (-1 per word)"""
+        self.commands.msg = "This is stupid shit"
+        self.commands.current_user = db.get_user(2)
+        initial_rating = self.commands.current_user.censored_words_rating
+        
+        self.commands.process_censored_words_rating()
+        
+        # Should get -2 for two censored words (stupid, shit)
+        assert self.commands.current_user.censored_words_rating == initial_rating - 2
+
+    @ordered
+    def test_censored_words_rating_message_display(
+        self
+    ) -> NoReturn:
+        """Test censored words rating message display"""
+        self.commands.user = db.get_user(1)
+        self.commands.from_id = 1
+        self.commands.censored_words_rating_message()
+        
+        # Test for another user
+        self.commands.user = db.get_user(2)
+        self.commands.from_id = 1
+        self.commands.censored_words_rating_message()
+
 
 if __name__ == '__main__':
     db = BetterBotBaseDataService("test_db")

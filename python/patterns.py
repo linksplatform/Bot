@@ -18,6 +18,9 @@ UPDATE = recompile(
 KARMA = recompile(
     r'\A\s*(карма|karma)\s*\Z', IGNORECASE)
 
+CENSORED_WORDS_RATING = recompile(
+    r'\A\s*(рейтинг|rating|цензура|censored)\s*\Z', IGNORECASE)
+
 APPLY_KARMA = recompile(
     r'\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z')
 

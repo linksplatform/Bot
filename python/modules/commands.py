@@ -119,6 +119,26 @@ class Commands:
         self.vk_instance.send_msg(
             CommandsBuilder.build_karma(self.user, self.data_service, is_self),
             self.peer_id)
+    
+    def censored_words_rating_message(self) -> NoReturn:
+        """Shows user's censored words rating."""
+        is_self = self.user.uid == self.from_id
+        rating = self.user.censored_words_rating
+        user_name = self.vk_instance.get_user_name(self.user.uid, "gen")
+        
+        if is_self:
+            message = f"Ваш рейтинг использования цензурных слов: {rating}"
+        else:
+            message = f"Рейтинг использования цензурных слов у {user_name}: {rating}"
+        
+        if rating > 0:
+            message += "\n✅ Превосходно! Вы общаетесь культурно."
+        elif rating == 0:
+            message += "\n⚖️ Нейтральный рейтинг."
+        else:
+            message += "\n❌ Рекомендуется следить за речью."
+            
+        self.vk_instance.send_msg(message, self.peer_id)
 
     def top(
             self,
@@ -308,6 +328,36 @@ class Commands:
         user.karma = new_karma
         return (user.uid, user.name, initial_karma, new_karma)
 
+    def process_censored_words_rating(self) -> NoReturn:
+        """Process message for censored words and update rating."""
+        if not self.current_user or self.from_id < 0:
+            return
+            
+        # Convert message to lowercase for case-insensitive matching
+        message_lower = self.msg.lower()
+        
+        # Count censored words in the message
+        censored_count = 0
+        for word in config.CENSORED_WORDS:
+            # Simple word boundary check to avoid partial matches
+            import re
+            pattern = r'\b' + re.escape(word.lower()) + r'\b'
+            censored_count += len(re.findall(pattern, message_lower))
+        
+        # Calculate rating change: +1 for clean message, -1 for each censored word
+        if censored_count == 0:
+            rating_change = 1  # +1 for clean message
+        else:
+            rating_change = -censored_count  # -1 for each censored word
+        
+        # Update user's censored words rating
+        current_rating = self.current_user.censored_words_rating
+        new_rating = current_rating + rating_change
+        self.current_user.censored_words_rating = new_rating
+        
+        # Save the updated user
+        self.data_service.save_user(self.current_user)
+
     def what_is(self) -> NoReturn:
         """Search on wikipedia and sends if available"""
         question = self.matched.groups()
@@ -435,4 +485,9 @@ class Commands:
             self.match_command(cmd)
             if self.matched:
                 action()
+                # Process censored words rating for all messages including commands
+                self.process_censored_words_rating()
                 return
+        
+        # Process censored words rating for non-command messages
+        self.process_censored_words_rating()

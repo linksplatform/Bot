@@ -155,3 +155,13 @@ GITHUB_COPILOT_TIMEOUT = 120  # seconds
 
 DEFAULT_PROGRAMMING_LANGUAGES_PATTERN_STRING = "|".join(DEFAULT_PROGRAMMING_LANGUAGES)
 GITHUB_COPILOT_LANGUAGES_PATTERN_STRING = "|".join([i for i in GITHUB_COPILOT_LANGUAGES.keys()])
+
+# Censored words for rating system
+CENSORED_WORDS = [
+    "блядь", "бляд", "сука", "хуй", "пизда", "ебать", "ебаный", "хуйня", "сраный", 
+    "говно", "дерьмо", "дебил", "идиот", "урод", "тупой", "долбоеб", "мудак",
+    "ублюдок", "гнида", "сволочь", "падла", "засранец", "говнюк", "пидор",
+    # English words
+    "fuck", "fucking", "shit", "bitch", "asshole", "damn", "crap", "bastard",
+    "stupid", "idiot", "moron", "dickhead", "motherfucker", "bullshit"
+]
