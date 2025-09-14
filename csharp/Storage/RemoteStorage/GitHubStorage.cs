@@ -103,12 +103,21 @@ namespace Storage.Remote.GitHub
                 Since = lastIssue
             };
             var issues = Client.Issue.GetAllForCurrent(request).Result;
+            
+            // Always update lastIssue to current time to prevent reprocessing the same timeframe
+            // even when there are no new issues
+            var now = DateTimeOffset.Now;
             if (issues.Count != 0)
             {
-                lastIssue = issues.Max(x => x.CreatedAt);
-                return issues;
+                var maxIssueTime = issues.Max(x => x.CreatedAt);
+                lastIssue = maxIssueTime > now ? maxIssueTime : now;
             }
-            return new List<Issue>();
+            else
+            {
+                lastIssue = now;
+            }
+            
+            return issues;
         }
 
         public Task<IReadOnlyList<GitHubCommit>> GetCommits(long repositoryId, CommitRequest commitRequest) => Client.Repository.Commit.GetAll(repositoryId, commitRequest);
