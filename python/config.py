@@ -14,6 +14,12 @@ CHATS_DELETING = [
     #2000000006
 ]
 
+# Delete ALL bot messages after certain period (in minutes, set to 0 to disable)
+BOT_MESSAGE_DELETE_DELAY_MINUTES = 60  # Delete bot messages after 1 hour
+
+# Chats where bot messages will be auto-deleted (leave empty to use CHATS_DELETING)
+BOT_MESSAGE_DELETE_CHATS = []
+
 # Check your search line, when you`re in the needed chat.
 # Then copy it`s id after "vk.com/im?peers=c"
 USERBOT_CHATS = {
