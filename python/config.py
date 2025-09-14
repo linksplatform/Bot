@@ -135,6 +135,10 @@ DEFAULT_PROGRAMMING_LANGUAGES = [
     r"X#",
     r"NVPTX",
     r"Nemerle",
+    r"fish",
+    r"QuakeC",
+    r"OpenCL",
+    r"CUDA",
 ]
 
 GITHUB_COPILOT_LANGUAGES = {
