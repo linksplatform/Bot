@@ -54,6 +54,12 @@ PEOPLE_LANGUAGES = recompile(
     r'\A\s*(люди|народ|people)\s*(?P<languages>(' + DEFAULT_LANGUAGES +
     r')(\s+(' + DEFAULT_LANGUAGES + r'))*)\s*\Z', IGNORECASE)
 
+TOP_VOTES = recompile(
+    r'\A\s*(топ голоса|топ голосов|top votes|votes top|голоса)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
+
+BOTTOM_VOTES = recompile(
+    r'\A\s*(низ голоса|низ голосов|bottom votes|votes bottom)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
+
 WHAT_IS = recompile(
     r'\A\s*(what is|что такое|що таке)\s+(?P<question>[\S\s]+?)\??\s*\Z', IGNORECASE)
 

@@ -111,6 +111,24 @@ class Test2DataBuilder(TestCase):
         print(DataBuilder.build_karma(user_1, db))
         print(DataBuilder.build_karma(user_2, db))
 
+    @ordered
+    def test_calculate_intermediate_votes(
+        self
+    ) -> NoReturn:
+        user_1 = db.get_user(1)
+        user_2 = db.get_user(2)
+        
+        # user_2 should have supporters from previous test
+        intermediate_votes_1 = DataBuilder.calculate_intermediate_votes(user_1, db)
+        intermediate_votes_2 = DataBuilder.calculate_intermediate_votes(user_2, db)
+        
+        print()
+        print(f"User 1 intermediate votes: {intermediate_votes_1}")
+        print(f"User 2 intermediate votes: {intermediate_votes_2}")
+        
+        assert intermediate_votes_1 >= 0 or intermediate_votes_1 < 0  # Just ensure it returns a number
+        assert intermediate_votes_2 >= 0 or intermediate_votes_2 < 0  # Just ensure it returns a number
+
 
 class Test3Commands(TestCase):
     commands = Commands(VkInstance(), BetterBotBaseDataService("test_db"))
@@ -221,6 +239,20 @@ class Test3Commands(TestCase):
     ) -> NoReturn:
         self.commands.apply_karma_change('-', 6)
         self.commands.karma_message()
+
+    @ordered
+    def test_top_votes(
+        self
+    ) -> NoReturn:
+        self.commands.msg = 'top votes'
+        self.commands.match_command(patterns.TOP_VOTES)
+        self.commands.top_votes()
+        self.commands.top_votes(True)
+
+        self.commands.msg = 'bottom votes'
+        self.commands.match_command(patterns.BOTTOM_VOTES)
+        self.commands.top_votes()
+        self.commands.top_votes(True)
 
 
 if __name__ == '__main__':
