@@ -63,6 +63,7 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
+            (patterns.UPVOTE_PREVIOUS, self.commands.upvote_previous),
             (patterns.GITHUB_COPILOT, self.commands.github_copilot)
         )
 
@@ -197,6 +198,20 @@ class Bot(Vk):
         """
         reply_message = event.get("reply_message", {})
         return [reply_message] if reply_message else event.get("fwd_messages", [])
+
+    def get_conversation_messages(
+        self,
+        peer_id: int,
+        count: int = 10
+    ) -> List[Dict[str, Any]]:
+        """Returns recent messages from conversation.
+        """
+        response = self.call_method(
+            'messages.getHistory',
+            dict(peer_id=peer_id, count=count))
+        if "error" in response:
+            return []
+        return response["response"]["items"]
 
 
 if __name__ == '__main__':

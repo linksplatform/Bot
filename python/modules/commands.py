@@ -379,6 +379,98 @@ class Commands:
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
 
+    def upvote_previous(self) -> NoReturn:
+        """Upvotes the previous non-command message."""
+        if self.peer_id < 2e9 or not self.karma_enabled:
+            return
+
+        # Get recent conversation messages
+        recent_messages = self.vk_instance.get_conversation_messages(self.peer_id, 20)
+        
+        # Find the previous non-command message
+        current_msg_found = False
+        for message in recent_messages:
+            # Skip until we find current message
+            if not current_msg_found:
+                if message["conversation_message_id"] == self.msg_id:
+                    current_msg_found = True
+                continue
+            
+            # Skip messages from bots or system
+            if message["from_id"] <= 0:
+                continue
+                
+            message_text = message["text"].lstrip("/")
+            
+            # Check if this message matches any command pattern
+            is_command = False
+            for cmd_pattern in Commands.cmds.keys():
+                if match(cmd_pattern, message_text):
+                    is_command = True
+                    break
+            
+            # If not a command, this is our target message
+            if not is_command and message_text.strip():
+                target_user_id = message["from_id"]
+                target_user = self.data_service.get_user(target_user_id, self.vk_instance)
+                
+                # Don't allow self-upvote
+                if target_user_id == self.from_id:
+                    self.vk_instance.send_msg(
+                        'Нельзя голосовать за свои сообщения.', self.peer_id)
+                    return
+                
+                # Apply upvote (equivalent to +0 karma - collective vote)
+                self.user = target_user
+                utcnow = datetime.utcnow()
+                
+                # Check if already voted for this user
+                if self.current_user.uid in target_user.supporters:
+                    self.vk_instance.send_msg(
+                        (f'Вы уже голосовали за [id{target_user.uid}|'
+                         f'{self.vk_instance.get_user_name(target_user.uid, "acc")}].'),
+                        self.peer_id
+                    )
+                    return
+                
+                # Check collective vote time limit
+                utclast = datetime.fromtimestamp(
+                    float(self.current_user.last_collective_vote))
+                difference = utcnow - utclast
+                hours_difference = difference.total_seconds() / 3600
+                hours_limit = karma_limit(self.current_user.karma)
+                
+                if hours_difference < hours_limit:
+                    self.vk_instance.delete_message(self.peer_id, self.msg_id)
+                    self.vk_instance.send_msg(
+                        CommandsBuilder.build_not_enough_hours(
+                            self.current_user, self.data_service,
+                            hours_limit, difference.total_seconds() / 60),
+                        self.peer_id)
+                    return
+                
+                # Apply the upvote
+                user_karma_change, selected_user_karma_change, collective_vote_applied, voters = self.apply_karma_change(
+                    "+", 0)
+                
+                if collective_vote_applied:
+                    self.current_user.last_collective_vote = int(utcnow.timestamp())
+                    self.data_service.save_user(self.current_user)
+                
+                if user_karma_change:
+                    self.data_service.save_user(target_user)
+                
+                self.vk_instance.send_msg(
+                    CommandsBuilder.build_karma_change(
+                        user_karma_change, selected_user_karma_change, voters),
+                    self.peer_id)
+                self.vk_instance.delete_message(self.peer_id, self.msg_id)
+                return
+        
+        # No previous non-command message found
+        self.vk_instance.send_msg(
+            'Не найдено предыдущее сообщение для голосования.', self.peer_id)
+
     def match_command(
             self,
             pattern: Pattern
