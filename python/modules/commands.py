@@ -179,7 +179,8 @@ class Commands:
 
             # Downvotes disabled for users with negative karma
             if operator == "-" and self.current_user.karma < 0:
-                self.vk_instance.delete_message(self.peer_id, self.msg_id)
+                if not config.DISABLE_AUTOMATIC_VOTES_DELETION:
+                    self.vk_instance.delete_message(self.peer_id, self.msg_id)
                 self.vk_instance.send_msg(
                     CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
                     self.peer_id)
@@ -202,7 +203,8 @@ class Commands:
                 hours_limit = karma_limit(
                     self.current_user.karma)
                 if hours_difference < hours_limit:
-                    self.vk_instance.delete_message(self.peer_id, self.msg_id)
+                    if not config.DISABLE_AUTOMATIC_VOTES_DELETION:
+                        self.vk_instance.delete_message(self.peer_id, self.msg_id)
                     self.vk_instance.send_msg(
                         CommandsBuilder.build_not_enough_hours(
                             self.current_user, self.data_service,
@@ -225,7 +227,8 @@ class Commands:
                 CommandsBuilder.build_karma_change(
                     user_karma_change, selected_user_karma_change, voters),
                 self.peer_id)
-            self.vk_instance.delete_message(self.peer_id, self.msg_id)
+            if not config.DISABLE_AUTOMATIC_VOTES_DELETION:
+                self.vk_instance.delete_message(self.peer_id, self.msg_id)
 
     def apply_karma_change(
             self,
@@ -289,7 +292,8 @@ class Commands:
             vote_applied = True
         if len(self.user[current_voters]) >= number_of_voters:
             voters = self.user[current_voters]
-            self.user[current_voters] = []
+            if not config.DISABLE_AUTOMATIC_VOTES_DELETION:
+                self.user[current_voters] = []
             return self.apply_user_karma(self.user, amount), voters, vote_applied
         return None, None, vote_applied
 
