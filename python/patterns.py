@@ -65,3 +65,6 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+UPVOTE_PREVIOUS = recompile(
+    r'\A\s*\+\s*\Z', IGNORECASE)
