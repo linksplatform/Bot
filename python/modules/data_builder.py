@@ -89,6 +89,35 @@ class DataBuilder:
         return users
 
     @staticmethod
+    def calculate_intermediate_votes(
+        user: BetterUser,
+        data: BetterBotBaseDataService
+    ) -> float:
+        """Calculate only intermediate votes (pending supporters/opponents)"""
+        up_votes = len(user["supporters"])/config.POSITIVE_VOTES_PER_KARMA
+        down_votes = len(user["opponents"])/config.NEGATIVE_VOTES_PER_KARMA
+        return up_votes - down_votes
+
+    @staticmethod
+    def get_users_sorted_by_intermediate_votes(
+        vk_instance: Vk,
+        data: BetterBotBaseDataService,
+        peer_id: int,
+        reverse_sort: bool = True
+    ) -> List[BetterUser]:
+        """Get users sorted by intermediate votes only (pending supporters/opponents)"""
+        members = vk_instance.get_members_ids(peer_id)
+        users = data.get_users(
+            other_keys=[
+                "karma", "name", "programming_languages",
+                "supporters", "opponents", "github_profile", "uid"],
+            sort_key=lambda u: DataBuilder.calculate_intermediate_votes(u, data),
+            reverse_sort=reverse_sort)
+        if members:
+            users = [u for u in users if u["uid"] in members]
+        return users
+
+    @staticmethod
     def calculate_real_karma(
         user: BetterUser,
         data: BetterBotBaseDataService
