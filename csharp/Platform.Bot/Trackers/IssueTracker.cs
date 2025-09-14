@@ -33,6 +33,14 @@ namespace Platform.Bot.Trackers
 
         /// <summary>
         /// <para>
+        /// Tracks processed issues to prevent duplicate actions.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        private HashSet<string> _processedIssues { get; } = new HashSet<string>();
+
+        /// <summary>
+        /// <para>
         /// Initializes a new <see cref="IssueTracker"/> instance.
         /// </para>
         /// <para></para>
@@ -66,6 +74,15 @@ namespace Platform.Bot.Trackers
             var allIssues = _storage.GetIssues();
             foreach (var issue in allIssues)
             {
+                // Create a unique key for each issue-trigger combination to prevent duplicate processing
+                var issueKey = $"{issue.Repository.FullName}#{issue.Number}";
+                
+                // Skip if this issue has already been processed
+                if (_processedIssues.Contains(issueKey))
+                {
+                    continue;
+                }
+
                 foreach (var trigger in _triggers)
                 {
                     if (cancellationToken.IsCancellationRequested)
@@ -75,6 +92,9 @@ namespace Platform.Bot.Trackers
                     if (await trigger.Condition(issue))
                     {
                         await trigger.Action(issue);
+                        // Mark issue as processed after successful action
+                        _processedIssues.Add(issueKey);
+                        break; // Only process one trigger per issue to prevent conflicts
                     }
                 }
             }

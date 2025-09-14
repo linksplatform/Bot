@@ -71,7 +71,7 @@ namespace Platform.Bot
             var minimumInteractionIntervalOption = new Option<int>(
                 name: "--minimum-interaction-interval",
                 description: "Minimum interaction interval in seconds.",
-                getDefaultValue: () => 60);
+                getDefaultValue: () => 300);
 
             var rootCommand = new RootCommand("Sample app for System.CommandLine")
             {
