@@ -17,7 +17,8 @@ from .utils import (
     get_default_programming_language,
     contains_all_strings,
     karma_limit,
-    is_available_ghpage
+    is_available_ghpage,
+    parse_programming_languages
 )
 import config
 import tokens
@@ -148,7 +149,8 @@ class Commands:
         """Sends users top."""
         if self.peer_id < 2e9:
             return
-        languages = split(r"\s+", self.matched.group("languages"))
+        # Use the new parse_programming_languages function instead of simple split
+        languages = parse_programming_languages(self.matched.group("languages"))
         count = self.matched.group("count")
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
