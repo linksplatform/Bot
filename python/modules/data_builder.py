@@ -89,6 +89,31 @@ class DataBuilder:
         return users
 
     @staticmethod
+    def get_user_top_position(
+        user: BetterUser,
+        vk_instance: Vk,
+        data: BetterBotBaseDataService,
+        peer_id: int
+    ) -> int:
+        """Gets user's position in the top ranking (1-based index).
+        
+        Returns:
+        - Position number (1 for first place, 2 for second, etc.)
+        - 0 if user is not found in ranking
+        """
+        users = DataBuilder.get_users_sorted_by_karma(vk_instance, data, peer_id)
+        users = [u for u in users if
+                 (u["karma"] != 0) or
+                 ("programming_languages" in u and len(u["programming_languages"]) > 0)
+                 ]
+        
+        user_uid = user["uid"]
+        for index, ranked_user in enumerate(users):
+            if ranked_user["uid"] == user_uid:
+                return index + 1  # 1-based position
+        return 0  # User not found in ranking
+
+    @staticmethod
     def calculate_real_karma(
         user: BetterUser,
         data: BetterBotBaseDataService

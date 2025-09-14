@@ -36,26 +36,38 @@ class CommandsBuilder:
         user: BetterUser,
         data: BetterBotBaseDataService,
         from_id: int,
-        karma: bool
+        karma: bool,
+        vk_instance=None,
+        peer_id: int = 0
     ) -> str:
         """Builds info message.
 
         Arguments:
         - {user} - selected user;
         - {data} - data service;
-        - {peer_id} - chat ID;
-        - {karma} - is karma enabled in chat.
+        - {from_id} - user ID requesting info;
+        - {karma} - is karma enabled in chat;
+        - {vk_instance} - VK instance for getting top position;
+        - {peer_id} - chat ID for getting top position.
         """
         programming_languages_string = DataBuilder.build_programming_languages(user, data)
         profile = DataBuilder.build_github_profile(user, data, default="отсутствует")
         mention = f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
         is_self = data.get_user_property(user, 'uid') == from_id
         karma_str: str = ""
+        
+        # Get top position if in group chat and karma enabled
+        top_position_str = ""
+        if karma and peer_id > 2e9 and vk_instance:
+            position = DataBuilder.get_user_top_position(user, vk_instance, data, peer_id)
+            if position > 0:
+                top_position_str = f" (место в топе: {position})"
+        
         if karma:
             if is_self:
-                karma_str = f"{mention}, Ваша карма - {DataBuilder.build_karma(user, data)}.\n"
+                karma_str = f"{mention}, Ваша карма - {DataBuilder.build_karma(user, data)}{top_position_str}.\n"
             else:
-                karma_str = f"Карма {mention} - {DataBuilder.build_karma(user, data)}.\n"
+                karma_str = f"Карма {mention} - {DataBuilder.build_karma(user, data)}{top_position_str}.\n"
         else:
             karma_str = f"{mention}.\n"
         return (f"{karma_str}"
