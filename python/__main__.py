@@ -52,10 +52,14 @@ class Bot(Vk):
             (patterns.REMOVE_GITHUB_PROFILE,
              lambda: self.commands.change_github_profile(False)),
             (patterns.KARMA, self.commands.karma_message),
+            (patterns.LOCAL_KARMA, self.commands.local_karma_message),
             (patterns.TOP, self.commands.top),
+            (patterns.LOCAL_TOP, self.commands.local_top),
             (patterns.PEOPLE, self.commands.top),
             (patterns.BOTTOM,
              lambda: self.commands.top(True)),
+            (patterns.LOCAL_BOTTOM,
+             lambda: self.commands.local_top(True)),
             (patterns.TOP_LANGUAGES, self.commands.top_langs),
             (patterns.PEOPLE_LANGUAGES, self.commands.top_langs),
             (patterns.BOTTOM_LANGUAGES,
@@ -63,6 +67,7 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
+            (patterns.APPLY_LOCAL_KARMA, self.commands.apply_local_karma),
             (patterns.GITHUB_COPILOT, self.commands.github_copilot)
         )
 

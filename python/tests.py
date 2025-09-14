@@ -223,6 +223,95 @@ class Test3Commands(TestCase):
         self.commands.karma_message()
 
 
+class Test4LocalKarma(TestCase):
+    """TestCase for local karma functionality
+    """
+    db = BetterBotBaseDataService('test_local_karma_db')
+    
+    @ordered
+    def test_local_karma_data_structure(self) -> NoReturn:
+        """Test local karma data storage and retrieval"""
+        user = self.db.get_or_create_user(1, None)
+        chat_id = 2000000001
+        
+        # Initially, local karma should be 0
+        assert self.db.get_local_karma(user, chat_id) == 0
+        
+        # Set local karma
+        self.db.set_local_karma(user, chat_id, 5)
+        assert self.db.get_local_karma(user, chat_id) == 5
+        
+        # Test different chat has different karma
+        chat_id_2 = 2000000002
+        assert self.db.get_local_karma(user, chat_id_2) == 0
+        
+        self.db.set_local_karma(user, chat_id_2, 10)
+        assert self.db.get_local_karma(user, chat_id) == 5  # First chat unchanged
+        assert self.db.get_local_karma(user, chat_id_2) == 10  # Second chat
+
+    @ordered  
+    def test_build_local_karma(self) -> NoReturn:
+        """Test local karma string building"""
+        user = self.db.get_user(1)
+        chat_id = 2000000001
+        
+        # Test with zero karma
+        karma_str = DataBuilder.build_local_karma(user, self.db, chat_id)
+        assert karma_str == "[5]"
+        
+        # Test with different karma value
+        self.db.set_local_karma(user, chat_id, 15)
+        karma_str = DataBuilder.build_local_karma(user, self.db, chat_id)
+        assert karma_str == "[15]"
+
+    @ordered
+    def test_local_karma_commands(self) -> NoReturn:
+        """Test local karma command functionality"""
+        commands = Commands(VkInstance(), self.db)
+        commands.peer_id = 2_000_000_001
+        commands.karma_enabled = True
+        commands.current_user = self.db.get_user(1)
+        commands.user = self.db.get_user(1)
+        
+        # Test local karma message
+        commands.local_karma_message()
+        
+        # Test local karma application (simulate)
+        initial_karma = self.db.get_local_karma(commands.user, commands.peer_id)
+        result = commands.apply_user_local_karma(commands.user, 3)
+        assert result[2] == initial_karma  # initial karma
+        assert result[3] == initial_karma + 3  # new karma
+        
+        # Verify karma was actually changed
+        assert self.db.get_local_karma(commands.user, commands.peer_id) == initial_karma + 3
+
+    @ordered
+    def test_local_karma_sorting(self) -> NoReturn:
+        """Test local karma user sorting"""
+        # Create multiple users with different local karma
+        user1 = self.db.get_or_create_user(10, None)
+        user2 = self.db.get_or_create_user(20, None) 
+        user3 = self.db.get_or_create_user(30, None)
+        
+        chat_id = 2000000001
+        
+        self.db.set_local_karma(user1, chat_id, 10)
+        self.db.set_local_karma(user2, chat_id, 5)
+        self.db.set_local_karma(user3, chat_id, 15)
+        
+        # Mock VK instance for testing
+        class MockVk:
+            def get_members_ids(self, peer_id):
+                return [10, 20, 30]
+        
+        users = DataBuilder.get_users_sorted_by_local_karma(MockVk(), self.db, chat_id, chat_id)
+        
+        # Should be sorted by local karma descending
+        assert users[0]["local_karma"] == 15  # user3
+        assert users[1]["local_karma"] == 10  # user1  
+        assert users[2]["local_karma"] == 5   # user2
+
+
 if __name__ == '__main__':
     db = BetterBotBaseDataService("test_db")
     defaultTestLoader.sortTestMethodsUsing = compare

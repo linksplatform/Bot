@@ -97,3 +97,66 @@ class DataBuilder:
         up_votes = len(user["supporters"])/config.POSITIVE_VOTES_PER_KARMA
         down_votes = len(user["opponents"])/config.NEGATIVE_VOTES_PER_KARMA
         return base_karma + up_votes - down_votes
+
+    @staticmethod
+    def build_local_karma(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        chat_id: int
+    ) -> str:
+        """Builds the user's local karma for specific chat and returns its string representation.
+        """
+        local_karma = data.get_local_karma(user, chat_id)
+        plus_string = ""
+        minus_string = ""
+        up_votes = len(user["supporters"])
+        down_votes = len(user["opponents"])
+        if up_votes > 0:
+            plus_string = "+%.1f" % (up_votes / config.POSITIVE_VOTES_PER_KARMA)
+        if down_votes > 0:
+            minus_string = "-%.1f" % (down_votes / config.NEGATIVE_VOTES_PER_KARMA)
+        if up_votes > 0 or down_votes > 0:
+            return f"[{local_karma}][{plus_string}{minus_string}]"
+        else:
+            return f"[{local_karma}]"
+
+    @staticmethod
+    def get_users_sorted_by_local_karma(
+        vk_instance: Vk,
+        data: BetterBotBaseDataService,
+        peer_id: int,
+        chat_id: int
+    ) -> List[Dict[str, Any]]:
+        """Returns users from the chat sorted by local karma."""
+        members = vk_instance.get_members_ids(peer_id)
+        users = []
+        for member_id in members:
+            user = data.get_user(member_id)
+            local_karma = data.get_local_karma(user, chat_id)
+            users.append({
+                "uid": member_id,
+                "local_karma": local_karma,
+                "name": user.name,
+                "programming_languages": user.programming_languages,
+                "github_profile": user.github_profile
+            })
+        return sorted(users, key=lambda u: u["local_karma"], reverse=True)
+
+    @staticmethod
+    def build_programming_languages_from_dict(
+        user_dict: Dict[str, Any],
+        default: str = "отсутствуют"
+    ) -> str:
+        """Builds programming languages from user dictionary."""
+        languages = user_dict.get("programming_languages", [])
+        languages = languages if isinstance(languages, list) else []
+        return ", ".join(sorted(languages)) if len(languages) > 0 else default
+
+    @staticmethod
+    def build_github_profile_from_dict(
+        user_dict: Dict[str, Any],
+        prefix: str = ""
+    ) -> str:
+        """Builds github profile from user dictionary."""
+        profile = user_dict.get("github_profile", "")
+        return f"{prefix}github.com/{profile}" if profile else ""

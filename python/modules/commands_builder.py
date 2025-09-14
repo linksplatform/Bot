@@ -26,6 +26,11 @@ class CommandsBuilder:
         elif peer_id > 2e9:
             if karma:
                 return ("Вы находитесь в беседе с включённой кармой.\n"
+                        "Доступные команды для локальной кармы:\n"
+                        "• 'local karma' / 'локальная карма' - показать локальную карму\n"
+                        "• 'local +/-' - изменить локальную карму пользователя\n"
+                        "• 'local top' / 'локальный топ' - топ по локальной карме\n"
+                        "• 'local bottom' / 'локальный низ' - низ по локальной карме\n"
                         f"Документация — {documentation_link}")
             else:
                 return (f"Вы находитесь в беседе (#{peer_id}) с выключенной кармой.\n"
@@ -185,3 +190,76 @@ class CommandsBuilder:
             return ("Карма изменена: [id%s|%s] [%s]->[%s]. Голосовали: (%s)" %
                 (selected_user_karma_change + (", ".join([f"@id{voter}" for voter in voters]),)))
         return None
+
+    @staticmethod
+    def build_local_karma(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        is_self: bool,
+        chat_id: int
+    ) -> str:
+        """Sends user local karma amount for specific chat.
+        """
+        if is_self:
+            return (f"Ваша локальная карма в этом чате — "
+                        f"{DataBuilder.build_local_karma(user, data, chat_id)}.")
+        else:
+            mention = f"[id{user.uid}|{user.name}]"
+            return (f"Локальная карма {mention} в этом чате — "
+                        f"{DataBuilder.build_local_karma(user, data, chat_id)}.")
+
+    @staticmethod
+    def build_not_enough_local_karma(
+        user: BetterUser,
+        data: BetterBotBaseDataService,
+        chat_id: int
+    ) -> str:
+        """Builds message about insufficient local karma."""
+        return (f"Вы не можете минусовать карму, "
+                f"но Вашей локальной кармы [{data.get_local_karma(user, chat_id)}] "
+                f"в этом чате недостаточно.")
+
+    @staticmethod
+    def build_local_karma_change(
+        local_karma_change: Tuple[int, str, int, int],
+        chat_id: int
+    ) -> str:
+        """Builds local karma changing message."""
+        return ("Локальная карма в этом чате изменена: [id%s|%s] [%s]->[%s]." %
+                local_karma_change)
+
+    @staticmethod
+    def build_local_top_users(
+        users: List[Dict[str, Any]],
+        data: BetterBotBaseDataService,
+        reverse: bool = False,
+        has_karma: bool = True,
+        maximum_users: int = -1
+    ) -> Optional[str]:
+        """Builds local karma top users list."""
+        if not users:
+            return None
+        if reverse:
+            users = list(reversed(users))
+        user_strings = []
+        for user in users:
+            karma_str = f"[{user['local_karma']}]" if has_karma else ""
+            user_string = (f"{karma_str} "
+                          f"[id{user['uid']}|{user['name']}]"
+                          f"{DataBuilder.build_github_profile_from_dict(user, ' - ')}"
+                          f"{DataBuilder.build_programming_languages_from_dict(user, '')}")
+            user_strings.append(user_string)
+        
+        total_symbols = 0
+        i = 0
+        for user_string in user_strings:
+            user_string_length = len(user_string)
+            if (total_symbols + user_string_length + 2) >= 4096:  # Maximum message size for VK API (messages.send)
+                user_strings = user_strings[:i]
+                break
+            else:
+                total_symbols += user_string_length + 2
+                i += 1
+        if maximum_users > 0:
+            return '\n'.join(user_strings[:maximum_users])
+        return '\n'.join(user_strings)

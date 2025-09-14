@@ -18,8 +18,14 @@ UPDATE = recompile(
 KARMA = recompile(
     r'\A\s*(карма|karma)\s*\Z', IGNORECASE)
 
+LOCAL_KARMA = recompile(
+    r'\A\s*(локальная карма|местная карма|local karma|лкарма|lkarma)\s*\Z', IGNORECASE)
+
 APPLY_KARMA = recompile(
     r'\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z')
+
+APPLY_LOCAL_KARMA = recompile(
+    r'\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*local\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z', IGNORECASE)
 
 ADD_PROGRAMMING_LANGUAGE = recompile(
     r'\A\s*\+=\s*(?P<language>' + DEFAULT_LANGUAGES + r')\s*\Z', IGNORECASE)
@@ -36,8 +42,14 @@ REMOVE_GITHUB_PROFILE = recompile(
 TOP = recompile(
     r'\A\s*(топ|верх|top)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
 
+LOCAL_TOP = recompile(
+    r'\A\s*(локальный топ|местный топ|local top|лтоп|ltop)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
+
 BOTTOM = recompile(
     r'\A\s*(низ|дно|bottom)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
+
+LOCAL_BOTTOM = recompile(
+    r'\A\s*(локальный низ|местный низ|local bottom|лдно|lbottom)\s*(?P<maximum_users>\d+)?\s*\Z', IGNORECASE)
 
 TOP_LANGUAGES = recompile(
     r'\A\s*(топ|верх|top)\s*(?P<count>\d+\s+)?\s*(?P<languages>(' + DEFAULT_LANGUAGES +
