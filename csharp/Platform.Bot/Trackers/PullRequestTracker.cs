@@ -35,6 +35,14 @@ namespace Platform.Bot.Trackers
 
         /// <summary>
         /// <para>
+        /// Tracks processed pull requests to prevent duplicate actions.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        private HashSet<string> _processedPullRequests = new HashSet<string>();
+
+        /// <summary>
+        /// <para>
         /// Initializes a new <see cref="IssueTracker"/> instance.
         /// </para>
         /// <para></para>
@@ -75,10 +83,22 @@ namespace Platform.Bot.Trackers
                         {
                             return;
                         }
+                        
+                        // Create a unique key for each pull request to prevent duplicate processing
+                        var pullRequestKey = $"{repository.FullName}#{pullRequest.Number}";
+                        
+                        // Skip if this pull request has already been processed
+                        if (_processedPullRequests.Contains(pullRequestKey))
+                        {
+                            continue;
+                        }
+                        
                         var detailedPullRequest = _storage.Client.PullRequest.Get(repository.Id, pullRequest.Number).AwaitResult();
                         if (await trigger.Condition(detailedPullRequest))
                         {
                             await trigger.Action(detailedPullRequest);
+                            // Mark pull request as processed after successful action
+                            _processedPullRequests.Add(pullRequestKey);
                         }
                     }
                 }
