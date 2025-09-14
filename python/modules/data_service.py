@@ -19,6 +19,7 @@ class BetterBotBaseDataService:
         self.base.addPattern("supporters", [])
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
+        self.base.addPattern("vote_log_subscription", False)
 
     def get_or_create_user(
         self,
