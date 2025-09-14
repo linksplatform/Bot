@@ -10,6 +10,7 @@ import requests
 from modules import (
     BetterBotBaseDataService, Commands
 )
+from modules.utils import get_daily_message_limit
 from tokens import BOT_TOKEN
 from userbot import UserBot
 import patterns
@@ -98,6 +99,40 @@ class Bot(Vk):
                 self.userbot.delete_messages(ids, peer)
 
         user = self.data.get_user(from_id, self) if from_id > 0 else None
+
+        # Check daily message limit for users with negative karma
+        if user and peer_id >= CHAT_ID_OFFSET:  # Only apply limits in group chats
+            current_date = datetime.now().strftime("%Y-%m-%d")
+            
+            # Reset daily message count if it's a new day
+            if user.last_message_date != current_date:
+                user.daily_message_count = 0
+                user.last_message_date = current_date
+                self.data.save_user(user)
+            
+            # Check if user has exceeded their daily message limit
+            daily_limit = get_daily_message_limit(user.karma)
+            if daily_limit >= 0:  # -1 means no limit
+                if user.daily_message_count >= daily_limit:
+                    if daily_limit == 0:
+                        # Read-only mode - delete message and notify
+                        self.delete_message(peer_id, msg_id, 0)
+                        self.send_msg(
+                            f"[id{from_id}|Пользователь] находится в режиме только для чтения (карма < -1280).",
+                            peer_id
+                        )
+                    else:
+                        # Message limit exceeded - delete message and notify
+                        self.delete_message(peer_id, msg_id, 0)
+                        self.send_msg(
+                            f"[id{from_id}|Пользователь] превысил лимит сообщений на день ({daily_limit} сообщений). Текущая карма: {user.karma}",
+                            peer_id
+                        )
+                    return
+                else:
+                    # Increment message count for this day
+                    user.daily_message_count += 1
+                    self.data.save_user(user)
 
         messages = self.get_messages(event)
         selected_message = messages[0] if len(messages) == 1 else None
