@@ -45,6 +45,7 @@ namespace Storage.Local
         private readonly TLinkAddress _setMarker;
         private readonly TLinkAddress _fileMarker;
         private readonly TLinkAddress _gitHubLastMigrationTimestampMarker;
+        private readonly TLinkAddress _userLinkMarker;
         private readonly TLinkAddress Any;
         private TLinkAddress GetOrCreateNextMapping(TLinkAddress currentMappingIndex) => _synchronizedLinks.Exists(currentMappingIndex) ? currentMappingIndex : _synchronizedLinks.CreateAndUpdate(_meaningRoot, _synchronizedLinks.Constants.Itself);
         private TLinkAddress GetOrCreateMeaningRoot(TLinkAddress meaningRootIndex) => _synchronizedLinks.Exists(meaningRootIndex) ? meaningRootIndex : _synchronizedLinks.CreatePoint();
@@ -76,6 +77,7 @@ namespace Storage.Local
             _setMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _fileMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _gitHubLastMigrationTimestampMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
+            _userLinkMarker = GetOrCreateNextMapping(currentMappingLinkIndex++);
             _addressToNumberConverter = new AddressToRawNumberConverter<TLinkAddress>();
             _numberToAddressConverter = new RawNumberToAddressConverter<TLinkAddress>();
             var balancedVariantConverter = new BalancedVariantConverter<TLinkAddress>(_synchronizedLinks);
@@ -328,6 +330,152 @@ namespace Storage.Local
         }
 
         // public void SetLastGithubMigrationTimeStamp()
+
+        /// <summary>
+        /// <para>
+        /// Adds a user link for the specified username, platform, and URL.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="username">
+        /// <para>The username.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="platform">
+        /// <para>The platform name.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="url">
+        /// <para>The URL.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>The link address of the created user link.</para>
+        /// <para></para>
+        /// </returns>
+        public TLinkAddress AddUserLink(string username, string platform, string url)
+        {
+            var usernameLink = CreateString(username);
+            var platformLink = CreateString(platform);
+            var urlLink = CreateString(url);
+            var userLinkData = _synchronizedLinks.GetOrCreate(platformLink, urlLink);
+            return _synchronizedLinks.GetOrCreate(_userLinkMarker, _synchronizedLinks.GetOrCreate(usernameLink, userLinkData));
+        }
+
+        /// <summary>
+        /// <para>
+        /// Removes a user link for the specified username and platform.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="username">
+        /// <para>The username.</para>
+        /// <para></para>
+        /// </param>
+        /// <param name="platform">
+        /// <para>The platform name.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>True if the link was removed, false if it was not found.</para>
+        /// <para></para>
+        /// </returns>
+        public bool RemoveUserLink(string username, string platform)
+        {
+            var usernameLink = CreateString(username);
+            var platformLink = CreateString(platform);
+            
+            var userLinks = _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _userLinkMarker, target: Any));
+            foreach (var userLink in userLinks)
+            {
+                var userLinkTarget = _synchronizedLinks.GetTarget(userLink);
+                var userLinkSource = _synchronizedLinks.GetSource(userLinkTarget);
+                var platformAndUrl = _synchronizedLinks.GetTarget(userLinkTarget);
+                var storedPlatformLink = _synchronizedLinks.GetSource(platformAndUrl);
+                
+                if (userLinkSource == usernameLink && storedPlatformLink == platformLink)
+                {
+                    _synchronizedLinks.Delete(userLink);
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets all user links for the specified username.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="username">
+        /// <para>The username.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>A list of user links for the username.</para>
+        /// <para></para>
+        /// </returns>
+        public List<UserLink> GetUserLinks(string username)
+        {
+            var usernameLink = CreateString(username);
+            var userLinks = new List<UserLink>();
+            
+            var links = _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _userLinkMarker, target: Any));
+            foreach (var link in links)
+            {
+                var linkTarget = _synchronizedLinks.GetTarget(link);
+                var linkSource = _synchronizedLinks.GetSource(linkTarget);
+                
+                if (linkSource == usernameLink)
+                {
+                    var platformAndUrl = _synchronizedLinks.GetTarget(linkTarget);
+                    var platformLink = _synchronizedLinks.GetSource(platformAndUrl);
+                    var urlLink = _synchronizedLinks.GetTarget(platformAndUrl);
+                    
+                    userLinks.Add(new UserLink
+                    {
+                        Username = username,
+                        Platform = GetString(platformLink),
+                        Url = GetString(urlLink)
+                    });
+                }
+            }
+            return userLinks;
+        }
+
+        /// <summary>
+        /// <para>
+        /// Gets all user links in the system.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <returns>
+        /// <para>A list of all user links.</para>
+        /// <para></para>
+        /// </returns>
+        public List<UserLink> GetAllUserLinks()
+        {
+            var userLinks = new List<UserLink>();
+            
+            var links = _synchronizedLinks.All(new Link<UInt64>(index: Any, source: _userLinkMarker, target: Any));
+            foreach (var link in links)
+            {
+                var linkTarget = _synchronizedLinks.GetTarget(link);
+                var usernameLink = _synchronizedLinks.GetSource(linkTarget);
+                var platformAndUrl = _synchronizedLinks.GetTarget(linkTarget);
+                var platformLink = _synchronizedLinks.GetSource(platformAndUrl);
+                var urlLink = _synchronizedLinks.GetTarget(platformAndUrl);
+                
+                userLinks.Add(new UserLink
+                {
+                    Username = GetString(usernameLink),
+                    Platform = GetString(platformLink),
+                    Url = GetString(urlLink)
+                });
+            }
+            return userLinks;
+        }
 
         protected override void Dispose(bool manual, bool wasDisposed)
         {
