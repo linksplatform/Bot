@@ -307,6 +307,16 @@ namespace Storage.Remote.GitHub
             return Client.Issue.Comment.Create(repositoryId, issueNumber, message);
         }
 
+        public Task<IReadOnlyList<IssueComment>> GetIssueComments(long repositoryId, int issueNumber)
+        {
+            return Client.Issue.Comment.GetAllForIssue(repositoryId, issueNumber);
+        }
+
+        public Task DeleteIssueComment(long repositoryId, long commentId)
+        {
+            return Client.Issue.Comment.Delete(repositoryId, (int)commentId);
+        }
+
         #endregion
 
         #region Branch
