@@ -40,3 +40,26 @@ dotnet run MyNickname ghp_123 MyAppName db.links HelloWorldSet
 ```shell
 ./run.sh NICKNAME TOKEN APP_NAME
 ```
+
+## Features
+
+The bot responds to GitHub issues with specific triggers:
+
+- **Hello World**: Create issues with title "hello world" to test the bot
+- **Organization Last Month Activity**: Create issues with title "organization last month activity" to get member activity
+- **Top by Technology**: Create issues with title "Top by technology [TECHNOLOGY_NAME]" to get users ranked by their activity with specific technologies
+
+### Top by Technology
+
+The "Top by technology" feature analyzes repositories in your organization and ranks users based on:
+- Commit activity in repositories that contain the specified technology
+- Overall contribution activity weighted by technology usage
+- Repository language analysis and file patterns
+
+Example usage:
+- "Top by technology CUDA" - Find users working with CUDA
+- "Top by technology Qt" - Find users working with Qt
+- "Top by technology Docker" - Find users working with Docker
+- "Top by technology React" - Find users working with React
+
+The bot will analyze the last 3 months of activity and return the top 10 contributors for the specified technology.
