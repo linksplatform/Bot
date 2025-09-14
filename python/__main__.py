@@ -63,7 +63,9 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
-            (patterns.GITHUB_COPILOT, self.commands.github_copilot)
+            (patterns.GITHUB_COPILOT, self.commands.github_copilot),
+            (patterns.ENABLE_VOTE_LOG, self.commands.enable_vote_log),
+            (patterns.DISABLE_VOTE_LOG, self.commands.disable_vote_log)
         )
 
     def message_new(

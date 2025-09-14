@@ -226,6 +226,9 @@ class Commands:
                     user_karma_change, selected_user_karma_change, voters),
                 self.peer_id)
             self.vk_instance.delete_message(self.peer_id, self.msg_id)
+            
+            # Send vote log to subscribed users
+            self.send_vote_log(user_karma_change, selected_user_karma_change, voters, operator, amount)
 
     def apply_karma_change(
             self,
@@ -378,6 +381,116 @@ class Commands:
         self.vk_instance.send_msg(
             f'Пожалуйста, подождите {round(config.GITHUB_COPILOT_TIMEOUT - (now - self.now))} секунд', self.peer_id
         )
+
+    def enable_vote_log(self) -> NoReturn:
+        """Enable vote log subscription for the user"""
+        if self.from_id > 0:
+            self.current_user.vote_log_subscription = True
+            self.data_service.save_user(self.current_user)
+            self.vk_instance.send_msg(
+                "✅ Лог голосований включен. Вы будете получать уведомления о всех голосованиях.",
+                self.peer_id
+            )
+        
+    def disable_vote_log(self) -> NoReturn:
+        """Disable vote log subscription for the user"""
+        if self.from_id > 0:
+            self.current_user.vote_log_subscription = False
+            self.data_service.save_user(self.current_user)
+            self.vk_instance.send_msg(
+                "❌ Лог голосований отключен. Вы больше не будете получать уведомления о голосованиях.",
+                self.peer_id
+            )
+
+    def send_vote_log(
+            self,
+            user_karma_change: Optional[Tuple[int, str, int, int]],
+            selected_user_karma_change: Optional[Tuple[int, str, int, int]],
+            voters: Optional[List[int]],
+            operator: str,
+            amount: int
+    ) -> NoReturn:
+        """Send vote log to subscribed users"""
+        # Get all users with vote log subscription enabled
+        subscribed_users = self.data_service.get_users(
+            ["uid", "vote_log_subscription"], 
+            None,
+            False
+        )
+        
+        # Filter users that have subscription enabled
+        subscribed_users = [user for user in subscribed_users if user.get("vote_log_subscription", False)]
+        
+        if not subscribed_users:
+            return
+            
+        # Build log message
+        log_message = self.build_vote_log_message(
+            user_karma_change, selected_user_karma_change, voters, operator, amount
+        )
+        
+        # Send to all subscribed users
+        for user in subscribed_users:
+            user_id = user["uid"]
+            # Don't send log to the voter themselves or the recipient
+            if user_id != self.from_id and (not selected_user_karma_change or user_id != selected_user_karma_change[0]):
+                try:
+                    self.vk_instance.send_msg(log_message, user_id)
+                except Exception as e:
+                    # Continue if failed to send to one user
+                    print(f"Failed to send vote log to user {user_id}: {e}")
+                    continue
+
+    def build_vote_log_message(
+            self,
+            user_karma_change: Optional[Tuple[int, str, int, int]],
+            selected_user_karma_change: Optional[Tuple[int, str, int, int]],
+            voters: Optional[List[int]],
+            operator: str,
+            amount: int
+    ) -> str:
+        """Build vote log message"""
+        timestamp = datetime.now().strftime("%H:%M:%S")
+        chat_name = f"chat_{self.peer_id}" if self.peer_id >= 2e9 else "ЛС"
+        
+        voter_name = self.current_user.name
+        if selected_user_karma_change:
+            target_name = selected_user_karma_change[1]
+            old_karma = selected_user_karma_change[2] 
+            new_karma = selected_user_karma_change[3]
+        else:
+            return f"📊 [{timestamp}] Голосование в {chat_name} не привело к изменению кармы"
+        
+        if amount > 0:
+            # Personal karma transfer
+            log_message = (f"📊 [{timestamp}] Голосование в {chat_name}:\n"
+                          f"👤 {voter_name} передал {amount} кармы "
+                          f"→ {target_name}\n"
+                          f"🔄 Карма {target_name}: {old_karma} → {new_karma}")
+        else:
+            # Collective vote
+            vote_type = "👍 поддержка" if operator == "+" else "👎 осуждение"
+            
+            if voters:
+                # Vote completed, karma changed
+                voters_count = len(voters)
+                karma_change = new_karma - old_karma
+                change_symbol = "+" if karma_change > 0 else ""
+                
+                log_message = (f"📊 [{timestamp}] Голосование в {chat_name}:\n"
+                              f"🗳 Коллективное голосование завершено ({vote_type})\n"
+                              f"👥 Голосов: {voters_count}\n"
+                              f"👤 {target_name}: {old_karma} → {new_karma} ({change_symbol}{karma_change})")
+            else:
+                # Vote in progress
+                current_votes = len(getattr(self.user, 'supporters' if operator == '+' else 'opponents', []))
+                required_votes = config.POSITIVE_VOTES_PER_KARMA if operator == '+' else config.NEGATIVE_VOTES_PER_KARMA
+                
+                log_message = (f"📊 [{timestamp}] Голосование в {chat_name}:\n"
+                              f"🗳 {vote_type} за {target_name}\n"
+                              f"📈 Голосов: {current_votes}/{required_votes}")
+        
+        return log_message
 
     def match_command(
             self,

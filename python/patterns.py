@@ -65,3 +65,9 @@ WHAT_MEAN = recompile(
 GITHUB_COPILOT = recompile(
     r'\A\s*(code|код)\s+(?P<lang>(' + COPILOT_LANGUAGES +
     r'))(?P<text>[\S\s]+)\Z', IGNORECASE)
+
+ENABLE_VOTE_LOG = recompile(
+    r'\A\s*(включить лог голосований|enable vote log)\s*\Z', IGNORECASE)
+
+DISABLE_VOTE_LOG = recompile(
+    r'\A\s*(отключить лог голосований|disable vote log)\s*\Z', IGNORECASE)
