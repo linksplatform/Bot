@@ -35,15 +35,34 @@ class DataBuilder:
     @staticmethod
     def build_karma(
         user: BetterUser,
-        data: BetterBotBaseDataService
+        data: BetterBotBaseDataService,
+        chat_id: int = None
     ) -> str:
         """Builds the user's karma and returns its string representation.
+        
+        :param user: user object
+        :param data: data service
+        :param chat_id: chat ID for chat-specific karma, None for global display
         """
         plus_string = ""
         minus_string = ""
-        karma = user["karma"]
-        up_votes = len(user["supporters"])
-        down_votes = len(user["opponents"])
+        
+        if chat_id is not None:
+            karma = data.get_user_chat_karma(user, chat_id)
+            supporters = data.get_user_chat_supporters(user, chat_id)
+            opponents = data.get_user_chat_opponents(user, chat_id)
+        else:
+            # Fallback to old behavior for backward compatibility
+            karma_value = user["karma"]
+            karma = karma_value if isinstance(karma_value, int) else 0
+            supporters_value = user["supporters"]
+            supporters = supporters_value if isinstance(supporters_value, list) else []
+            opponents_value = user["opponents"]
+            opponents = opponents_value if isinstance(opponents_value, list) else []
+        
+        up_votes = len(supporters)
+        down_votes = len(opponents)
+        
         if up_votes > 0:
             plus_string = "+%.1f" % (up_votes / config.POSITIVE_VOTES_PER_KARMA)
         if down_votes > 0:
@@ -65,7 +84,7 @@ class DataBuilder:
             other_keys=[
                 "karma", "name", "programming_languages",
                 "supporters", "opponents", "github_profile", "uid"],
-            sort_key=lambda u: DataBuilder.calculate_real_karma(u, data),
+            sort_key=lambda u: DataBuilder.calculate_real_karma(u, data, peer_id),
             reverse_sort=reverse_sort)
         if members:
             users = [u for u in users if u["uid"] in members]
@@ -91,9 +110,28 @@ class DataBuilder:
     @staticmethod
     def calculate_real_karma(
         user: BetterUser,
-        data: BetterBotBaseDataService
+        data: BetterBotBaseDataService,
+        chat_id: int = None
     ) -> int:
-        base_karma = user["karma"]
-        up_votes = len(user["supporters"])/config.POSITIVE_VOTES_PER_KARMA
-        down_votes = len(user["opponents"])/config.NEGATIVE_VOTES_PER_KARMA
+        """Calculate real karma including pending votes.
+        
+        :param user: user object
+        :param data: data service
+        :param chat_id: chat ID for chat-specific karma calculation
+        """
+        if chat_id is not None:
+            base_karma = data.get_user_chat_karma(user, chat_id)
+            supporters = data.get_user_chat_supporters(user, chat_id)
+            opponents = data.get_user_chat_opponents(user, chat_id)
+        else:
+            # Fallback to old behavior for backward compatibility
+            karma_value = user["karma"]
+            base_karma = karma_value if isinstance(karma_value, int) else 0
+            supporters_value = user["supporters"]
+            supporters = supporters_value if isinstance(supporters_value, list) else []
+            opponents_value = user["opponents"]
+            opponents = opponents_value if isinstance(opponents_value, list) else []
+        
+        up_votes = len(supporters) / config.POSITIVE_VOTES_PER_KARMA
+        down_votes = len(opponents) / config.NEGATIVE_VOTES_PER_KARMA
         return base_karma + up_votes - down_votes

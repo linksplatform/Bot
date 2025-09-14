@@ -56,7 +56,7 @@ class Commands:
         """Sends user info"""
         self.vk_instance.send_msg(
             CommandsBuilder.build_info_message(
-                self.user, self.data_service, self.from_id, self.karma_enabled),
+                self.user, self.data_service, self.from_id, self.karma_enabled, self.peer_id),
             self.peer_id)
 
     def update_command(self) -> NoReturn:
@@ -117,7 +117,7 @@ class Commands:
             return
         is_self = self.user.uid == self.from_id
         self.vk_instance.send_msg(
-            CommandsBuilder.build_karma(self.user, self.data_service, is_self),
+            CommandsBuilder.build_karma(self.user, self.data_service, is_self, self.peer_id),
             self.peer_id)
 
     def top(
@@ -131,14 +131,18 @@ class Commands:
         maximum_users = int(maximum_users) if maximum_users else -1
         users = DataBuilder.get_users_sorted_by_karma(
             self.vk_instance, self.data_service, self.peer_id)
-        users = [i for i in users if
-                 (i["karma"] != 0) or
-                 ("programming_languages" in i and len(i["programming_languages"]) > 0)
-                 ]
+        # Filter users with chat-specific karma or programming languages
+        filtered_users = []
+        for user in users:
+            has_karma = self.data_service.get_user_chat_karma(user, self.peer_id) != 0
+            has_languages = ("programming_languages" in user and len(user["programming_languages"]) > 0)
+            if has_karma or has_languages:
+                filtered_users.append(user)
+        users = filtered_users
         self.vk_instance.send_msg(
             CommandsBuilder.build_top_users(
                 users, self.data_service, reverse,
-                self.karma_enabled, maximum_users),
+                self.karma_enabled, maximum_users, self.peer_id),
             self.peer_id)
 
     def top_langs(
@@ -156,7 +160,7 @@ class Commands:
                  ("programming_languages" in i and len(i["programming_languages"]) > 0) and
                  contains_all_strings(i["programming_languages"], languages, True)]
         built = CommandsBuilder.build_top_users(
-            users[:int(count.strip())] if count else users, self.data_service, reverse, self.karma_enabled)
+            users[:int(count.strip())] if count else users, self.data_service, reverse, self.karma_enabled, -1, self.peer_id)
         if built:
             self.vk_instance.send_msg(built, self.peer_id)
             return
@@ -178,17 +182,22 @@ class Commands:
             utcnow = datetime.utcnow()
 
             # Downvotes disabled for users with negative karma
-            if operator == "-" and self.current_user.karma < 0:
+            current_user_karma = self.data_service.get_user_chat_karma(self.current_user, self.peer_id)
+            if operator == "-" and current_user_karma < 0:
                 self.vk_instance.delete_message(self.peer_id, self.msg_id)
                 self.vk_instance.send_msg(
-                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
+                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service, self.peer_id),
                     self.peer_id)
                 return
 
             # Collective votes limit
             if amount == 0:
                 current_voters = "supporters" if operator == "+" else "opponents"
-                if self.current_user.uid in self.user[current_voters]:
+                user_voters = (self.data_service.get_user_chat_supporters(self.user, self.peer_id) 
+                              if operator == "+" 
+                              else self.data_service.get_user_chat_opponents(self.user, self.peer_id))
+                
+                if self.current_user.uid in user_voters:
                     self.vk_instance.send_msg(
                         (f'Вы уже голосовали за [id{self.user.uid}|'
                          f'{self.vk_instance.get_user_name(self.user.uid, "acc")}].'),
@@ -200,7 +209,7 @@ class Commands:
                 difference = utcnow - utclast
                 hours_difference = difference.total_seconds() / 3600
                 hours_limit = karma_limit(
-                    self.current_user.karma)
+                    current_user_karma)
                 if hours_difference < hours_limit:
                     self.vk_instance.delete_message(self.peer_id, self.msg_id)
                     self.vk_instance.send_msg(
@@ -244,9 +253,10 @@ class Commands:
 
         # Personal karma transfer
         if amount > 0:
-            if self.current_user.karma < amount:
+            current_user_karma = self.data_service.get_user_chat_karma(self.current_user, self.peer_id)
+            if current_user_karma < amount:
                 self.vk_instance.send_msg(
-                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service),
+                    CommandsBuilder.build_not_enough_karma(self.current_user, self.data_service, self.peer_id),
                     self.peer_id)
                 return user_karma_change, selected_user_karma_change, collective_vote_applied, voters
             else:
@@ -284,28 +294,46 @@ class Commands:
         :param amount: positive or negative number.
         """
         vote_applied = False
-        if self.current_user.uid not in self.user[current_voters]:
-            self.user[current_voters].append(self.current_user.uid)
+        
+        # Get current voters for this chat
+        if current_voters == "supporters":
+            user_voters = self.data_service.get_user_chat_supporters(self.user, self.peer_id)
+        else:
+            user_voters = self.data_service.get_user_chat_opponents(self.user, self.peer_id)
+            
+        if self.current_user.uid not in user_voters:
+            user_voters.append(self.current_user.uid)
             vote_applied = True
-        if len(self.user[current_voters]) >= number_of_voters:
-            voters = self.user[current_voters]
-            self.user[current_voters] = []
+            
+            # Update the user's voters for this chat
+            if current_voters == "supporters":
+                self.data_service.set_user_chat_supporters(self.user, self.peer_id, user_voters)
+            else:
+                self.data_service.set_user_chat_opponents(self.user, self.peer_id, user_voters)
+                
+        if len(user_voters) >= number_of_voters:
+            voters = user_voters[:]
+            # Reset voters for this chat
+            if current_voters == "supporters":
+                self.data_service.set_user_chat_supporters(self.user, self.peer_id, [])
+            else:
+                self.data_service.set_user_chat_opponents(self.user, self.peer_id, [])
             return self.apply_user_karma(self.user, amount), voters, vote_applied
         return None, None, vote_applied
 
-    @staticmethod
     def apply_user_karma(
+            self,
             user: BetterUser,
             amount: int
     ) -> Tuple[int, str, int, int]:
-        """Changes user karma
+        """Changes user karma for the current chat
 
         :param user: user object
         :param amount: karma amount to change
         """
-        initial_karma = user.karma
+        initial_karma = self.data_service.get_user_chat_karma(user, self.peer_id)
         new_karma = initial_karma + amount
-        user.karma = new_karma
+        self.data_service.set_user_chat_karma(user, self.peer_id, new_karma)
         return (user.uid, user.name, initial_karma, new_karma)
 
     def what_is(self) -> NoReturn:

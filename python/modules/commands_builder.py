@@ -36,15 +36,17 @@ class CommandsBuilder:
         user: BetterUser,
         data: BetterBotBaseDataService,
         from_id: int,
-        karma: bool
+        karma: bool,
+        peer_id: int = None
     ) -> str:
         """Builds info message.
 
         Arguments:
         - {user} - selected user;
         - {data} - data service;
-        - {peer_id} - chat ID;
-        - {karma} - is karma enabled in chat.
+        - {from_id} - user ID requesting info;
+        - {karma} - is karma enabled in chat;
+        - {peer_id} - chat ID for chat-specific karma display.
         """
         programming_languages_string = DataBuilder.build_programming_languages(user, data)
         profile = DataBuilder.build_github_profile(user, data, default="отсутствует")
@@ -53,9 +55,9 @@ class CommandsBuilder:
         karma_str: str = ""
         if karma:
             if is_self:
-                karma_str = f"{mention}, Ваша карма - {DataBuilder.build_karma(user, data)}.\n"
+                karma_str = f"{mention}, Ваша карма - {DataBuilder.build_karma(user, data, peer_id)}.\n"
             else:
-                karma_str = f"Карма {mention} - {DataBuilder.build_karma(user, data)}.\n"
+                karma_str = f"Карма {mention} - {DataBuilder.build_karma(user, data, peer_id)}.\n"
         else:
             karma_str = f"{mention}.\n"
         return (f"{karma_str}"
@@ -96,27 +98,46 @@ class CommandsBuilder:
     def build_karma(
         user: BetterUser,
         data: BetterBotBaseDataService,
-        is_self: bool
+        is_self: bool,
+        peer_id: int = None
     ) -> str:
         """Sends user karma amount.
+        
+        :param user: user object
+        :param data: data service
+        :param is_self: whether the user is requesting their own karma
+        :param peer_id: chat ID for chat-specific karma display
         """
         if is_self:
             return (f"[id{data.get_user_property(user, 'uid')}|"
                         f"{data.get_user_property(user, 'name')}], "
-                        f"Ваша карма — {DataBuilder.build_karma(user, data)}.")
+                        f"Ваша карма — {DataBuilder.build_karma(user, data, peer_id)}.")
         else:
             return (f"Карма [id{data.get_user_property(user, 'uid')}|"
                         f"{data.get_user_property(user, 'name')}] — "
-                        f"{DataBuilder.build_karma(user, data)}.")
+                        f"{DataBuilder.build_karma(user, data, peer_id)}.")
 
     @staticmethod
     def build_not_enough_karma(
         user: BetterUser,
-        data: BetterBotBaseDataService
+        data: BetterBotBaseDataService,
+        peer_id: int = None
     ) -> str:
+        """Build message for insufficient karma.
+        
+        :param user: user object
+        :param data: data service
+        :param peer_id: chat ID for chat-specific karma display
+        """
+        if peer_id is not None:
+            karma_value = data.get_user_chat_karma(user, peer_id)
+        else:
+            karma_prop = data.get_user_property(user, 'karma')
+            karma_value = karma_prop if isinstance(karma_prop, int) else 0
+            
         return (f"Извините, [id{data.get_user_property(user, 'uid')}|"
                 f"{data.get_user_property(user, 'name')}], "
-                f"но Вашей кармы [{data.get_user_property(user, 'karma')}] "
+                f"но Вашей кармы [{karma_value}] "
                 f"недостаточно :(")
 
     @staticmethod
@@ -147,13 +168,23 @@ class CommandsBuilder:
         data: BetterBotBaseDataService,
         reverse: bool = False,
         has_karma: bool = True,
-        maximum_users: int = -1
+        maximum_users: int = -1,
+        peer_id: int = None
     ) -> Optional[str]:
+        """Build top users list display.
+        
+        :param users: list of users
+        :param data: data service
+        :param reverse: whether to reverse the order
+        :param has_karma: whether to display karma
+        :param maximum_users: maximum number of users to display
+        :param peer_id: chat ID for chat-specific karma display
+        """
         if not users:
             return None
         if reverse:
             users = reversed(users)
-        user_strings = [(f"{DataBuilder.build_karma(user, data) if has_karma else ''} "
+        user_strings = [(f"{DataBuilder.build_karma(user, data, peer_id) if has_karma else ''} "
                          f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}]"
                          f"{DataBuilder.build_github_profile(user, data, prefix=' - ')} "
                          f"{DataBuilder.build_programming_languages(user, data, '')}") for user in users]
