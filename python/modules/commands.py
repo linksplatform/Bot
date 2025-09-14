@@ -170,6 +170,10 @@ class Commands:
             if selected_user_id:
                 self.user = self.data_service.get_user(int(selected_user_id), self)
 
+        # Disable votes on bot messages (votes on votes)
+        if self.user and self.user.uid < 0:
+            return
+
         if self.user and (self.user.uid != self.from_id):
             operator = self.matched.group("operator")[0]
             amount = self.matched.group("amount")
