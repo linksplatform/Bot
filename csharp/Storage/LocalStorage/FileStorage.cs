@@ -329,6 +329,50 @@ namespace Storage.Local
 
         // public void SetLastGithubMigrationTimeStamp()
 
+        /// <summary>
+        /// <para>
+        /// Checks if a user has been welcomed before.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="username">
+        /// <para>The username to check.</para>
+        /// <para></para>
+        /// </param>
+        /// <returns>
+        /// <para>True if user is new (not welcomed), false if already welcomed</para>
+        /// <para></para>
+        /// </returns>
+        public bool IsNewUser(string username)
+        {
+            var userMarker = CreateString($"welcomed_user:{username}");
+            try
+            {
+                var existingUser = _synchronizedLinks.SearchOrDefault(userMarker, _synchronizedLinks.Constants.Itself);
+                return existingUser == _synchronizedLinks.Constants.Null;
+            }
+            catch
+            {
+                return true; // Assume new user if there's any error
+            }
+        }
+
+        /// <summary>
+        /// <para>
+        /// Marks a user as welcomed.
+        /// </para>
+        /// <para></para>
+        /// </summary>
+        /// <param name="username">
+        /// <para>The username to mark as welcomed.</para>
+        /// <para></para>
+        /// </param>
+        public void MarkUserAsWelcomed(string username)
+        {
+            var userMarker = CreateString($"welcomed_user:{username}");
+            _synchronizedLinks.GetOrCreate(userMarker, _synchronizedLinks.Constants.Itself);
+        }
+
         protected override void Dispose(bool manual, bool wasDisposed)
         {
             _disposableLinks.Dispose();
