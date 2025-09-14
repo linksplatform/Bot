@@ -308,6 +308,102 @@ class Commands:
         user.karma = new_karma
         return (user.uid, user.name, initial_karma, new_karma)
 
+    def local_karma_message(self) -> NoReturn:
+        """Shows user's local karma for current chat."""
+        if self.peer_id < 2e9 and not self.karma_enabled:
+            return
+        is_self = self.user.uid == self.from_id
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_local_karma(self.user, self.data_service, is_self, self.peer_id),
+            self.peer_id)
+
+    def apply_local_karma(self) -> NoReturn:
+        """Changes user local karma for current chat."""
+        if self.peer_id < 2e9 or not self.karma_enabled or not self.matched or self.is_bot_selected:
+            return
+
+        operator = self.matched.group("operator")
+        amount_string = self.matched.group("amount")
+        amount = int(amount_string) if amount_string else 1
+
+        if amount > 10:
+            return
+
+        selected_user_id = self.matched.group("selectedUserId")
+        selected_user = self.data_service.get_user(
+            int(selected_user_id), self.vk_instance) if selected_user_id else self.user
+
+        if selected_user.uid == self.from_id:
+            return
+
+        if selected_user.uid == config.BOT_GROUP_ID:
+            self.is_bot_selected = True
+            return
+
+        if operator == "-":
+            # Downvotes disabled for users with negative local karma
+            if self.data_service.get_local_karma(self.current_user, self.peer_id) < 0:
+                self.vk_instance.send_msg(
+                    CommandsBuilder.build_not_enough_local_karma(self.current_user, self.data_service, self.peer_id),
+                    self.peer_id)
+                return
+
+        current_time = datetime.now()
+        last_vote_time = self.current_user.last_collective_vote
+
+        if last_vote_time > 0:
+            time_diff = (current_time - datetime.fromtimestamp(last_vote_time)).total_seconds() / 3600
+            hours_limit = karma_limit(
+                self.data_service.get_local_karma(self.current_user, self.peer_id))
+
+            if time_diff < hours_limit:
+                return
+
+        # Apply local karma change
+        local_karma_change = self.apply_user_local_karma(selected_user, amount if operator == "+" else -amount)
+
+        if local_karma_change:
+            self.current_user.last_collective_vote = current_time.timestamp()
+            self.data_service.save_user(self.current_user)
+            self.data_service.save_user(selected_user)
+            self.vk_instance.send_msg(
+                CommandsBuilder.build_local_karma_change(local_karma_change, self.peer_id),
+                self.peer_id)
+
+    def apply_user_local_karma(
+        self,
+        user: BetterUser,
+        amount: int
+    ) -> Optional[Tuple[int, str, int, int]]:
+        """Changes user local karma for current chat
+
+        :param user: user object
+        :param amount: karma amount to change
+        :return: tuple of (user_id, username, initial_karma, new_karma) or None
+        """
+        initial_karma = self.data_service.get_local_karma(user, self.peer_id)
+        new_karma = initial_karma + amount
+        self.data_service.set_local_karma(user, self.peer_id, new_karma)
+        return (user.uid, user.name, initial_karma, new_karma)
+
+    def local_top(self, reverse: bool = False) -> NoReturn:
+        """Sends users local karma top for current chat."""
+        if self.peer_id < 2e9:
+            return
+        maximum_users = self.matched.group("maximum_users")
+        maximum_users = int(maximum_users) if maximum_users else -1
+        users = DataBuilder.get_users_sorted_by_local_karma(
+            self.vk_instance, self.data_service, self.peer_id, self.peer_id)
+        users = [user for user in users if user["local_karma"] != 0 or not reverse]
+        if maximum_users != -1:
+            users = users[:maximum_users]
+        if reverse:
+            users.reverse()
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_local_top_users(
+                users, self.data_service, reverse, self.karma_enabled, maximum_users),
+            self.peer_id)
+
     def what_is(self) -> NoReturn:
         """Search on wikipedia and sends if available"""
         question = self.matched.groups()

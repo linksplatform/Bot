@@ -19,6 +19,7 @@ class BetterBotBaseDataService:
         self.base.addPattern("supporters", [])
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
+        self.base.addPattern("local_karma", {})
 
     def get_or_create_user(
         self,
@@ -115,3 +116,35 @@ class BetterBotBaseDataService:
         user: BetterUser
     ) -> NoReturn:
         self.base.save(user)
+
+    @staticmethod
+    def get_local_karma(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int
+    ) -> int:
+        """Get user's karma for specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat identifier
+        :return: karma value for the chat
+        """
+        local_karma_dict = BetterBotBaseDataService.get_user_property(user, "local_karma")
+        return local_karma_dict.get(str(chat_id), 0)
+    
+    @staticmethod
+    def set_local_karma(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int,
+        karma_value: int
+    ) -> NoReturn:
+        """Set user's karma for specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat identifier
+        :param karma_value: new karma value
+        """
+        local_karma_dict = BetterBotBaseDataService.get_user_property(user, "local_karma")
+        if local_karma_dict is None:
+            local_karma_dict = {}
+        local_karma_dict[str(chat_id)] = karma_value
+        BetterBotBaseDataService.set_user_property(user, "local_karma", local_karma_dict)
