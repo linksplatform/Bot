@@ -32,7 +32,8 @@ class BetterBotBaseDataService:
         """
         if self.base.notInBD(uid):
             if vk:
-                name = vk.users.get(user_ids=uid)['response'][0]["first_name"]
+                user_data = vk.users.get(user_ids=uid)['response'][0]
+                name = f"{user_data['first_name']} {user_data['last_name']}"
             else:
                 name = "Пользователь"
             return self.base.addNew(uid=uid, name=name)

@@ -11,7 +11,7 @@ class VkInstance:
     """
     __all__ = [
         'send_msg', 'delete_message',
-        'get_user_name', 'get_members_ids'
+        'get_user_name', 'get_user_full_name', 'get_members_ids'
     ]
     data = BetterBotBaseDataService()
 
@@ -41,6 +41,13 @@ class VkInstance:
         name_case: str = "nom"
     ) -> str:
         return "username"
+
+    def get_user_full_name(
+        self,
+        uid: int,
+        name_case: str = "nom"
+    ) -> str:
+        return "username lastname"
 
     def send_msg(
         self,
