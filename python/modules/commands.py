@@ -165,6 +165,20 @@ class Commands:
         """Changes user karma."""
         if self.peer_id < 2e9 or not self.karma_enabled or not self.matched or self.is_bot_selected:
             return
+        
+        # Check if the target message is older than 24 hours
+        if self.selected_message and 'date' in self.selected_message:
+            message_timestamp = self.selected_message['date']
+            current_timestamp = datetime.utcnow().timestamp()
+            hours_since_message = (current_timestamp - message_timestamp) / 3600
+            
+            if hours_since_message > 24:
+                self.vk_instance.send_msg(
+                    "❌ Cannot vote on messages older than 24 hours.",
+                    self.peer_id
+                )
+                return
+        
         if not self.user:
             selected_user_id = self.matched.group("selectedUserId")
             if selected_user_id:
