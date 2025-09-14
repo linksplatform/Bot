@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace Platform.Bot.Triggers
 {
     using TContext = Issue;
-    internal class LastCommitActivityTrigger : ITrigger<TContext>
+    internal class LastCommitActivityTrigger : IPrivateMessageTrigger<TContext>
     {
         private readonly GitHubStorage _githubStorage;
 
@@ -26,13 +26,29 @@ namespace Platform.Bot.Triggers
 
         public async Task Action(TContext issue)
         {
+            Console.WriteLine($"Issue {issue.Title} is processed: {issue.HtmlUrl}");
+            await _githubStorage.Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, new IssueUpdate() { State = ItemState.Closed });
+        }
+
+        public string GetTargetUserLogin(TContext issue)
+        {
+            return issue.User.Login;
+        }
+
+        public string GetMessageSubject(TContext issue)
+        {
+            return "Last 3 Months Commit Activity Report";
+        }
+
+        public async Task<string> GetPrivateMessageContent(TContext issue)
+        {
             var organizationName = issue.Repository.Owner.Login;
 
             var allMembers = await _githubStorage.GetAllOrganizationMembers(organizationName);
             var allRepositories = await _githubStorage.GetAllRepositories(organizationName);
             if (!allRepositories.Any())
             {
-                return;
+                return "No repositories found in the organization.";
             }
 
             var commitsPerUserInLast3Months = await allRepositories
@@ -54,16 +70,15 @@ namespace Platform.Bot.Triggers
                     }
                     return dictionary;
                 });
+            
             StringBuilder messageSb = new();
             var ShortSummaryMessage = GetShortSummaryMessage(commitsPerUserInLast3Months.Select(pair => pair.Key).ToList());
             messageSb.Append(ShortSummaryMessage);
             messageSb.AppendLine("---");
             var detailedMessage = await GetDetailedMessage(commitsPerUserInLast3Months);
             messageSb.Append(detailedMessage);
-            var message = messageSb.ToString();
-            await _githubStorage.CreateIssueComment(issue.Repository.Id, issue.Number, message);
-            Console.WriteLine($"Issue {issue.Title} is processed: {issue.HtmlUrl}");
-            await _githubStorage.Client.Issue.Update(issue.Repository.Owner.Login, issue.Repository.Name, issue.Number, new IssueUpdate() { State = ItemState.Closed });
+            
+            return messageSb.ToString();
         }
 
         private string GetShortSummaryMessage(List<User> users)

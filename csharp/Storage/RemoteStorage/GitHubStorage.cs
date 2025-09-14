@@ -307,6 +307,33 @@ namespace Storage.Remote.GitHub
             return Client.Issue.Comment.Create(repositoryId, issueNumber, message);
         }
 
+        public async Task<Issue> SendPrivateMessage(string userLogin, string subject, string message, string botCommunicationRepoName = "bot-communications")
+        {
+            try
+            {
+                var repo = await Client.Repository.Get(Owner, botCommunicationRepoName);
+                var issueTitle = $"Message for @{userLogin}: {subject}";
+                var issueBody = $"@{userLogin}\n\n{message}";
+                
+                var newIssue = new NewIssue(issueTitle)
+                {
+                    Body = issueBody
+                };
+                
+                return await Client.Issue.Create(repo.Id, newIssue);
+            }
+            catch (NotFoundException)
+            {
+                throw new InvalidOperationException($"Bot communication repository '{botCommunicationRepoName}' not found. Please create this repository first.");
+            }
+        }
+
+        public async Task<IssueComment> CreateMinimalIssueComment(long repositoryId, int issueNumber, string userLogin, string subject, Issue privateMessageIssue)
+        {
+            var message = $"@{userLogin} Bot message sent privately: [{subject}]({privateMessageIssue.HtmlUrl})";
+            return await Client.Issue.Comment.Create(repositoryId, issueNumber, message);
+        }
+
         #endregion
 
         #region Branch
