@@ -62,7 +62,7 @@ class Commands:
     def update_command(self) -> NoReturn:
         """Updates user profile."""
         if self.from_id > 0:
-            name = self.vk_instance.get_user_name(self.from_id)
+            name = self.vk_instance.get_user_full_name(self.from_id)
             self.current_user.name = name
             self.data_service.save_user(self.current_user)
             self.info_message()
@@ -191,7 +191,7 @@ class Commands:
                 if self.current_user.uid in self.user[current_voters]:
                     self.vk_instance.send_msg(
                         (f'Вы уже голосовали за [id{self.user.uid}|'
-                         f'{self.vk_instance.get_user_name(self.user.uid, "acc")}].'),
+                         f'{self.vk_instance.get_user_full_name(self.user.uid, "acc")}].'),
                         self.peer_id
                     )
                     return

@@ -189,6 +189,28 @@ class Bot(Vk):
             'users.get', dict(user_ids=uid, name_case=name_case)
         )['response'][0]["first_name"]
 
+    def get_user_full_name(
+        self,
+        uid: int,
+        name_case: str = "nom"
+    ) -> str:
+        """Returns user full name (first + last name).
+
+        :param uid: user ID
+        :param name_case: The declension case for the user's first and last name.
+            Possible values:
+            • Nominative – nom,
+            • Genitive – gen,
+            • dative – dat,
+            • accusative – acc,
+            • instrumental – ins,
+            • prepositional – abl.
+        """
+        user_data = self.call_method(
+            'users.get', dict(user_ids=uid, name_case=name_case)
+        )['response'][0]
+        return f"{user_data['first_name']} {user_data['last_name']}"
+
     @staticmethod
     def get_messages(
         event: Dict[str, Any]
