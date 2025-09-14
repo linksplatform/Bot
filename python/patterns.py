@@ -15,8 +15,6 @@ INFO = recompile(
 UPDATE = recompile(
     r'\A\s*(обновить|update)\s*\Z', IGNORECASE)
 
-KARMA = recompile(
-    r'\A\s*(карма|karma)\s*\Z', IGNORECASE)
 
 APPLY_KARMA = recompile(
     r'\A(\[id(?<selectedUserId>\d+)\|@\w+\])?\s*(?P<operator>\+|\-)(?P<amount>[0-9]*)\s*\Z')

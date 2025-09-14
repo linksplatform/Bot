@@ -165,13 +165,6 @@ class Test3Commands(TestCase):
         self.commands.match_command(patterns.REMOVE_GITHUB_PROFILE)
         self.commands.change_github_profile(False)
 
-    @ordered
-    def test_karma_message(
-        self
-    ) -> NoReturn:
-        self.commands.karma_message()
-        self.commands.user = db.get_user(2)
-        self.commands.karma_message()
 
     @ordered
     def test_top(
@@ -203,7 +196,6 @@ class Test3Commands(TestCase):
         self.commands.user = db.get_user(1)
         self.commands.apply_user_karma(self.commands.user, 5)
         db.save_user(self.commands.user)
-        self.commands.karma_message()
 
     @ordered
     def test_apply_collective_vote(
@@ -213,14 +205,12 @@ class Test3Commands(TestCase):
         self.commands.user = db.get_user(1)
         self.commands.apply_collective_vote("opponents", config.NEGATIVE_VOTES_PER_KARMA, -1)
         db.save_user(self.commands.user)
-        self.commands.karma_message()
 
     @ordered
     def test_apply_karma_change(
         self
     ) -> NoReturn:
         self.commands.apply_karma_change('-', 6)
-        self.commands.karma_message()
 
 
 if __name__ == '__main__':

@@ -92,22 +92,6 @@ class CommandsBuilder:
             return (f"[id{data.get_user_property(user, 'uid')}|{data.get_user_property(user, 'name')}], "
                     f"Ваша страничка на GitHub — {profile}.")
 
-    @staticmethod
-    def build_karma(
-        user: BetterUser,
-        data: BetterBotBaseDataService,
-        is_self: bool
-    ) -> str:
-        """Sends user karma amount.
-        """
-        if is_self:
-            return (f"[id{data.get_user_property(user, 'uid')}|"
-                        f"{data.get_user_property(user, 'name')}], "
-                        f"Ваша карма — {DataBuilder.build_karma(user, data)}.")
-        else:
-            return (f"Карма [id{data.get_user_property(user, 'uid')}|"
-                        f"{data.get_user_property(user, 'name')}] — "
-                        f"{DataBuilder.build_karma(user, data)}.")
 
     @staticmethod
     def build_not_enough_karma(

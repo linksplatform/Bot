@@ -51,7 +51,6 @@ class Bot(Vk):
              lambda: self.commands.change_github_profile(True)),
             (patterns.REMOVE_GITHUB_PROFILE,
              lambda: self.commands.change_github_profile(False)),
-            (patterns.KARMA, self.commands.karma_message),
             (patterns.TOP, self.commands.top),
             (patterns.PEOPLE, self.commands.top),
             (patterns.BOTTOM,
