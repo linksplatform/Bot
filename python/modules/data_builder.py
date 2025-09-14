@@ -17,7 +17,11 @@ class DataBuilder:
     ) -> str:
         """Builds the user's programming languages and returns its string representation.
         """
-        languages = data.get_user_sorted_programming_languages(user)
+        # Check user's sorting preference, default to True for existing users
+        sort_preference = data.get_user_property(user, "programming_languages_sorted")
+        if sort_preference is None:
+            sort_preference = True
+        languages = data.get_user_sorted_programming_languages(user, sort=sort_preference)
         return ", ".join(languages) if len(languages) > 0 else default
 
     @staticmethod

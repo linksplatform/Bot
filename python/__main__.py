@@ -63,7 +63,11 @@ class Bot(Vk):
             (patterns.WHAT_IS, self.commands.what_is),
             (patterns.WHAT_MEAN, self.commands.what_is),
             (patterns.APPLY_KARMA, self.commands.apply_karma),
-            (patterns.GITHUB_COPILOT, self.commands.github_copilot)
+            (patterns.GITHUB_COPILOT, self.commands.github_copilot),
+            (patterns.ENABLE_SORTING,
+             lambda: self.commands.change_sorting_preference(True)),
+            (patterns.DISABLE_SORTING,
+             lambda: self.commands.change_sorting_preference(False))
         )
 
     def message_new(

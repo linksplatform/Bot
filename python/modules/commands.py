@@ -111,6 +111,19 @@ class Commands:
             CommandsBuilder.build_github_profile(self.current_user, self.data_service),
             self.peer_id)
 
+    def change_sorting_preference(
+            self,
+            enable: bool
+    ) -> NoReturn:
+        """Changes sorting preference for programming languages."""
+        self.current_user.programming_languages_sorted = enable
+        self.data_service.save_user(self.current_user)
+        status = "включена" if enable else "выключена"
+        self.vk_instance.send_msg(
+            CommandsBuilder.build_sorting_preference_changed(
+                self.current_user, self.data_service, status),
+            self.peer_id)
+
     def karma_message(self) -> NoReturn:
         """Shows user's karma."""
         if self.peer_id < 2e9 and not self.karma_enabled:
