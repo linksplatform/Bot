@@ -39,10 +39,13 @@ class Bot(Vk):
         self.userbot = UserBot()
         self.data = BetterBotBaseDataService()
         self.commands = Commands(self, self.data)
+        self.last_auto_update_check = datetime.now()
         self.commands.register_cmds(
             (patterns.HELP, self.commands.help_message),
             (patterns.INFO, self.commands.info_message),
             (patterns.UPDATE, self.commands.update_command),
+            (patterns.UPDATE_ALL, self.commands.update_all_command),
+            (patterns.AUTO_UPDATE, self.commands.toggle_auto_update),
             (patterns.ADD_PROGRAMMING_LANGUAGE,
              lambda: self.commands.change_programming_language(True)),
             (patterns.REMOVE_PROGRAMMING_LANGUAGE,
@@ -66,12 +69,48 @@ class Bot(Vk):
             (patterns.GITHUB_COPILOT, self.commands.github_copilot)
         )
 
+    def check_periodic_updates(self) -> NoReturn:
+        """Checks if it's time to perform periodic auto-updates."""
+        now = datetime.now()
+        time_diff = now - self.last_auto_update_check
+        
+        # Check for auto-updates every 6 hours
+        if time_diff.total_seconds() >= 6 * 3600:
+            self.last_auto_update_check = now
+            
+            # Get users who haven't been auto-updated in the last 24 hours
+            from time import time
+            cutoff_time = int(time()) - 24 * 3600  # 24 hours ago
+            
+            try:
+                # Get all users from database who have auto-update enabled
+                all_users = self.data.base.getByKeys("auto_update_enabled", "last_auto_update")
+                users_to_update = [
+                    user for user in all_users 
+                    if user.get("auto_update_enabled", True) and 
+                    user.get("last_auto_update", 0) < cutoff_time
+                ]
+                
+                # Update up to 10 users at a time to avoid API limits
+                for user_data in users_to_update[:10]:
+                    user_id = user_data.get("uid")
+                    if user_id and user_id > 0:
+                        user = self.data.get_user(user_id)
+                        updated_fields = self.commands._update_user_profile(user, user_id)
+                        if updated_fields:
+                            print(f"Periodic auto-update: Updated user {user_id} - {', '.join(updated_fields)}")
+                            
+            except Exception as e:
+                print(f"Error during periodic auto-update: {e}")
+
     def message_new(
         self,
         event: Dict[str, Any]
     ) -> NoReturn:
         """Handling all new messages.
         """
+        # Check for periodic updates occasionally
+        self.check_periodic_updates()
         event = event["object"]["message"]
         msg = event["text"].lstrip("/")
         peer_id = event["peer_id"]

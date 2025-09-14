@@ -60,12 +60,199 @@ class Commands:
             self.peer_id)
 
     def update_command(self) -> NoReturn:
-        """Updates user profile."""
+        """Updates user profile with comprehensive information from VK API."""
         if self.from_id > 0:
-            name = self.vk_instance.get_user_name(self.from_id)
-            self.current_user.name = name
-            self.data_service.save_user(self.current_user)
-            self.info_message()
+            updated_fields = []
+            
+            # Get comprehensive user info from VK API
+            user_info = self.vk_instance.call_method(
+                'users.get',
+                dict(
+                    user_ids=self.from_id,
+                    fields='about,activities,bdate,books,career,city,contacts,education,games,interests,movies,music,personal,quotes,relation,schools,site,tv,universities'
+                )
+            )
+            
+            if 'response' in user_info and user_info['response']:
+                user_data = user_info['response'][0]
+                
+                # Update name
+                current_name = f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip()
+                if current_name and self.current_user.name != current_name:
+                    self.current_user.name = current_name
+                    updated_fields.append("имя")
+                
+                # Auto-detect GitHub profile from site field
+                site = user_data.get('site', '')
+                if site and 'github.com/' in site:
+                    # Extract GitHub username from URL
+                    import re
+                    github_match = re.search(r'github\.com/([a-zA-Z0-9-_]+)', site)
+                    if github_match:
+                        github_username = github_match.group(1)
+                        if self.current_user.github_profile != github_username:
+                            # Verify GitHub profile exists before updating
+                            if is_available_ghpage(github_username):
+                                self.current_user.github_profile = github_username
+                                updated_fields.append("GitHub профиль")
+                
+                # Auto-detect programming languages from activities or about
+                activities = user_data.get('activities', '').lower()
+                about = user_data.get('about', '').lower()
+                combined_text = f"{activities} {about}"
+                
+                # Check for programming languages mentioned in profile
+                detected_languages = []
+                for lang_pattern in config.DEFAULT_PROGRAMMING_LANGUAGES:
+                    lang_clean = lang_pattern.replace('\\', '').replace('+', r'\+').replace('-', r'\-')
+                    if lang_clean.lower() in combined_text:
+                        detected_languages.append(lang_pattern.replace('\\', ''))
+                
+                # Add detected languages that aren't already in user's profile
+                current_languages = self.current_user.programming_languages or []
+                new_languages = [lang for lang in detected_languages if lang not in current_languages]
+                if new_languages:
+                    self.current_user.programming_languages = current_languages + new_languages
+                    updated_fields.append(f"языки программирования ({', '.join(new_languages)})")
+                
+                # Save updated user profile
+                self.data_service.save_user(self.current_user)
+                
+                # Send detailed update message
+                if updated_fields:
+                    update_message = f"Профиль обновлен!\nОбновленные поля: {', '.join(updated_fields)}"
+                else:
+                    update_message = "Профиль проверен - изменений не найдено."
+                
+                self.vk_instance.send_msg(update_message, self.peer_id)
+                self.info_message()
+            else:
+                self.vk_instance.send_msg("Ошибка при получении данных профиля.", self.peer_id)
+
+    def update_all_command(self) -> NoReturn:
+        """Updates all user profiles in the current chat (admin only)."""
+        # Check if user has admin privileges (high karma or specific user ID)
+        if self.current_user.karma < 50 and self.from_id not in [147953325]:  # Add admin user IDs here
+            self.vk_instance.send_msg("Недостаточно прав для выполнения массового обновления.", self.peer_id)
+            return
+        
+        if self.peer_id < 2e9:
+            self.vk_instance.send_msg("Команда доступна только в беседах.", self.peer_id)
+            return
+        
+        # Get all chat members
+        member_ids = self.vk_instance.get_members_ids(self.peer_id)
+        if not member_ids:
+            self.vk_instance.send_msg("Не удалось получить список участников беседы.", self.peer_id)
+            return
+        
+        updated_count = 0
+        processed_count = 0
+        
+        for member_id in member_ids:
+            if member_id <= 0:  # Skip groups/bots
+                continue
+                
+            user = self.data_service.get_user(member_id, self.vk_instance)
+            if not user.auto_update_enabled:
+                continue
+                
+            # Apply the same update logic as single update
+            updated_fields = self._update_user_profile(user, member_id)
+            if updated_fields:
+                updated_count += 1
+            processed_count += 1
+        
+        self.vk_instance.send_msg(
+            f"Массовое обновление завершено!\nОбработано пользователей: {processed_count}\nОбновлено профилей: {updated_count}",
+            self.peer_id
+        )
+    
+    def toggle_auto_update(self) -> NoReturn:
+        """Toggles auto-update setting for current user."""
+        if self.from_id <= 0:
+            return
+            
+        action = self.matched.group(2).lower() if self.matched.group(2) else ""
+        
+        if action in ['вкл', 'on']:
+            self.current_user.auto_update_enabled = True
+            message = "Автообновление профиля включено."
+        elif action in ['выкл', 'off']:
+            self.current_user.auto_update_enabled = False
+            message = "Автообновление профиля отключено."
+        else:
+            current_status = "включено" if self.current_user.auto_update_enabled else "отключено"
+            message = f"Автообновление профиля сейчас {current_status}."
+        
+        self.data_service.save_user(self.current_user)
+        self.vk_instance.send_msg(message, self.peer_id)
+    
+    def _update_user_profile(self, user, user_id: int) -> list:
+        """Helper method to update a single user profile. Returns list of updated fields."""
+        updated_fields = []
+        
+        try:
+            # Get user info from VK API
+            user_info = self.vk_instance.call_method(
+                'users.get',
+                dict(
+                    user_ids=user_id,
+                    fields='about,activities,bdate,books,career,city,contacts,education,games,interests,movies,music,personal,quotes,relation,schools,site,tv,universities'
+                )
+            )
+            
+            if 'response' not in user_info or not user_info['response']:
+                return updated_fields
+                
+            user_data = user_info['response'][0]
+            
+            # Update name
+            current_name = f"{user_data.get('first_name', '')} {user_data.get('last_name', '')}".strip()
+            if current_name and user.name != current_name:
+                user.name = current_name
+                updated_fields.append("имя")
+            
+            # Auto-detect GitHub profile from site field
+            site = user_data.get('site', '')
+            if site and 'github.com/' in site:
+                import re
+                github_match = re.search(r'github\.com/([a-zA-Z0-9-_]+)', site)
+                if github_match:
+                    github_username = github_match.group(1)
+                    if user.github_profile != github_username:
+                        if is_available_ghpage(github_username):
+                            user.github_profile = github_username
+                            updated_fields.append("GitHub профиль")
+            
+            # Auto-detect programming languages from activities or about
+            activities = user_data.get('activities', '').lower()
+            about = user_data.get('about', '').lower()
+            combined_text = f"{activities} {about}"
+            
+            detected_languages = []
+            for lang_pattern in config.DEFAULT_PROGRAMMING_LANGUAGES:
+                lang_clean = lang_pattern.replace('\\', '').replace('+', r'\+').replace('-', r'\-')
+                if lang_clean.lower() in combined_text:
+                    detected_languages.append(lang_pattern.replace('\\', ''))
+            
+            current_languages = user.programming_languages or []
+            new_languages = [lang for lang in detected_languages if lang not in current_languages]
+            if new_languages:
+                user.programming_languages = current_languages + new_languages
+                updated_fields.append(f"языки программирования")
+            
+            # Update last auto-update timestamp
+            from time import time
+            user.last_auto_update = int(time())
+            
+            # Save updated user profile
+            self.data_service.save_user(user)
+            
+        except Exception as e:
+            print(f"Error updating user {user_id}: {e}")
+        
+        return updated_fields
 
     def change_programming_language(
             self,

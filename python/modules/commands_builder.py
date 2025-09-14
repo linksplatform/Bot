@@ -20,16 +20,24 @@ class CommandsBuilder:
         - {karma} - is karma enabled in chat.
         """
         documentation_link = "vk.cc/c9TNs3"
+        base_commands = ("\n🔄 Команды обновления профиля:\n"
+                        "• обновить/update — обновить свой профиль\n"
+                        "• обновить всех/update all — массовое обновление (для админов)\n"
+                        "• автообновление вкл/выкл — управление автообновлением\n")
+        
         if 0 < peer_id < 2e9:
             return ("Вы находитесь в личных сообщениях бота.\n"
-                    f"Документация — {documentation_link}")
+                    f"Документация — {documentation_link}"
+                    f"{base_commands}")
         elif peer_id > 2e9:
             if karma:
                 return ("Вы находитесь в беседе с включённой кармой.\n"
-                        f"Документация — {documentation_link}")
+                        f"Документация — {documentation_link}"
+                        f"{base_commands}")
             else:
                 return (f"Вы находитесь в беседе (#{peer_id}) с выключенной кармой.\n"
-                        f"Документация — {documentation_link}")
+                        f"Документация — {documentation_link}"
+                        f"{base_commands}")
 
     @staticmethod
     def build_info_message(
