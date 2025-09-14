@@ -16,9 +16,9 @@ class BetterBotBaseDataService:
         self.base.addPattern("programming_languages", [])
         self.base.addPattern("last_collective_vote", 0)
         self.base.addPattern("github_profile", "")
-        self.base.addPattern("supporters", [])
-        self.base.addPattern("opponents", [])
-        self.base.addPattern("karma", 0)
+        self.base.addPattern("supporters", {})  # {chat_id: [user_ids]}
+        self.base.addPattern("opponents", {})   # {chat_id: [user_ids]}
+        self.base.addPattern("karma", {})       # {chat_id: karma_value}
 
     def get_or_create_user(
         self,
@@ -115,3 +115,108 @@ class BetterBotBaseDataService:
         user: BetterUser
     ) -> NoReturn:
         self.base.save(user)
+
+    @staticmethod
+    def get_user_chat_karma(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int
+    ) -> int:
+        """Get user's karma for a specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat ID
+        """
+        karma_dict = BetterBotBaseDataService.get_user_property(user, "karma")
+        if isinstance(karma_dict, dict):
+            return karma_dict.get(chat_id, 0)
+        # Backward compatibility: treat old integer karma as global
+        return karma_dict if isinstance(karma_dict, int) else 0
+
+    @staticmethod
+    def set_user_chat_karma(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int,
+        karma_value: int
+    ) -> NoReturn:
+        """Set user's karma for a specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat ID
+        :param karma_value: new karma value
+        """
+        karma_dict = BetterBotBaseDataService.get_user_property(user, "karma")
+        if not isinstance(karma_dict, dict):
+            # Migrate from old integer karma to dict
+            karma_dict = {} if karma_dict == 0 else {chat_id: karma_dict}
+        karma_dict[chat_id] = karma_value
+        BetterBotBaseDataService.set_user_property(user, "karma", karma_dict)
+
+    @staticmethod
+    def get_user_chat_supporters(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int
+    ) -> List[int]:
+        """Get user's supporters for a specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat ID
+        """
+        supporters_dict = BetterBotBaseDataService.get_user_property(user, "supporters")
+        if isinstance(supporters_dict, dict):
+            return supporters_dict.get(chat_id, [])
+        # Backward compatibility: treat old list as global
+        return supporters_dict if isinstance(supporters_dict, list) else []
+
+    @staticmethod
+    def set_user_chat_supporters(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int,
+        supporters: List[int]
+    ) -> NoReturn:
+        """Set user's supporters for a specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat ID
+        :param supporters: list of supporter user IDs
+        """
+        supporters_dict = BetterBotBaseDataService.get_user_property(user, "supporters")
+        if not isinstance(supporters_dict, dict):
+            # Migrate from old list to dict
+            supporters_dict = {} if not supporters_dict else {chat_id: supporters_dict}
+        supporters_dict[chat_id] = supporters
+        BetterBotBaseDataService.set_user_property(user, "supporters", supporters_dict)
+
+    @staticmethod
+    def get_user_chat_opponents(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int
+    ) -> List[int]:
+        """Get user's opponents for a specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat ID
+        """
+        opponents_dict = BetterBotBaseDataService.get_user_property(user, "opponents")
+        if isinstance(opponents_dict, dict):
+            return opponents_dict.get(chat_id, [])
+        # Backward compatibility: treat old list as global
+        return opponents_dict if isinstance(opponents_dict, list) else []
+
+    @staticmethod
+    def set_user_chat_opponents(
+        user: Union[Dict[str, Any], BetterUser],
+        chat_id: int,
+        opponents: List[int]
+    ) -> NoReturn:
+        """Set user's opponents for a specific chat.
+        
+        :param user: dict or BetterUser
+        :param chat_id: chat ID
+        :param opponents: list of opponent user IDs
+        """
+        opponents_dict = BetterBotBaseDataService.get_user_property(user, "opponents")
+        if not isinstance(opponents_dict, dict):
+            # Migrate from old list to dict
+            opponents_dict = {} if not opponents_dict else {chat_id: opponents_dict}
+        opponents_dict[chat_id] = opponents
+        BetterBotBaseDataService.set_user_property(user, "opponents", opponents_dict)
