@@ -19,6 +19,8 @@ class BetterBotBaseDataService:
         self.base.addPattern("supporters", [])
         self.base.addPattern("opponents", [])
         self.base.addPattern("karma", 0)
+        self.base.addPattern("daily_message_count", 0)
+        self.base.addPattern("last_message_date", "")
 
     def get_or_create_user(
         self,

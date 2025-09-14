@@ -68,3 +68,29 @@ def is_available_ghpage(
     """Returns True if github profile is available.
     """
     return requests.get(f'https://github.com/{profile}').status_code == 200
+
+
+def get_daily_message_limit(karma: int) -> int:
+    """Returns daily message limit based on karma level.
+    
+    :param karma: user's karma value
+    :return: maximum number of messages allowed per day
+    """
+    if karma > -10:
+        return -1  # No limit
+    elif karma > -20:
+        return 64
+    elif karma > -40:
+        return 32
+    elif karma > -80:
+        return 16
+    elif karma > -160:
+        return 8
+    elif karma > -320:
+        return 4
+    elif karma > -640:
+        return 2
+    elif karma > -1280:
+        return 1
+    else:
+        return 0  # Read-only mode
