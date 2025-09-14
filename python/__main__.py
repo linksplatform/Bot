@@ -52,6 +52,7 @@ class Bot(Vk):
             (patterns.REMOVE_GITHUB_PROFILE,
              lambda: self.commands.change_github_profile(False)),
             (patterns.KARMA, self.commands.karma_message),
+            (patterns.CENSORED_WORDS_RATING, self.commands.censored_words_rating_message),
             (patterns.TOP, self.commands.top),
             (patterns.PEOPLE, self.commands.top),
             (patterns.BOTTOM,
