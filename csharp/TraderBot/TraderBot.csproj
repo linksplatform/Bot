@@ -14,7 +14,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.2" />
         <PackageReference Include="Microsoft.Extensions.Logging" Version="9.0.2" />
         <PackageReference Include="Platform.Data.Doublets.Sequences" Version="0.1.1" />
-        <PackageReference Include="Tinkoff.InvestApi" Version="0.6.1" />
+        <PackageReference Include="Tinkoff.InvestApi" Version="0.6.4" />
     </ItemGroup>
 
 </Project>
