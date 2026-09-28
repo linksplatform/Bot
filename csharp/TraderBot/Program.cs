@@ -5,6 +5,12 @@ using Microsoft.Extensions.Configuration.UserSecrets;
 using Tinkoff.InvestApi;
 using TraderBot;
 
+if (args.Length > 0 && args[0] == "--balance-portfolio")
+{
+    Environment.ExitCode = PortfolioBalanceCommand.Run(args, Console.Out, Console.Error);
+    return;
+}
+
 var builder = Host.CreateDefaultBuilder(args);
 var host = builder
     .ConfigureServices((context, services) =>

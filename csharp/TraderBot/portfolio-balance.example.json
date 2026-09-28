@@ -1,0 +1,5 @@
+{
+  "PortfolioName": "Example",
+  "TargetPercentages": { "Gold": 25, "USD": 25, "TCS Group stocks": 50 },
+  "CurrentValues": { "Gold": 10000, "USD": 30000, "TCS Group stocks": 60000 }
+}
