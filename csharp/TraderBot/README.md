@@ -4,6 +4,12 @@ This bot was participating in the [Tinkoff Invest Robot Contest](https://github.
 
 [![Trading with bot](trading.png)](trading.png)
 
+## Portfolio allocation planning
+
+[Calculate target allocations and balance changes offline](PORTFOLIO_BALANCE.md),
+including the 25% Gold / 25% USD / 50% stocks example. This mode stores target
+relationships in Deep and requires no broker credentials.
+
 ## Prerequisites
 * Linux, macOS, Windows
 * [Git](https://git-scm.com/downloads)
